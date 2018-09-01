@@ -1036,7 +1036,7 @@ FUNCTION(fun_reswitch)
 
   /* try matching, return match immediately when found */
 
-  for (j = 1; j < (nargs - 1); j += 2) {
+  for (j = 1; j < (nargs - 1) && !cpu_time_limit_hit; j += 2) {
     dp = pstr;
     sp = args[j];
     if (process_expression(pstr, &dp, &sp, executor, caller, enactor, eflags,

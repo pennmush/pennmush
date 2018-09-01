@@ -226,7 +226,6 @@ PENNCONF conftable[] = {
    "limits"},
   {"queue_loss", cf_int, &options.queue_loss, 10000, 0, "limits"},
   {"queue_chunk", cf_int, &options.queue_chunk, 100000, 0, "limits"},
-  {"active_queue_chunk", cf_int, &options.active_q_chunk, 100000, 0, "limits"},
   {"function_recursion_limit", cf_int, &options.func_nest_lim, 100000, 0,
    "limits"},
   {"function_invocation_limit", cf_int, &options.func_invk_lim, 100000, 0,
@@ -1205,7 +1204,6 @@ conf_default_set(void)
   options.starting_quota = 20;
   options.player_queue_limit = 100;
   options.queue_chunk = 3;
-  options.active_q_chunk = 0;
   options.func_nest_lim = 50;
   options.func_invk_lim = 2500;
   options.call_lim = 0;

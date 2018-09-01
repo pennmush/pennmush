@@ -45,8 +45,8 @@
 #include "game.h"
 
 #define HELPDB_APP_ID 0x42010FF1
-#define HELPDB_VERSION 4
-#define HELPDB_VERSIONS "4"
+#define HELPDB_VERSION 5
+#define HELPDB_VERSIONS "5"
 
 #define LINE_SIZE 8192
 #define TOPIC_NAME_LEN 30
@@ -170,6 +170,53 @@ help_search(dbref executor, help_file *h, char *_term, char *delim,
   }
 }
 
+static void
+help_search_find(dbref player, help_file *h, char *arg_left)
+{
+  sqlite3_stmt *finder;
+  char *pattern;
+  int rc, len;
+  bool first = 1;
+  sqlite3_str *output;
+  char *utf8 = latin1_to_utf8(arg_left, -1, NULL, "utf8.string");
+  pattern = glob_to_like(utf8, '$', &len);
+  mush_free(utf8, "utf8.string");
+
+  finder = prepare_statement(
+    help_db,
+    "SELECT name FROM topics JOIN entries ON topics.bodyid = entries.id "
+    "WHERE catid = (SELECT id FROM categories WHERE name = ?1) AND body LIKE "
+    "'%' || ?2 || '%' ESCAPE '$' AND main = 1 ORDER BY name",
+    "help.find.wildcard");
+
+  sqlite3_bind_text(finder, 1, h->command, -1, SQLITE_STATIC);
+  sqlite3_bind_text(finder, 2, pattern, len, free_string);
+  output = sqlite3_str_new(help_db);
+
+  do {
+    rc = sqlite3_step(finder);
+    if (rc == SQLITE_ROW) {
+      const char *name;
+      if (first) {
+        first = 0;
+      } else {
+        sqlite3_str_appendall(output, ", ");
+      }
+      name = (const char *) sqlite3_column_text(finder, 0);
+      sqlite3_str_appendall(output, name);
+    }
+  } while (rc == SQLITE_ROW);
+  if (first) {
+    notify(player, T("No matches."));
+  } else {
+    notify_format(player, T("Matches: %s"), sqlite3_str_value(output));
+  }
+
+  utf8 = sqlite3_str_finish(output);
+  sqlite3_free(utf8);
+  sqlite3_reset(finder);
+}
+
 COMMAND(cmd_helpcmd)
 {
   help_file *h;
@@ -187,12 +234,25 @@ COMMAND(cmd_helpcmd)
     return;
   }
 
-  if (SW_ISSET(sw, SWITCH_SEARCH)) {
+  if (SW_ISSET(sw, SWITCH_QUERY)) {
+    char *results = NULL;
+    char *delim = SW_ISSET(sw, SWITCH_BRIEF) ? ", " : NULL;
     int matches;
-    help_search(executor, h, arg_left, NULL, &matches);
+    results = help_search(executor, h, arg_left, delim, &matches);
     if (matches == 0) {
       notify(executor, T("No matches."));
     }
+    if (results) {
+      if (matches > 0) {
+        notify_format(executor, "Matches: %s", results);
+      }
+      mush_free(results, "help.search.results");
+    }
+    return;
+  }
+
+  if (SW_ISSET(sw, SWITCH_SEARCH)) {
+    help_search_find(executor, h, arg_left);
     return;
   }
 
@@ -388,7 +448,7 @@ init_help_files(void)
       "CASCADE) WITHOUT ROWID;"
       "CREATE INDEX index_starts_idx_catid_topic ON index_starts(catid, topic);"
       "CREATE VIRTUAL TABLE helpfts USING fts5(body, content='entries', "
-      "content_rowid='id');"
+      "content_rowid='id', tokenize=\"porter unicode61 tokenchars '@+'\");"
       "CREATE TRIGGER entries_ai AFTER INSERT ON entries BEGIN INSERT INTO "
       "helpfts(rowid, body) VALUES (new.id, new.body); END;"
       "CREATE TRIGGER entries_ad AFTER DELETE ON entries BEGIN INSERT INTO "
@@ -559,8 +619,8 @@ add_help_file(const char *command_name, const char *filename, int admin)
     sqlite3_finalize(add_suggest);
     sqlite3_exec(sqldb, "COMMIT TRANSACTION", NULL, NULL, NULL);
   }
-  (void) command_add(h->command, CMD_T_ANY | CMD_T_NOPARSE, NULL, 0, "SEARCH",
-                     cmd_helpcmd);
+  (void) command_add(h->command, CMD_T_ANY | CMD_T_NOPARSE, NULL, 0,
+                     "BRIEF QUERY SEARCH", cmd_helpcmd);
   hashadd(h->command, h, &help_files);
 }
 
@@ -1086,10 +1146,14 @@ FUNCTION(fun_textentries)
 /* ARGSUSED */
 FUNCTION(fun_textsearch)
 {
-  help_file *h;
-  char *entries;
-  char *sep = " ";
+  sqlite3_stmt *finder;
+  char *pattern;
+  int len;
+  int count = 0;
+  char *utf8;
+  const char *osep = " ";
 
+  help_file *h;
   h = hashfind(strupper(args[0]), &help_files);
   if (!h) {
     safe_str(T("#-1 NO SUCH FILE"), buff, bp);
@@ -1100,13 +1164,33 @@ FUNCTION(fun_textsearch)
     return;
   }
   if (nargs > 2)
-    sep = args[2];
+    osep = args[2];
 
-  entries = help_search(executor, h, args[1], sep, NULL);
-  if (entries)
-    safe_str(entries, buff, bp);
-  else
-    safe_str("#-1", buff, bp);
+  utf8 = latin1_to_utf8(args[1], -1, NULL, "utf8.string");
+  pattern = glob_to_like(utf8, '$', &len);
+  mush_free(utf8, "utf8.string");
+
+  finder = prepare_statement(
+    help_db,
+    "SELECT name FROM topics JOIN entries ON topics.bodyid = entries.id "
+    "WHERE catid = (SELECT id FROM categories WHERE name = ?1) AND body LIKE "
+    "'%' || ?2 || '%' ESCAPE '$' AND main = 1 ORDER BY name",
+    "help.find.wildcard");
+
+  sqlite3_bind_text(finder, 1, h->command, -1, SQLITE_STATIC);
+  sqlite3_bind_text(finder, 2, pattern, len, free_string);
+
+  while (sqlite3_step(finder) == SQLITE_ROW) {
+    const char *name;
+    name = (const char *) sqlite3_column_text(finder, 0);
+    if (count) {
+      safe_str(osep, buff, bp);
+    }
+    count++;
+    safe_str(name, buff, bp);
+  }
+
+  sqlite3_reset(finder);
 }
 
 static char *

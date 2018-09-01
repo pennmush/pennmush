@@ -3,6 +3,7 @@ This is the index to the MUSH online help files.
 
   For an explanation of the help system, type:    help newbie
   For a walkthrough of PennMUSH systems, type:    help getting started
+  For help finding the helpfile you want:         help helpfile
 
   For the list of MUSH commands, type:            help commands
   For the list of MUSH topics, type:              help topics
@@ -13,26 +14,49 @@ This is the index to the MUSH online help files.
   For a list of functions:                        help function list 
   For a list of attributes:                       help attribute list
   To see the configuration of this MUSH:          @config
-
-  Use 'help <pattern>' to search for topic names that match the wildcard pattern <pattern>, or 'help/search <pattern>' for a list of topics whose text matches <pattern> (See HELP SEARCHING for details on the format of the pattern).
   
   On many MUSHes, list local commands with:       +help
 
   If there are any errors in the help text, please notify a wizard in the game, or file an issue at https://github.com/pennmush/pennmush/issues, which is the bug-tracking site for PennMUSH (and its distributed help files) but probably has no relation to this MUSH in particular.
-& searching
-help/search <pattern>
+& help search
+& help/search
+& helpfile
+  help <textname>
+  help <namepattern>
+  help/search <pattern>
+  help/query[/brief] <sqlite3query>
 
-Displays help entries that match <pattern>
+  These commands and switches also work with other things using our helpfile setup: news, ahelp, and any others added.
 
-The pattern is one or more 'phrases', where each phrase is one or more words, optionally enclosed with quote marks, and combined with +. A * at the end treats the phrase as a prefix. Phrases can be combined with AND, OR and NOT. The function NEAR(phrase phrase...) matches entries where two or more phrases are near each other. An optional second argument controls how close the matching is. All these operators must appear in upper case. For full details, see https://www.sqlite.org/fts5.html#full_text_query_syntax
+  help <textname> is how to see a help file.
+  > help helpfile
+  > help @search
+  
+  help <namepattern> is a good way to read long helpfilenames or find a pattern you're looking for. If <namepattern> matches multiple entries, it will show you their names.
+  > help @tri*2
+  > help sort*()
 
-Examples:
+  If you want to find helpfiles that _contain_ a pattern, use "help/search". For example:
+  > help/search @trigger
+  > help/search @switch
+
+  help/query is a more advanced and complex way to search our helpfiles, see "help helpfile2" for more.
+
+  To add more categories and commands (like 'news'), read "game/txt/README"
+
+  See also: textfile(), textentries(), textsearch()
+& help helpfile2
+& help query
+  Displays help entries that match <pattern>. If the /brief switch is given, only shows the names of matching entries. Without it, also shows a fragment of the entry with matches underlined.
+
+  The pattern is one or more phrases, where each phrase is one or more words (enclosed with quote marks if there's more than one word, or searching for a word with characters like @ or +). A * at the end treats the phrase as a prefix. Phrases can be combined with AND (The default), OR and NOT. The function NEAR(phrase phrase...) matches entries where two or more phrases are near each other. An optional second argument controls how close the matching is. All these operators must appear in upper case. For full details, see https://www.sqlite.org/fts5.html#full_text_query_syntax
+
+  Examples:
 
   help/search cosine OR tangent
   help/search "treated as"
   help/search NEAR(player wizard, 20)
-
-This switch works with help, news, ahelp, and other help like commands.
+  help/search "@attrib"*
 & newbie
   If you are new to MUSHing, the help files may seem confusing. Most of them are written in a specific style, however, and once you understand it the files are extremely helpful.
 
@@ -963,25 +987,25 @@ See also: PUPPET, @force, DBREF
 & QUEUE
   QUEUE
 
-  The queue is the waiting line for action lists to be executed by the MUSH. Each time you enter an action list, it goes into the queue and stays there until its turn comes up, at which time the MUSH processes the commands and you see the results. The MUSH can execute several commands every second, so normally you see results right away.
+  The queue is the waiting line for action lists to be executed by the MUSH.  Each time you enter an action list, it goes into the queue and stays there until its turn comes up, at which time the MUSH processes the commands and you see the results. The MUSH can execute thousands of commands every second, so normally you see results right away.
 
-  However, if there are too many action lists in the queue, there may be a slight delay, called lag. The more common cause of lag, however, is network delays between you and the MUSH. Action lists that were queued by another command (like @switch, @force, @wait, etc.) also have a small delay before they run.
+  There are actually two distinct queues:
+  * Incoming socket commands. These are run immediately, so a "look" or "@ps" will happen before any other softcode that is waiting to run. A socket may 'burst' up to 100 commands, then 1 per second after that.
+  * Command queue. These enter the queue via @trigger, @force, or many other ways.
   
-Continued in 'help queue2'.
-& QUEUE2
-  There are actually several different queues in PennMUSH. Commands which are queued as a direct result of something done by a player go onto the Player queue (also called the Priority queue). Commands which are queued by other types of objects go on the lower priority Object Queue. This gives actions caused directly by a player a higher priority, to make the MUSH seem more responsive. Commands on the Object queue get moved to the Player queue after a 1 second delay.
-  
-  There is also a Wait queue, where commands queued via the @wait command go, and a Semaphore queue, where semaphore @waits go. These commands are moved to the Player or Object queue at the appropriate time, either when the @wait time elapses, or when the semaphore is @notified.
+  There is also a Wait queue, where commands queued via the @wait command go, and a Semaphore queue, where semaphore @waits go. These commands are moved to the command queue at the appropriate time, either when the @wait time elapses, or when the semaphore is @notified.
   
   You can see which commands are currently queued with the @ps command, and with the getpids(), lpids() and pidinfo() functions. Queued commands can be cancelled with @halt and/or @drain.
 
-Continued in 'help queue3'.
+Continued in 'help queue2'.
 & QUEUE3
-  There are several @config options which affect queueing. The option 'player_queue_limit' controls how many action lists can be queued by one object at any given time. Wizards and objects with the Queue @power can queue more commands (equal to the player_queue_limit plus the current number of objects in the database, including garbage).
+  There are several @config options which affect queueing.
+
+  The option 'player_queue_limit' controls how many action lists can be queued by one object at any given time. Wizards and objects with the Queue @power can queue more commands (equal to the player_queue_limit plus the current number of objects in the database, including garbage).
   
   Normally each object has its own queue count, but if the 'owner_queues' option is enabled, objects share a queue count with their owner.
   
-  'queue_chunk' and 'active_queue_chunk' control how quickly commands are executed from the queue.
+  'queue_chunk' controls how many commands PennMUSH runs before checking again for incoming socket commands or connections.
   
   It costs a certain number of pennies to queue an action list; the exact amount is set in the 'queue_cost' @config option. These pennies are returned after the action list is run. Sometimes, you'll lose a penny when queueing a command; the chance of this happening is controlled by the 'queue_loss' option.
   

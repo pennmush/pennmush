@@ -2107,8 +2107,7 @@ do_chan_title(dbref player, const char *name, const char *title)
     return;
   }
   scan = title;
-  WALK_ANSI_STRING(scan)
-  {
+  WALK_ANSI_STRING (scan) {
     /* Stomp newlines and other weird whitespace */
     if ((isspace(*scan) && (*scan != ' ')) || (*scan == BEEP_CHAR)) {
       notify(player, T("Invalid character in title."));
@@ -3884,7 +3883,8 @@ channel_send(CHAN *channel, dbref player, int flags, const char *origmessage)
 
   if (flags & CB_PRESENCE) {
     /* This is a 'connect/disconnected' message. For mogrify purposes, thanks to
-     * backwards compat, there is no title, and message is "playername has connected."
+     * backwards compat, there is no title, and message is "playername has
+     * connected."
      *
      * So this is ugly. 'title' is used a temp buffer for redoing message.
      */
@@ -4208,7 +4208,7 @@ parse_chat_alias(dbref player, char *command)
     message++;
 
   ignoreme = snprintf(abuff, sizeof abuff, "CHANALIAS`%s",
-             strupper_r(alias, channame, sizeof channame));
+                      strupper_r(alias, channame, sizeof channame));
   a = atr_get(player, abuff);
   if (!a || !(av = safe_atr_value(a, "chanalias"))) {
     /* Not an alias */

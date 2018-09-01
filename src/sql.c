@@ -1412,6 +1412,8 @@ penn_pg_free_sql_query(PGresult *qres)
 }
 #endif /* HAVE_POSTGRESQL */
 
+void sql_regexp_fun(sqlite3_context *, int, sqlite3_value **);
+
 static int
 penn_sqlite3_sql_init(void)
 {
@@ -1427,6 +1429,19 @@ penn_sqlite3_sql_init(void)
     sqlite3_connp = NULL;
     return 0;
   } else {
+#ifdef HAVE_ICU
+    // Delete the ICU version
+    sqlite3_create_function(sqlite3_connp, "regexp", 2,
+                            SQLITE_ANY | SQLITE_DETERMINISTIC, NULL, NULL, NULL,
+                            NULL);
+#endif
+    if ((status = sqlite3_create_function(
+           sqlite3_connp, "regexp", 2, SQLITE_UTF8 | SQLITE_DETERMINISTIC, NULL,
+           sql_regexp_fun, NULL, NULL)) != SQLITE_OK) {
+      do_rawlog(LT_ERR, "Unable to register sqlite3 regexp() function: %s",
+                sqlite3_errstr(status));
+    }
+
     queue_event(SYSEVENT, "SQL`CONNECT", "%s", "sqlite3");
     return 1;
   }
@@ -1435,7 +1450,7 @@ penn_sqlite3_sql_init(void)
 static void
 penn_sqlite3_sql_shutdown(void)
 {
-  sqlite3_close(sqlite3_connp);
+  sqlite3_close_v2(sqlite3_connp);
   sqlite3_connp = NULL;
 }
 

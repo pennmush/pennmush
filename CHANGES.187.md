@@ -20,11 +20,24 @@ Numbers next to the developer credit refer to Github issue numbers.
 Version 1.8.7 patchlevel 1 ??? ?? 20??
 ======================================
 
+Minor Changes
+-------------
+
+* `help/search` takes a `/brief` switch to display just the names of
+  matching entries. [SW]
+* help full text search includes @ and + in tokens, so things like
+  `help/search "@force"` work as expected. Also enabled porter
+  stemming of search phrases (Searching for *wizard* matches
+  *wizards*). Noticed by [MG]. [SW]
+* Add `help/find` which mimics the pre-1.8.7 behavior of
+  `help/search`. Suggested by [MG]. [SW]
+
 Fixes
 -----
 
 * `connrecord()` returns an error if extended connection logging is disabled. [SW]
 * `connlog()` didn't handle future dates very well. [SW]
+* dbtools programs couludn't handle attributes with quote marks in the name. Reported by [MT]. [SW,1228]
 
 Version 1.8.7 patchlevel 0 Aug 10 2018
 ======================================

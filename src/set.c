@@ -1127,7 +1127,7 @@ regedit_helper(dbref player, dbref thing,
       }
     }
   } while (subpatterns >= 0 && !(gargs->flags & EDIT_FIRST) &&
-           !gargs->call_limit_hit);
+           !gargs->call_limit_hit && !cpu_time_limit_hit);
 
   if (gargs->call_limit_hit) {
     /* Bail out */
@@ -1295,7 +1295,7 @@ do_trigger(dbref executor, dbref enactor, char *object, char **argv,
   bool control;
   char *input = NULL;
   int qflags = parent_queue->queue_type & QUEUE_EVENT;
-  
+
   if (flags & TRIGGER_INLINE) {
     qflags |= QUEUE_INPLACE;
     if (flags & TRIGGER_NOBREAK)

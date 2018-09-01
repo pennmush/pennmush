@@ -60,7 +60,6 @@ static uint32_t top_pid = 1;
 #define MAX_PID (1U << 15)
 
 static MQUE *qfirst = NULL, *qlast = NULL, *qwait = NULL;
-static MQUE *qlfirst = NULL, *qllast = NULL;
 static MQUE *qsemfirst = NULL, *qsemlast = NULL;
 
 static int add_to_generic(dbref player, int am, const char *name,
@@ -92,9 +91,6 @@ int32_t queue_load_record[QUEUE_LOAD_SECS]
   __attribute__((__aligned__(16))) = {0};
 
 double average32(const int32_t *arr, int count);
-
-extern volatile sig_atomic_t
-  cpu_time_limit_hit; /**< Have we used too much CPU? */
 
 /* From game.c, for report() */
 extern char report_cmd[BUFFER_LEN];
@@ -511,20 +507,11 @@ queue_event(dbref enactor, const char *event, const char *fmt, ...)
   /* Hmm, should events queue ahead of anything else?
    * For now, yes, but leaving code here anyway.
    */
-  if (1) {
-    if (qlast) {
-      qlast->next = tmp;
-      qlast = tmp;
-    } else {
-      qlast = qfirst = tmp;
-    }
+  if (qlast) {
+    qlast->next = tmp;
+    qlast = tmp;
   } else {
-    if (qllast) {
-      qllast->next = tmp;
-      qllast = tmp;
-    } else {
-      qllast = qlfirst = tmp;
-    }
+    qlast = qfirst = tmp;
   }
 
   /* All good! */
@@ -582,19 +569,12 @@ insert_que(MQUE *queue_entry, MQUE *parent_queue)
   switch (
     (queue_entry->queue_type & (QUEUE_PLAYER | QUEUE_OBJECT | QUEUE_INPLACE))) {
   case QUEUE_PLAYER:
+  case QUEUE_OBJECT:
     if (qlast) {
       qlast->next = queue_entry;
       qlast = queue_entry;
     } else {
       qlast = qfirst = queue_entry;
-    }
-    break;
-  case QUEUE_OBJECT:
-    if (qllast) {
-      qllast->next = queue_entry;
-      qllast = queue_entry;
-    } else {
-      qllast = qlfirst = queue_entry;
     }
     break;
   case QUEUE_INPLACE:
@@ -819,7 +799,8 @@ queue_attribute_base_priv(dbref executor, const char *atrname, dbref enactor,
     return 0;
   if (RealGoodObject(priv) && !Can_Read_Attr(priv, executor, a))
     return 0;
-  queue_attribute_useatr(executor, a, enactor, pe_regs, flags, parent_queue, input);
+  queue_attribute_useatr(executor, a, enactor, pe_regs, flags, parent_queue,
+                         input);
   return 1;
 }
 
@@ -860,9 +841,8 @@ queue_attribute_useatr(dbref executor, ATTR *a, dbref enactor, PE_REGS *pe_regs,
 
   if (input) {
     /* Attempt to match input against the attribute, accept either. */
-    if (atr_single_match_r(a, AF_COMMAND | AF_LISTEN, ':', input,
-                           args, match_space, match_space_len,
-                           cmd_buff, pe_regs)) {
+    if (atr_single_match_r(a, AF_COMMAND | AF_LISTEN, ':', input, args,
+                           match_space, match_space_len, cmd_buff, pe_regs)) {
       command = cmd_buff;
     } else {
       return 1;
@@ -873,7 +853,7 @@ queue_attribute_useatr(dbref executor, ATTR *a, dbref enactor, PE_REGS *pe_regs,
     /* Trim off $-command or ^-command prefix */
     if (*command == '$' || *command == '^') {
       while (*command && *command != ':') {
-        if (*command == '\\' && *(command+1))
+        if (*command == '\\' && *(command + 1))
           command++;
         command++;
       }
@@ -1035,39 +1015,17 @@ queue_update(void)
   }
   last_mudtime = mudtime;
 
-  /* move contents of low priority queue onto end of normal one
-   * this helps to keep objects from getting out of control since
-   * its effects on other objects happen only after one second
-   * this should allow @halt to be typed before getting blown away
-   * by scrolling text.
-   */
-  if (qlfirst) {
-    if (qlast)
-      qlast->next = qlfirst;
-    else
-      qfirst = qlfirst;
-    qlast = qllast;
-    qllast = qlfirst = NULL;
-  }
-
   /* check regular @wait queue */
   while (qwait && qwait->wait_until <= mudtime) {
     point = qwait;
     qwait = point->next;
     point->next = NULL;
     point->wait_until = 0;
-    if ((point->enactor < 0) || IsPlayer(point->enactor)) {
-      if (qlast) {
-        qlast->next = point;
-        qlast = point;
-      } else
-        qlast = qfirst = point;
+    if (qlast) {
+      qlast->next = point;
+      qlast = point;
     } else {
-      if (qllast) {
-        qllast->next = point;
-        qllast = point;
-      } else
-        qllast = qlfirst = point;
+      qlast = qfirst = point;
     }
   }
 
@@ -1086,18 +1044,11 @@ queue_update(void)
     add_to_sem(point->semaphore_obj, -1, point->semaphore_attr);
     point->semaphore_obj = NOTHING;
     point->next = NULL;
-    if (IsPlayer(point->enactor)) {
-      if (qlast) {
-        qlast->next = point;
-        qlast = point;
-      } else
-        qlast = qfirst = point;
+    if (qlast) {
+      qlast->next = point;
+      qlast = point;
     } else {
-      if (qllast) {
-        qllast->next = point;
-        qllast = point;
-      } else
-        qllast = qlfirst = point;
+      qlast = qfirst = point;
     }
   }
 }
@@ -1328,14 +1279,9 @@ queue_msecs_till_next(void)
   if (qfirst != NULL)
     return 0;
 
-  /* If there are commands in the object queue, they should be run in
-   * one second (asuming no @waits demanding time sooner)
-   */
-  if (qlfirst != NULL) {
-    min = SECS_TO_MSECS(1);
-  } else {
-    min = SECS_TO_MSECS(500);
-  }
+  /* Arbitrarily high wait */
+  min = SECS_TO_MSECS(500);
+
   /* Check out the wait and semaphore queues, looking for the smallest
    * wait value. Return that - 1, since commands get moved to the player
    * queue when they have one second to go.
@@ -1417,21 +1363,12 @@ execute_one_semaphore(dbref thing, char const *aname, PE_REGS *pe_regs)
       pe_regs_copystack(entry->pe_info->regvals, pe_regs, PE_REGS_QUEUE, 1);
     }
 
-    /* Place entry into the player or object queue. */
-    if (IsPlayer(entry->enactor)) {
-      if (qlast) {
-        qlast->next = entry;
-        qlast = entry;
-      } else {
-        qlast = qfirst = entry;
-      }
+    /* And enqueue */
+    if (qlast) {
+      qlast->next = entry;
+      qlast = entry;
     } else {
-      if (qllast) {
-        qllast->next = entry;
-        qllast = entry;
-      } else {
-        qllast = qlfirst = entry;
-      }
+      qlast = qfirst = entry;
     }
     return 1;
   }
@@ -1488,19 +1425,12 @@ dequeue_semaphores(dbref thing, char const *aname, int count, int all,
       giveto(entry->executor, QUEUE_COST);
       add_to(entry->executor, -1);
       free_qentry(entry);
-    } else if (IsPlayer(entry->enactor)) {
+    } else {
       if (qlast) {
         qlast->next = entry;
         qlast = entry;
       } else {
         qlast = qfirst = entry;
-      }
-    } else {
-      if (qllast) {
-        qllast->next = entry;
-        qllast = entry;
-      } else {
-        qllast = qlfirst = entry;
       }
     }
   }
@@ -2136,9 +2066,9 @@ do_queue(dbref player, const char *what, enum queue_type flag)
   dbref victim = NOTHING;
   int all = 0;
   int quick = 0;
-  int dpq = 0, doq = 0, dwq = 0, dsq = 0;
-  int pq = 0, oq = 0, wq = 0, sq = 0;
-  int tpq = 0, toq = 0, twq = 0, tsq = 0;
+  int dpq = 0, dwq = 0, dsq = 0;
+  int pq = 0, wq = 0, sq = 0;
+  int tpq = 0, twq = 0, tsq = 0;
   if (flag == QUEUE_SUMMARY || flag == QUEUE_QUICK)
     quick = 1;
   if (flag == QUEUE_ALL || flag == QUEUE_SUMMARY) {
@@ -2172,11 +2102,8 @@ do_queue(dbref player, const char *what, enum queue_type flag)
     }
     victim = Owner(victim);
     if (!quick)
-      notify(player, T("Player Queue:"));
+      notify(player, T("Command Queue:"));
     show_queue(player, victim, 0, quick, all, qfirst, &tpq, &pq, &dpq);
-    if (!quick)
-      notify(player, T("Object Queue:"));
-    show_queue(player, victim, 0, quick, all, qlfirst, &toq, &oq, &doq);
     if (!quick)
       notify(player, T("Wait Queue:"));
     show_queue(player, victim, 1, quick, all, qwait, &twq, &wq, &dwq);
@@ -2186,9 +2113,9 @@ do_queue(dbref player, const char *what, enum queue_type flag)
     if (!quick)
       notify(player, T("------------  Queue Done  ------------"));
     notify_format(player,
-                  T("Totals: Player...%d/%d[%ddel]  Object...%d/%d[%ddel]  "
+                  T("Totals: Player...%d/%d[%ddel]  "
                     "Wait...%d/%d[%ddel]  Semaphore...%d/%d"),
-                  pq, tpq, dpq, oq, toq, doq, wq, twq, dwq, sq, tsq);
+                  pq, tpq, dpq, wq, twq, dwq, sq, tsq);
     notify_format(player, T("Load average (1/5/15 minutes): %.2f %.2f %.2f"),
                   average32(queue_load_record, 60),
                   average32(queue_load_record, 300),
@@ -2258,20 +2185,14 @@ do_halt(dbref owner, const char *ncom, dbref victim)
   if (!Quiet(Owner(player)))
     notify_format(Owner(player), "%s: %s(#%d)", T("Halted"),
                   AName(player, AN_SYS, NULL), player);
-  for (tmp = qfirst; tmp; tmp = tmp->next)
+  for (tmp = qfirst; tmp; tmp = tmp->next) {
     if (GoodObject(tmp->executor) &&
         ((tmp->executor == player) || (Owner(tmp->executor) == player))) {
       num--;
       giveto(player, QUEUE_COST);
       tmp->executor = NOTHING;
     }
-  for (tmp = qlfirst; tmp; tmp = tmp->next)
-    if (GoodObject(tmp->executor) &&
-        ((tmp->executor == player) || (Owner(tmp->executor) == player))) {
-      num--;
-      giveto(player, QUEUE_COST);
-      tmp->executor = NOTHING;
-    }
+  }
   /* remove wait q stuff */
   for (point = qwait; point; point = next) {
     if (((point->executor == player) || (Owner(point->executor) == player))) {
@@ -2282,8 +2203,9 @@ do_halt(dbref owner, const char *ncom, dbref victim)
       else
         qwait = next = point->next;
       free_qentry(point);
-    } else
+    } else {
       next = (trail = point)->next;
+    }
   }
 
   /* clear semaphore queue */
@@ -2547,7 +2469,6 @@ void
 shutdown_queues(void)
 {
   shutdown_a_queue(&qfirst, &qlast);
-  shutdown_a_queue(&qlfirst, &qllast);
   shutdown_a_queue(&qsemfirst, &qsemlast);
   shutdown_a_queue(&qwait, NULL);
 }

@@ -520,7 +520,7 @@ See also: QUIT, LOGOUT
   @break[/queued] <boolean>[=<action list>]
   @assert[/queued] <boolean>[=<action list>]
 
-  @break stops the execution of further commands in the current action list if <boolean> is a true value. It doesn't affect new queue entries made by previous commands in the action list. It can be useful for doing error checking without having to nest @switches and suffer from delayed execution because of queueing.
+  @break stops the execution of further commands in the current action list if <boolean> is a true value. It doesn't affect new queue entries made by previous commands in the action list. It can be useful for doing error checking without having to nest @switches.
   
   If <action list> is given, it is executed instead of the rest of the commands in the current action list. By default, <action list> is run immediately, replacing the rest of the action list @break was called in. If the /queued switch is given, <action list> will instead be queued to be run later. @break also accepts an /inline switch, for Rhost compatability; this switch does nothing on PennMUSH.
 
@@ -2358,7 +2358,7 @@ See also: @inprefix, AUDIBLE, @listen
   @ps[/<switch>] [<player>]
   @ps[/debug] <pid>
   
-  @ps lists all commands currently on your 'to be executed' queue, thus allowing you to identify infinite (or unnecessary) loops with-out putting in says or poses. It gives a count of the total commands in each of the queues (Player, Object, Wait, and Semaphore), displayed in the format:
+  @ps lists all commands currently on your 'to be executed' queue, thus allowing you to identify infinite (or unnecessary) loops with-out putting in says or poses. It gives a count of the total commands in each of the queues (Command, Wait, and Semaphore), displayed in the format:
       <Number of your queued commands> / <Total number of queued commands>.
 
   Some of the queues also include a [Ndel] after the total. That number is the number of entries made by objects that have been halted but haven't been removed from the queue yet.

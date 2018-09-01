@@ -1500,7 +1500,7 @@ regrep_helper(dbref player, dbref thing __attribute__((__unused__)),
     ps_free(rbuff);
     return 0;
   }
-  while (subpatterns >= 0) {
+  while (subpatterns >= 0 && !cpu_time_limit_hit) {
     ps_safe_str(rbuff, ANSI_HILITE);
     ps_ansi_pcre_copy_substring(orig, offsets, subpatterns, 0, 0, rbuff);
     ps_safe_str(rbuff, ANSI_END);

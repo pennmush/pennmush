@@ -392,7 +392,6 @@ NEW_PE_INFO *pe_info_from(NEW_PE_INFO *old_pe_info, int flags,
 extern void start_cpu_timer(void);
 extern void reset_cpu_timer(void);
 
-
 #ifdef HAVE_LIBCURL
 /* Data for successfull @fetch commands */
 struct urlreq {

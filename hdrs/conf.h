@@ -96,12 +96,12 @@
  * burst, but after that goes down, it replenishes at COMMANDS_PER_SECOND per
  * second.
  *
- * e.g: After pasting a file that contains 120 lines, the first 100 take 1 second,
- * then the next 20 lines are run once each second. But 50 seconds after it's
- * finished, the quota is back up to 50.
+ * e.g: After pasting a file that contains 120 lines, the first 100 take 1
+ * second, then the next 20 lines are run once each second. But 50 seconds after
+ * it's finished, the quota is back up to 50.
  */
-#define COMMAND_BURST_SIZE    100 /* commands allowed per user in a burst */
-#define COMMANDS_PER_SECOND   1  /* commands per second, prorated by ms. */
+#define COMMAND_BURST_SIZE 100 /* commands allowed per user in a burst */
+#define COMMANDS_PER_SECOND 1  /* commands per second, prorated by ms. */
 
 /* From conf.c */
 bool config_file_startup(const char *conf, int restrictions);
@@ -175,7 +175,8 @@ struct options_table {
   dbref ancestor_player;  /**< The ultimate parent player (help ancestors) */
   dbref event_handler;    /**< The Event Handler (help events). */
   dbref http_handler;     /**< The HTTP Handler (GET, POST, etc) */
-  int   http_per_second;  /**< Maximum number of commands run from http every second */
+  int http_per_second;    /**< Maximum number of commands run from http every
+                             second */
   int connect_fail_limit; /**< Maximum number of connect fails in 10 mins. */
   int idle_timeout;       /**< Maximum idle time allowed, in minutes */
   int unconnected_idle_timeout; /**< Maximum idle time for connections without
@@ -195,13 +196,11 @@ struct options_table {
   int starting_money; /**< Number of pennies for newly created players */
   int starting_quota; /**< Object quota for newly created players */
   int player_queue_limit; /**< Maximum commands a player can queue at once */
-  int queue_chunk;    /**< Number of commands run from queue when no input from
-                         sockets is waiting */
-  int active_q_chunk; /**< Number of commands run from queue when input from
-                         sockets is waiting */
-  int func_nest_lim;  /**< Maximum function recursion depth */
-  int func_invk_lim;  /**< Maximum number of function invocations */
-  int call_lim;       /**< Maximum parser calls allowed in a queue cycle */
+  int queue_chunk;   /**< Number of commands run from queue when no input from
+                        sockets is waiting */
+  int func_nest_lim; /**< Maximum function recursion depth */
+  int func_invk_lim; /**< Maximum number of function invocations */
+  int call_lim;      /**< Maximum parser calls allowed in a queue cycle */
   char log_wipe_passwd[256];  /**< Password for logwipe command */
   char money_singular[32];    /**< Currency unit name, singular */
   char money_plural[32];      /**< Currency unit name, plural */

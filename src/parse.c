@@ -47,7 +47,6 @@ int global_fun_recursions;
 /* extern int re_subpatterns; */
 /* extern int *re_offsets; */
 /* extern ansi_string *re_from; */
-extern volatile sig_atomic_t cpu_time_limit_hit;
 extern int cpu_limit_warning_sent;
 
 /** Structure for storing DEBUG output in a linked list */
@@ -1297,14 +1296,16 @@ extern char atr_name_table[UCHAR_MAX + 1];
 void
 pi_regs_normalize_key(char *lckey)
 {
-  if (!lckey || !*lckey) return;
+  if (!lckey || !*lckey)
+    return;
   if (lckey[0] == '-' && !lckey[1]) {
     /* 1-character key that is only - ? */
     lckey[0] = '?';
   }
 
-  for (;lckey && *lckey; lckey++) {
-    if (islower(*lckey)) *lckey = toupper(*lckey);
+  for (; lckey && *lckey; lckey++) {
+    if (islower(*lckey))
+      *lckey = toupper(*lckey);
     if (!atr_name_table[*lckey]) {
       *lckey = '?';
     }

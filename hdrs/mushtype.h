@@ -9,6 +9,7 @@
 
 #include "copyrite.h"
 #include <openssl/ssl.h>
+#include <signal.h>
 
 #ifdef HAVE_STDINT_H
 #include <stdint.h>
@@ -233,9 +234,9 @@ struct text_queue {
 #define CONN_XTERM256 0x400
 #define CONN_RESERVED 0x800
 
-/** An unrecoverable error happened when trying to read or write to the socket.
- * Close when safe. */
-#define CONN_SOCKET_ERROR 0x1000
+/** This connection is marked for closing. Still safe to write to it.
+ * Close when ready. */
+#define CONN_SHUTDOWN 0x1000
 
 /** Negotiated GMCP via Telnet */
 #define CONN_GMCP 0x2000
@@ -243,13 +244,17 @@ struct text_queue {
 /** Sending and receiving UTF-8 */
 #define CONN_UTF8 0x4000
 
+/* Socket error, do not write to this connection anymore. */
+#define CONN_NOWRITE 0x8000
+
 /* HTTP connection, pass input straight to process_http_input */
 #define CONN_HTTP_REQUEST 0x10000
-/* An active HTTP command: Pemits and the like should be buffered in active_http_request */
-#define CONN_HTTP_BUFFER  0x20000
+/* An active HTTP command: Pemits and the like should be buffered in
+ * active_http_request */
+#define CONN_HTTP_BUFFER 0x20000
 /* An HTTP Request that should be closed. */
-#define CONN_HTTP_READY   0x40000
-#define CONN_HTTP_CLOSE   0x80000
+#define CONN_HTTP_READY 0x40000
+#define CONN_HTTP_CLOSE 0x80000
 
 #ifndef WITHOUT_WEBSOCKETS
 /* Flag for WebSocket client. */
@@ -290,26 +295,29 @@ struct squeue {
   struct squeue *next; /** Pointer to next squeue event in linked list */
 };
 
+/**< Have we used too much CPU? */
+extern volatile sig_atomic_t cpu_time_limit_hit;
+
 #define HTTP_METHOD_LEN 16
-#define HTTP_CODE_LEN   64
+#define HTTP_CODE_LEN 64
 
 struct http_request {
-  char method[HTTP_METHOD_LEN];  /**< GET/POST/PUT/DELETE/HEAD/etc */
-  char path[MAX_COMMAND_LEN];    /**< Varies by browser, but 2048 is IE max */
-  char inheaders[BUFFER_LEN];        /**< Incoming Headers */
-  char *inhp;                      /**< bp for hbuff */
-  char inbody[BUFFER_LEN];         /**< Incoming Body */
-  char *inbp;                      /**< bp for buff */
-  uint32_t state;                /**< Current state of request. */
-  int32_t content_length;        /**< Content-Length value. */
-  int32_t content_read;        /**< Content-Length value. */
+  char method[HTTP_METHOD_LEN]; /**< GET/POST/PUT/DELETE/HEAD/etc */
+  char path[MAX_COMMAND_LEN];   /**< Varies by browser, but 2048 is IE max */
+  char inheaders[BUFFER_LEN];   /**< Incoming Headers */
+  char *inhp;                   /**< bp for hbuff */
+  char inbody[BUFFER_LEN];      /**< Incoming Body */
+  char *inbp;                   /**< bp for buff */
+  uint32_t state;               /**< Current state of request. */
+  int32_t content_length;       /**< Content-Length value. */
+  int32_t content_read;         /**< Content-Length value. */
 
-  char code[HTTP_CODE_LEN];      /**< 200 OK, etc */
-  char ctype[MAX_COMMAND_LEN];   /**< Content-Type: text/plain */
-  char headers[BUFFER_LEN];      /**< Response headers */
-  char *hp;                      /**< ptr for headers */
-  char response[BUFFER_LEN];     /**< Response body. @pemits, etc. */
-  char *rp;                      /**< bp for response */
+  char code[HTTP_CODE_LEN];    /**< 200 OK, etc */
+  char ctype[MAX_COMMAND_LEN]; /**< Content-Type: text/plain */
+  char headers[BUFFER_LEN];    /**< Response headers */
+  char *hp;                    /**< ptr for headers */
+  char response[BUFFER_LEN];   /**< Response body. @pemits, etc. */
+  char *rp;                    /**< bp for response */
 };
 
 typedef struct descriptor_data DESC;
@@ -335,12 +343,11 @@ struct descriptor_data {
   char *raw_input_at;       /**< Pointer to position in raw input */
   time_t connected_at;      /**< Time of connection */
   time_t last_time;         /**< Time of last activity */
-  uint32_t quota;           /**< Quota of commands allowed, *1000 (for milliseconds) */
-  int cmds;                 /**< Number of commands sent */
-  int hide;                 /**< Hide status */
-  uint32_t conn_flags;      /**< Flags of connection (telnet status, etc.) */
+  uint32_t quota; /**< Quota of commands allowed, *1000 (for milliseconds) */
+  int cmds;       /**< Number of commands sent */
+  int hide;       /**< Hide status */
+  uint32_t conn_flags; /**< Flags of connection (telnet status, etc.) */
   struct descriptor_data *next; /**< Next descriptor in linked list */
-  struct descriptor_data *prev; /**< Previous descriptor in linked list */
   unsigned long input_chars;    /**< Characters received */
   unsigned long output_chars;   /**< Characters sent */
   int width;                    /**< Screen width */
@@ -353,9 +360,10 @@ struct descriptor_data {
 #ifndef WITHOUT_WEBSOCKETS
   /* TODO: Need to add this state to reboot.db. */
   uint64_t ws_frame_len;
-#endif                /* undef WITHOUT_WEBSOCKETS */
-  int64_t connlog_id; /**< ID for this connection's connlog entry */
-
+#endif                      /* undef WITHOUT_WEBSOCKETS */
+  int64_t connlog_id;       /**< ID for this connection's connlog entry */
+  const char *close_reason; /**< Why is this socket being closed? */
+  dbref closer;             /**< Who closed this socket? */
   struct http_request *http_request;
 };
 

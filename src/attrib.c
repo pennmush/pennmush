@@ -1357,6 +1357,8 @@ atr_iter_get(dbref player, dbref thing, const char *name, unsigned flags,
       result = func(player, thing, NOTHING, name, ptr, args);
   } else if (AttrCount(thing)) {
     ATTR_FOR_EACH (thing, ptr) {
+      if (cpu_time_limit_hit)
+        break;
       if (strchr(AL_NAME(ptr), '`')) {
         continue;
       }
@@ -1483,8 +1485,11 @@ atr_iter_get_parent(dbref player, dbref thing, const char *name, unsigned flags,
     int parent_depth;
     st_init(&seen, "AttrsSeenTree");
     for (parent_depth = MAX_PARENTS + 1, parent = thing;
-         parent_depth-- && parent != NOTHING; parent = Parent(parent)) {
+         parent_depth-- && parent != NOTHING && !cpu_time_limit_hit;
+         parent = Parent(parent)) {
       ATTR_FOR_EACH (parent, ptr) {
+        if (cpu_time_limit_hit)
+          break;
         if (!st_find(AL_NAME(ptr), &seen)) {
           st_insert(AL_NAME(ptr), &seen);
           if (parent != thing) {
@@ -1653,9 +1658,8 @@ can_debug(dbref player, dbref victim)
  * others.
  */
 int
-atr_single_match_r(ATTR *ptr, int flag_mask, int end,
-                   const char *input, char *args[],
-                   char *match_space, int match_space_len,
+atr_single_match_r(ATTR *ptr, int flag_mask, int end, const char *input,
+                   char *args[], char *match_space, int match_space_len,
                    char cmd_buff[], PE_REGS *pe_regs)
 {
   char buff[BUFFER_LEN];
@@ -1712,21 +1716,19 @@ atr_single_match_r(ATTR *ptr, int flag_mask, int end,
   }
 
   if (AF_Regexp(ptr)) {
-    if (regexp_match_case_r(buff, input, AF_Case(ptr), args,
-                            MAX_STACK_ARGS, match_space, match_space_len,
-                            pe_regs, PE_REGS_ARG)) {
+    if (regexp_match_case_r(buff, input, AF_Case(ptr), args, MAX_STACK_ARGS,
+                            match_space, match_space_len, pe_regs,
+                            PE_REGS_ARG)) {
       match_found = 1;
     }
   } else {
-    if (wild_match_case_r(buff, input, AF_Case(ptr), args,
-                        MAX_STACK_ARGS, match_space, match_space_len,
-                        pe_regs, PE_REGS_ARG)) {
+    if (wild_match_case_r(buff, input, AF_Case(ptr), args, MAX_STACK_ARGS,
+                          match_space, match_space_len, pe_regs, PE_REGS_ARG)) {
       match_found = 1;
     }
   }
   return match_found;
 }
-
 
 /** Match input against a $command or ^listen attribute.
  * This function attempts to match a string against either the $commands
@@ -1828,6 +1830,8 @@ atr_comm_match(dbref thing, dbref player, int type, int end, char const *str,
     st_flush(&private_attrs);
 
     ATTR_FOR_EACH (current, ptr) {
+      if (cpu_time_limit_hit)
+        break;
       if (current == thing) {
         if (st_find(AL_NAME(ptr), &nocmd_roots)) {
           continue;
@@ -1914,10 +1918,11 @@ atr_comm_match(dbref thing, dbref player, int type, int end, char const *str,
           continue;
       }
 
-      match_found = atr_single_match_r(ptr, flag_mask, end, str, args,
-                                       match_space, match_space_len,
-                                       cmd_buff, pe_regs);
-      if (match_found) match++;
+      match_found =
+        atr_single_match_r(ptr, flag_mask, end, str, args, match_space,
+                           match_space_len, cmd_buff, pe_regs);
+      if (match_found)
+        match++;
 
       if (match_found) {
         /* We only want to do the lock check once, so that any side
@@ -1985,8 +1990,8 @@ atr_comm_match(dbref thing, dbref player, int type, int end, char const *str,
             /* inplace queue */
             snprintf(tmp, sizeof tmp, "#%d/%s", thing, AL_NAME(ptr));
             new_queue_actionlist_int(thing, player, player, cmd_buff,
-                                     from_queue, pe_flags, queue_type,
-                                     pe_regs, tmp);
+                                     from_queue, pe_flags, queue_type, pe_regs,
+                                     tmp);
           } else {
             /* Normal queue */
             parse_que_attr(
@@ -1999,7 +2004,7 @@ atr_comm_match(dbref thing, dbref player, int type, int end, char const *str,
         }
       }
     }
-  } while ((current = next) != NOTHING);
+  } while ((current = next) != NOTHING && !cpu_time_limit_hit);
 
   st_flush(&seen);
   st_flush(&nocmd_roots);
@@ -2051,9 +2056,8 @@ one_comm_match(dbref thing, dbref player, const char *atr, const char *str,
   pe_regs = pe_regs_create(PE_REGS_ARG, "one_comm_match");
   pe_regs_copystack(pe_regs, pe_regs_parent, PE_REGS_ARG, 1);
 
-  if (atr_single_match_r(ptr, AF_COMMAND, ':', str, args,
-                         match_space, match_space_len,
-                         cmd_buff, pe_regs)) {
+  if (atr_single_match_r(ptr, AF_COMMAND, ':', str, args, match_space,
+                         match_space_len, cmd_buff, pe_regs)) {
     char *save_cmd_raw = NULL, *save_cmd_evaled = NULL;
     NEW_PE_INFO *pe_info;
 

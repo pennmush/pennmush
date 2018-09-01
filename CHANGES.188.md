@@ -20,15 +20,30 @@ Numbers next to the developer credit refer to Github issue numbers.
 Version 1.8.8 patchlevel 0 ??? ?? 2018
 ======================================
 
+WARNING! With the removal of the object queue, please be careful when upgrading that you do not have any infinitely looping triggers without an @wait.
+
+As an example, this used to be a common way to ensure something was executed once per second:
+
+  &gt; &amp;everysecond object=do some ; updates ; @trigger me/everysecond
+
+This will now happen up to several thousand times per second! Add in an @wait 1, and it'll work as expected!
+
 Major Changes
 -------------
 
 * Built-in HTTP server support, see "help http" [GM]
+* A single command queue for players and objects. No more @trigger waits. [GM]
+* A restructuring of bsd.c, to make it easier to reason about Penn's queue cycle. [GM]
+* Millisecond timing in bsd.c for polling waits in prep for subsecond @waits. [GM]
 
 Minor Changes
 -------------
 
+* Sockets commands now inline $-commands, so, e.g: $,* *: chat aliases don't hit queue. [GM]
 * Millisecond timing in bsd.c for polling waits in prep for subsecond @waits. [GM]
+* Sqlite3's `REGEXP` operator is always available and uses pcre regular expressions (Previously it depended on libicu and used java style REs). [SW]
+* Update `local.dst` to include example of millisecond callback loop. [MT]
+* Add '--disable-socket-quota' option for our test suite [GM]
 
 Softcode
 --------
@@ -38,3 +53,9 @@ Softcode
 * `formdecode()` for decoding HTTP paths and POST bodies. [GM]
 * `@respond` for manipulating HTTP response codes and headers. [GM]
 * `hmac()` for creating authentication fingerprints. [SW]
+
+Fixes
+-----
+
+* `add_function` in .cnf files was not properly using the upper case'd string. [#1223, MT]
+* Various PCRE calls in the softcode have had CPU time limit watchdogs added. Discovered by Ashen-Shugar. [GM]

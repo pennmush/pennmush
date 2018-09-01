@@ -166,37 +166,29 @@ test('atree.command.6', $mortal, '&bar parent=$bar:say Parent Bar', 'Set');
 test('atree.command.7', $mortal, '&bar`baz parent=$bar`baz:say Parent Baz', []);
 test('atree.command.8', $mortal, '@set child=!no_command', 'set');
 # Do commands work from parent?
-test('atree.command.9', $god, 'bar', '!Bar');
-test('atree.command.10', $god, undef, 'Parent Bar');
-test('atree.command.11', $god, 'bar`baz', []);
-test('atree.command.12', $god, undef, 'Parent Baz');
+test('atree.command.9', $god, 'bar', 'Parent Bar');
+test('atree.command.11', $god, 'bar`baz', 'Parent Baz');
 # Child should block parent
 test('atree.command.13', $mortal, '&bar child=$bar:say Child!', 'Set');
-test('atree.command.14', $god, 'bar', '!Bar');
-test('atree.command.15', $god, undef, ['!Bar', 'Child']);
+test('atree.command.14', $god, 'bar', ['!Bar', 'Child']);
 # Child no_command blocks parent branch, too
 test('atree.command.16', $mortal, '@set child/bar=no_command', 'set');
-test('atree.command.17', $god, 'bar`baz', '!Baz');
-test('atree.command.18', $god, undef, '!Baz');
+test('atree.command.17', $god, 'bar`baz', 'Huh?');
 # Parent no_command not masked by child not no_command...
 test('atree.command.19', $mortal, '@set child/bar=!no_command', 'set');
 test('atree.command.20', $mortal, '@set parent/bar=no_command', 'set');
-test('atree.command.21', $god, 'bar`baz', '!Baz');
-test('atree.command.22', $god, undef, '!Baz');
+test('atree.command.21', $god, 'bar`baz', 'Huh?');
 # no_command can be on the leaf, too
 test('atree.command.23', $mortal, '@set parent/bar=!no_command', 'set');
 test('atree.command.24', $mortal, '@set parent/bar`baz=no_command', 'set');
-test('atree.command.25', $god, 'bar`baz', '!Baz');
-test('atree.command.26', $god, undef, '!Baz');
+test('atree.command.25', $god, 'bar`baz', 'Huh?');
 # no_inherit trumps no_command
 test('atree.command.27', $mortal, '@set parent/bar=no_inherit', 'set');
 test('atree.command.28', $mortal, '@set parent/bar`baz=no_command', 'set');
-test('atree.command.29', $god, 'bar`baz', '!Baz');
-test('atree.command.30', $god, undef, 'Grand Baz');
+test('atree.command.29', $god, 'bar`baz', 'Grand Baz');
 test('atree.command.31', $mortal, '@set parent/bar=no_command', 'set');
 test('atree.command.32', $mortal, '&bar child', []);
-test('atree.command.33', $god, 'bar', '!Baz');
-test('atree.command.34', $god, undef, 'Grand Bar');
+test('atree.command.33', $god, 'bar', 'Grand Bar');
 
 # Test for the child recognition bugs:
 test('atree.sortorder.1', $mortal, '&abc grand=$abc:say Grand ABC', 'Set');
@@ -209,37 +201,29 @@ test("atree.sortorder.7", $god, 'examine parent', 'ABC \[.*`\]');
 test("atree.sortorder.8", $god, '&abc parent', '!Cleared');
 test('atree.sortorder.9', $mortal, '@set child=!no_command', 'set');
 # Do commands work from parent?
-test('atree.sortorder.10', $god, 'abc', '!ABC');
-test('atree.sortorder.11', $god, undef, 'Parent ABC');
-test('atree.sortorder.12', $god, 'abc`xyz', []);
-test('atree.sortorder.13', $god, undef, 'Parent XYZ');
+test('atree.sortorder.10', $god, 'abc', 'Parent ABC');
+test('atree.sortorder.12', $god, 'abc`xyz', 'Parent XYZ');
 # Child should block parent
 test('atree.sortorder.14', $mortal, '&abc child=$abc:say Child!', 'Set');
-test('atree.sortorder.15', $god, 'abc', '!ABC');
-test('atree.sortorder.16', $god, undef, ['!ABC', 'Child']);
+test('atree.sortorder.15', $god, 'abc', ['!ABC', 'Child']);
 # Child no_command blocks parent branch, too
 test('atree.sortorder.17', $mortal, '@set child/abc=no_command', 'set');
-test('atree.sortorder.18', $god, 'abc`xyz', '!XYZ');
-test('atree.sortorder.19', $god, undef, '!XYZ');
+test('atree.sortorder.18', $god, 'abc`xyz', 'Huh?');
 # Parent no_command not masked by child not no_command...
 test('atree.sortorder.20', $mortal, '@set child/abc=!no_command', 'set');
 test('atree.sortorder.21', $mortal, '@set parent/abc=no_command', 'set');
-test('atree.sortorder.22', $god, 'abc`xyz', '!XYZ');
-test('atree.sortorder.23', $god, undef, '!XYZ');
+test('atree.sortorder.22', $god, 'abc`xyz', 'Huh?');
 # no_command can be on the leaf, too
 test('atree.sortorder.24', $mortal, '@set parent/abc=!no_command', 'set');
 test('atree.sortorder.25', $mortal, '@set parent/abc`xyz=no_command', 'set');
-test('atree.sortorder.26', $god, 'abc`xyz', '!XYZ');
-test('atree.sortorder.27', $god, undef, '!XYZ');
+test('atree.sortorder.26', $god, 'abc`xyz', 'Huh?');
 # no_inherit trumps no_command
 test('atree.sortorder.28', $mortal, '@set parent/abc=no_inherit', 'set');
 test('atree.sortorder.29', $mortal, '@set parent/abc`xyz=no_command', 'set');
-test('atree.sortorder.30', $god, 'abc`xyz', '!XYZ');
-test('atree.sortorder.31', $god, undef, 'Grand XYZ');
+test('atree.sortorder.30', $god, 'abc`xyz', 'Grand XYZ');
 test('atree.sortorder.32', $mortal, '@set parent/abc=no_command', 'set');
 test('atree.sortorder.33', $mortal, '&abc child', []);
-test('atree.sortorder.34', $god, 'abc', '!XYZ');
-test('atree.sortorder.35', $god, undef, 'Grand ABC');
+test('atree.sortorder.34', $god, 'abc', 'Grand ABC');
 # wipe check
 test("atree.sortorder.36", $god, '@wipe parent', 'wiped');
 test("atree.sortorder.37", $god, '@wipe grand/abc', []);

@@ -145,15 +145,14 @@ fetch_ufun_attrib(const char *attrstring, dbref executor, ufun_attrib *ufun,
   ATTR *attrib;
   char *stripped;
 
-
   if (!ufun) {
     return 0;
   }
-  
-  if(!attrstring) {
+
+  if (!attrstring) {
     return 0;
   }
-  
+
   stripped = remove_markup(attrstring, NULL);
 
   memset(ufun->contents, 0, sizeof ufun->contents);
@@ -165,7 +164,7 @@ fetch_ufun_attrib(const char *attrstring, dbref executor, ufun_attrib *ufun,
   ufun->thing = executor;
   thingname = NULL;
 
-   mush_strncpy(astring, stripped, sizeof astring);
+  mush_strncpy(astring, stripped, sizeof astring);
 
   /* Split obj/attr */
   if ((flags & UFUN_OBJECT) && ((attrname = strchr(astring, '/')) != NULL)) {

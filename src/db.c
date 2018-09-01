@@ -2073,6 +2073,67 @@ int sqlite3_spellfix_init(sqlite3 *db, char **pzErrMsg,
 int sqlite3_remember_init(sqlite3 *db, char **pzErrMsg,
                           const sqlite3_api_routines *pApi);
 
+struct sql_regexp_data {
+  pcre *re;
+  pcre_extra *study;
+  bool free_study;
+};
+
+static void
+sql_regexp_free(void *ptr)
+{
+  struct sql_regexp_data *d = ptr;
+  if (d->free_study) {
+    pcre_free_study(d->study);
+  }
+  pcre_free(d->re);
+  free(d);
+}
+
+void
+sql_regexp_fun(sqlite3_context *ctx, int nargs __attribute__((__unused__)),
+               sqlite3_value **args)
+{
+  int ovec[99];
+  int nmatches;
+  const char *subj;
+  int subj_len;
+  struct sql_regexp_data *d = sqlite3_get_auxdata(ctx, 0);
+
+  if (sqlite3_value_type(args[0]) == SQLITE_NULL ||
+      sqlite3_value_type(args[1]) == SQLITE_NULL) {
+    return;
+  }
+
+  if (!d) {
+    const char *err;
+    int erroff;
+    d = malloc(sizeof *d);
+    d->re =
+      pcre_compile((const char *) sqlite3_value_text(args[0]),
+                   PCRE_ANCHORED | PCRE_UTF8 | PCRE_UCP, &err, &erroff, NULL);
+    if (!d->re) {
+      sqlite3_result_error(ctx, err, -1);
+      free(d);
+      return;
+    }
+    d->study = pcre_study(d->re, pcre_public_study_flags, &err);
+    if (d->study) {
+      d->free_study = 1;
+      set_match_limit(d->study);
+    } else {
+      d->free_study = 0;
+      d->study = default_match_limit();
+    }
+    sqlite3_set_auxdata(ctx, 0, d, sql_regexp_free);
+  }
+
+  subj = (const char *) sqlite3_value_text(args[1]);
+  subj_len = sqlite3_value_bytes(args[1]);
+  nmatches = pcre_exec(d->re, d->study, subj, subj_len, 0, 0, ovec, 99);
+  sqlite3_result_int(ctx, nmatches > 0 ? 1 : 0);
+}
+
 /** Open a new connection to a sqlite3 database.
  * If given a NULL file, returns a NEW in-memory database.
  * A zero-length file, returns a new temporary-file based database.
@@ -2111,6 +2172,17 @@ open_sql_db(const char *name, bool nocreate)
               *name ? name : ":unnamed:", sqlite3_errstr(status));
   }
 
+#ifdef HAVE_ICU
+  // Delete the ICU version
+  sqlite3_create_function(db, "regexp", 2, SQLITE_ANY | SQLITE_DETERMINISTIC,
+                          NULL, NULL, NULL, NULL);
+#endif
+  if ((status = sqlite3_create_function(
+         db, "regexp", 2, SQLITE_UTF8 | SQLITE_DETERMINISTIC, NULL,
+         sql_regexp_fun, NULL, NULL)) != SQLITE_OK) {
+    do_rawlog(LT_ERR, "Unable to register sqlite3 regexp() function: %s",
+              sqlite3_errstr(status));
+  }
   sqlite3_spellfix_init(db, NULL, NULL);
   sqlite3_remember_init(db, NULL, NULL);
   sqlite3_busy_timeout(db, 250);

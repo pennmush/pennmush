@@ -128,7 +128,8 @@ foreach my $color (@$xterm256colors) {
     $counter += 1;
     $seen{"xterm$num"} = hex $rgb;
     $xterm256_rgb{$rgb} = $num;
-    push @allcolors, {name => "xterm$num", rgb => hex $rgb, xterm => int $num, ansi => int $ansi};
+    push @allcolors, {name => "xterm$num", rgb => "0x$rgb", xterm => int $num,
+		      ansi => int $ansi};
 }
 
 while (my ($name, $rgb) = each %x11colors) {
@@ -139,7 +140,8 @@ while (my ($name, $rgb) = each %x11colors) {
     $seen{$name} = hex $rgb;
     my $xnum = map_to_256 $rgb;
     my $ansi = $map_16[$xnum];
-    push @allcolors, {name => $name, rgb => hex $rgb, xterm => int $xnum, ansi => int $ansi};
+    push @allcolors, {name => $name, rgb => "0x$rgb", xterm => int $xnum,
+		      ansi => int $ansi};
 }
 
 foreach my $color (@$xterm256colors) {
@@ -153,7 +155,8 @@ foreach my $color (@$xterm256colors) {
     next if exists $seen{$name};
     $counter += 1;
     $seen{$name} = hex $rgb;
-    push @allcolors, {name => $name, rgb => hex $rgb, xterm => int $num, ansi => int $ansi};
+    push @allcolors, {name => $name, rgb => "0x$rgb", xterm => int $num,
+		      ansi => int $ansi};
 }
 
 @allcolors = sort { $a->{name} cmp $b->{name} } @allcolors;

@@ -117,9 +117,10 @@ build_rgb_map(void)
   char *errmsg;
   const char query[] =
     "INSERT INTO colors(name, rgb, xterm, ansi) SELECT "
-    "json_extract(json_each.value, '$.name'), json_extract(json_each.value, "
-    "'$.rgb'), json_extract(json_each.value, '$.xterm'), "
-    "json_extract(json_each.value, '$.ansi') FROM json_each(?)";
+    "json_extract(j.value, '$.name')"
+    ", from_hexstr(json_extract(j.value, '$.rgb'))"
+    ", json_extract(j.value, '$.xterm')"
+    ", json_extract(j.value, '$.ansi') FROM json_each(?) AS j";
 
   sqldb = get_shared_db();
 

@@ -36,7 +36,7 @@ fi
 AC_PATH_PROG(TEST, test)
 AC_PATH_PROG(TOUCH, touch)
 AC_PATH_PROG(RM, rm)
-AC_PATH_PROGS(INDENT, [clang-format clang-format-6.0 clang-format-5.0 clang-format 4.0])
+AC_PATH_PROGS(INDENT, [clang-format clang-format-6.0 clang-format-5.0 clang-format-4.0])
 
 AC_PATH_PROG(CTAGS, ctags)
 AC_PATH_PROG(ETAGS, etags)

@@ -73,7 +73,7 @@ install: localized all
 	@if [ -f game/netmush ]; then rm -f game/netmush; fi	
 	@if [ -f game/info_slave ]; then rm -f game/info_slave; fi	
 	@if [ -f game/ssl_slave ]; then rm -f game/ssl_slave; fi	
-	(cd game; $(INSTALL_LINKS))
+	-(cd game; $(INSTALL_LINKS))
 	(cd game/txt; @MAKE@)
 	@echo "If you plan to run multiple MUSHes, consider running 'make customize'"
 

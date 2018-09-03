@@ -183,7 +183,7 @@ depend: $(C_FILES) info_slave.c ssl_slave.c
 
 indent:
 	@INDENT@ -i --style=file *.dst $(filter-out cJSON.c cmdlocal.c funlocal.c flaglocal.c local.c remember.c spellfix.c sqlite3.c tables.c, $(C_FILES)) \
-	$(filter-out ../hdrs/buildinf.h ../hdrs/cJSON.h ../hdrs/cmds.h ../hdrs/funs.h ../hdrs/gitinfo.h ../hdrs/rgb.h ../hdrs/sqlite3.h ../hdrs/sqlite3ext.h ../hdrs/switches.h ../hdrs/version.h, $(wildcard ../hdrs/*.h)) \
+	$(filter-out ../hdrs/buildinf.h ../hdrs/cJSON.h ../hdrs/cmds.h ../hdrs/funs.h ../hdrs/gitinfo.h ../hdrs/sqlite3.h ../hdrs/sqlite3ext.h ../hdrs/switches.h ../hdrs/version.h, $(wildcard ../hdrs/*.h)) \
 	ssl_slave.c info_slave.c
 
 clean:
@@ -1594,7 +1594,7 @@ markup.o: ../hdrs/parse.h
 markup.o: ../hdrs/mushsql.h
 markup.o: ../hdrs/sqlite3.h
 markup.o: ../hdrs/pueblo.h
-markup.o: ../hdrs/rgb.h
+markup.o: ../hdrs/map_file.h
 markup.o: ../hdrs/strutil.h
 markup.o: ../hdrs/charconv.h
 markup.o: ../hdrs/myutf8.h

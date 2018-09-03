@@ -1,0 +1,5564 @@
+[
+   {
+      "ansi" : 263,
+      "name" : "aliceblue",
+      "rgb" : 15792383,
+      "xterm" : 15
+   },
+   {
+      "ansi" : 263,
+      "name" : "antiquewhite",
+      "rgb" : 16444375,
+      "xterm" : 224
+   },
+   {
+      "ansi" : 263,
+      "name" : "antiquewhite1",
+      "rgb" : 16773083,
+      "xterm" : 230
+   },
+   {
+      "ansi" : 263,
+      "name" : "antiquewhite2",
+      "rgb" : 15654860,
+      "xterm" : 224
+   },
+   {
+      "ansi" : 261,
+      "name" : "antiquewhite3",
+      "rgb" : 13484208,
+      "xterm" : 181
+   },
+   {
+      "ansi" : 256,
+      "name" : "antiquewhite4",
+      "rgb" : 9143160,
+      "xterm" : 8
+   },
+   {
+      "ansi" : 262,
+      "name" : "aqua",
+      "rgb" : 65535,
+      "xterm" : 14
+   },
+   {
+      "ansi" : 263,
+      "name" : "aquamarine",
+      "rgb" : 8388564,
+      "xterm" : 122
+   },
+   {
+      "ansi" : 263,
+      "name" : "aquamarine1",
+      "rgb" : 8388564,
+      "xterm" : 122
+   },
+   {
+      "ansi" : 263,
+      "name" : "aquamarine2",
+      "rgb" : 7794374,
+      "xterm" : 122
+   },
+   {
+      "ansi" : 262,
+      "name" : "aquamarine3",
+      "rgb" : 6737322,
+      "xterm" : 79
+   },
+   {
+      "ansi" : 2,
+      "name" : "aquamarine4",
+      "rgb" : 4557684,
+      "xterm" : 66
+   },
+   {
+      "ansi" : 263,
+      "name" : "azure",
+      "rgb" : 15794175,
+      "xterm" : 15
+   },
+   {
+      "ansi" : 263,
+      "name" : "azure1",
+      "rgb" : 15794175,
+      "xterm" : 15
+   },
+   {
+      "ansi" : 263,
+      "name" : "azure2",
+      "rgb" : 14741230,
+      "xterm" : 255
+   },
+   {
+      "ansi" : 263,
+      "name" : "azure3",
+      "rgb" : 12701133,
+      "xterm" : 251
+   },
+   {
+      "ansi" : 2,
+      "name" : "azure4",
+      "rgb" : 8620939,
+      "xterm" : 102
+   },
+   {
+      "ansi" : 263,
+      "name" : "beige",
+      "rgb" : 16119260,
+      "xterm" : 230
+   },
+   {
+      "ansi" : 263,
+      "name" : "bisque",
+      "rgb" : 16770244,
+      "xterm" : 224
+   },
+   {
+      "ansi" : 263,
+      "name" : "bisque1",
+      "rgb" : 16770244,
+      "xterm" : 224
+   },
+   {
+      "ansi" : 263,
+      "name" : "bisque2",
+      "rgb" : 15652279,
+      "xterm" : 223
+   },
+   {
+      "ansi" : 261,
+      "name" : "bisque3",
+      "rgb" : 13481886,
+      "xterm" : 181
+   },
+   {
+      "ansi" : 2,
+      "name" : "bisque4",
+      "rgb" : 9141611,
+      "xterm" : 101
+   },
+   {
+      "ansi" : 0,
+      "name" : "black",
+      "rgb" : 0,
+      "xterm" : 16
+   },
+   {
+      "ansi" : 263,
+      "name" : "blanchedalmond",
+      "rgb" : 16772045,
+      "xterm" : 224
+   },
+   {
+      "ansi" : 260,
+      "name" : "blue",
+      "rgb" : 255,
+      "xterm" : 21
+   },
+   {
+      "ansi" : 260,
+      "name" : "blue1",
+      "rgb" : 255,
+      "xterm" : 21
+   },
+   {
+      "ansi" : 260,
+      "name" : "blue2",
+      "rgb" : 238,
+      "xterm" : 12
+   },
+   {
+      "ansi" : 260,
+      "name" : "blue3",
+      "rgb" : 205,
+      "xterm" : 20
+   },
+   {
+      "ansi" : 4,
+      "name" : "blue4",
+      "rgb" : 139,
+      "xterm" : 18
+   },
+   {
+      "ansi" : 261,
+      "name" : "blueviolet",
+      "rgb" : 9055202,
+      "xterm" : 92
+   },
+   {
+      "ansi" : 1,
+      "name" : "brown",
+      "rgb" : 10824234,
+      "xterm" : 124
+   },
+   {
+      "ansi" : 257,
+      "name" : "brown1",
+      "rgb" : 16728128,
+      "xterm" : 203
+   },
+   {
+      "ansi" : 257,
+      "name" : "brown2",
+      "rgb" : 15612731,
+      "xterm" : 203
+   },
+   {
+      "ansi" : 257,
+      "name" : "brown3",
+      "rgb" : 13447987,
+      "xterm" : 167
+   },
+   {
+      "ansi" : 1,
+      "name" : "brown4",
+      "rgb" : 9118499,
+      "xterm" : 88
+   },
+   {
+      "ansi" : 259,
+      "name" : "burlywood",
+      "rgb" : 14596231,
+      "xterm" : 180
+   },
+   {
+      "ansi" : 259,
+      "name" : "burlywood1",
+      "rgb" : 16765851,
+      "xterm" : 222
+   },
+   {
+      "ansi" : 259,
+      "name" : "burlywood2",
+      "rgb" : 15648145,
+      "xterm" : 222
+   },
+   {
+      "ansi" : 259,
+      "name" : "burlywood3",
+      "rgb" : 13478525,
+      "xterm" : 180
+   },
+   {
+      "ansi" : 1,
+      "name" : "burlywood4",
+      "rgb" : 9139029,
+      "xterm" : 95
+   },
+   {
+      "ansi" : 6,
+      "name" : "cadetblue",
+      "rgb" : 6266528,
+      "xterm" : 73
+   },
+   {
+      "ansi" : 263,
+      "name" : "cadetblue1",
+      "rgb" : 10024447,
+      "xterm" : 123
+   },
+   {
+      "ansi" : 262,
+      "name" : "cadetblue2",
+      "rgb" : 9364974,
+      "xterm" : 117
+   },
+   {
+      "ansi" : 262,
+      "name" : "cadetblue3",
+      "rgb" : 8046029,
+      "xterm" : 116
+   },
+   {
+      "ansi" : 2,
+      "name" : "cadetblue4",
+      "rgb" : 5473931,
+      "xterm" : 66
+   },
+   {
+      "ansi" : 258,
+      "name" : "chartreuse",
+      "rgb" : 8388352,
+      "xterm" : 118
+   },
+   {
+      "ansi" : 258,
+      "name" : "chartreuse1",
+      "rgb" : 8388352,
+      "xterm" : 118
+   },
+   {
+      "ansi" : 258,
+      "name" : "chartreuse2",
+      "rgb" : 7794176,
+      "xterm" : 118
+   },
+   {
+      "ansi" : 258,
+      "name" : "chartreuse3",
+      "rgb" : 6737152,
+      "xterm" : 76
+   },
+   {
+      "ansi" : 2,
+      "name" : "chartreuse4",
+      "rgb" : 4557568,
+      "xterm" : 64
+   },
+   {
+      "ansi" : 257,
+      "name" : "chocolate",
+      "rgb" : 13789470,
+      "xterm" : 166
+   },
+   {
+      "ansi" : 257,
+      "name" : "chocolate1",
+      "rgb" : 16744228,
+      "xterm" : 208
+   },
+   {
+      "ansi" : 257,
+      "name" : "chocolate2",
+      "rgb" : 15627809,
+      "xterm" : 208
+   },
+   {
+      "ansi" : 257,
+      "name" : "chocolate3",
+      "rgb" : 13461021,
+      "xterm" : 166
+   },
+   {
+      "ansi" : 2,
+      "name" : "chocolate4",
+      "rgb" : 9127187,
+      "xterm" : 94
+   },
+   {
+      "ansi" : 257,
+      "name" : "coral",
+      "rgb" : 16744272,
+      "xterm" : 209
+   },
+   {
+      "ansi" : 257,
+      "name" : "coral1",
+      "rgb" : 16740950,
+      "xterm" : 203
+   },
+   {
+      "ansi" : 257,
+      "name" : "coral2",
+      "rgb" : 15624784,
+      "xterm" : 203
+   },
+   {
+      "ansi" : 257,
+      "name" : "coral3",
+      "rgb" : 13458245,
+      "xterm" : 167
+   },
+   {
+      "ansi" : 2,
+      "name" : "coral4",
+      "rgb" : 9125423,
+      "xterm" : 94
+   },
+   {
+      "ansi" : 260,
+      "name" : "cornflowerblue",
+      "rgb" : 6591981,
+      "xterm" : 69
+   },
+   {
+      "ansi" : 263,
+      "name" : "cornsilk",
+      "rgb" : 16775388,
+      "xterm" : 230
+   },
+   {
+      "ansi" : 263,
+      "name" : "cornsilk1",
+      "rgb" : 16775388,
+      "xterm" : 230
+   },
+   {
+      "ansi" : 263,
+      "name" : "cornsilk2",
+      "rgb" : 15657165,
+      "xterm" : 254
+   },
+   {
+      "ansi" : 263,
+      "name" : "cornsilk3",
+      "rgb" : 13486257,
+      "xterm" : 187
+   },
+   {
+      "ansi" : 2,
+      "name" : "cornsilk4",
+      "rgb" : 9144440,
+      "xterm" : 102
+   },
+   {
+      "ansi" : 262,
+      "name" : "cyan",
+      "rgb" : 65535,
+      "xterm" : 51
+   },
+   {
+      "ansi" : 262,
+      "name" : "cyan1",
+      "rgb" : 65535,
+      "xterm" : 51
+   },
+   {
+      "ansi" : 262,
+      "name" : "cyan2",
+      "rgb" : 61166,
+      "xterm" : 14
+   },
+   {
+      "ansi" : 262,
+      "name" : "cyan3",
+      "rgb" : 52685,
+      "xterm" : 44
+   },
+   {
+      "ansi" : 6,
+      "name" : "cyan4",
+      "rgb" : 35723,
+      "xterm" : 30
+   },
+   {
+      "ansi" : 4,
+      "name" : "darkblue",
+      "rgb" : 139,
+      "xterm" : 18
+   },
+   {
+      "ansi" : 6,
+      "name" : "darkcyan",
+      "rgb" : 35723,
+      "xterm" : 30
+   },
+   {
+      "ansi" : 3,
+      "name" : "darkgoldenrod",
+      "rgb" : 12092939,
+      "xterm" : 136
+   },
+   {
+      "ansi" : 259,
+      "name" : "darkgoldenrod1",
+      "rgb" : 16759055,
+      "xterm" : 214
+   },
+   {
+      "ansi" : 259,
+      "name" : "darkgoldenrod2",
+      "rgb" : 15641870,
+      "xterm" : 214
+   },
+   {
+      "ansi" : 3,
+      "name" : "darkgoldenrod3",
+      "rgb" : 13473036,
+      "xterm" : 172
+   },
+   {
+      "ansi" : 2,
+      "name" : "darkgoldenrod4",
+      "rgb" : 9135368,
+      "xterm" : 94
+   },
+   {
+      "ansi" : 263,
+      "name" : "darkgray",
+      "rgb" : 11119017,
+      "xterm" : 248
+   },
+   {
+      "ansi" : 2,
+      "name" : "darkgreen",
+      "rgb" : 25600,
+      "xterm" : 22
+   },
+   {
+      "ansi" : 263,
+      "name" : "darkgrey",
+      "rgb" : 11119017,
+      "xterm" : 248
+   },
+   {
+      "ansi" : 3,
+      "name" : "darkkhaki",
+      "rgb" : 12433259,
+      "xterm" : 143
+   },
+   {
+      "ansi" : 5,
+      "name" : "darkmagenta",
+      "rgb" : 9109643,
+      "xterm" : 90
+   },
+   {
+      "ansi" : 256,
+      "name" : "darkolivegreen",
+      "rgb" : 5597999,
+      "xterm" : 239
+   },
+   {
+      "ansi" : 259,
+      "name" : "darkolivegreen1",
+      "rgb" : 13303664,
+      "xterm" : 191
+   },
+   {
+      "ansi" : 259,
+      "name" : "darkolivegreen2",
+      "rgb" : 12381800,
+      "xterm" : 155
+   },
+   {
+      "ansi" : 259,
+      "name" : "darkolivegreen3",
+      "rgb" : 10669402,
+      "xterm" : 149
+   },
+   {
+      "ansi" : 2,
+      "name" : "darkolivegreen4",
+      "rgb" : 7244605,
+      "xterm" : 65
+   },
+   {
+      "ansi" : 257,
+      "name" : "darkorange",
+      "rgb" : 16747520,
+      "xterm" : 208
+   },
+   {
+      "ansi" : 257,
+      "name" : "darkorange1",
+      "rgb" : 16744192,
+      "xterm" : 208
+   },
+   {
+      "ansi" : 257,
+      "name" : "darkorange2",
+      "rgb" : 15627776,
+      "xterm" : 208
+   },
+   {
+      "ansi" : 257,
+      "name" : "darkorange3",
+      "rgb" : 13460992,
+      "xterm" : 166
+   },
+   {
+      "ansi" : 2,
+      "name" : "darkorange4",
+      "rgb" : 9127168,
+      "xterm" : 94
+   },
+   {
+      "ansi" : 261,
+      "name" : "darkorchid",
+      "rgb" : 10040012,
+      "xterm" : 98
+   },
+   {
+      "ansi" : 261,
+      "name" : "darkorchid1",
+      "rgb" : 12533503,
+      "xterm" : 135
+   },
+   {
+      "ansi" : 261,
+      "name" : "darkorchid2",
+      "rgb" : 11680494,
+      "xterm" : 135
+   },
+   {
+      "ansi" : 261,
+      "name" : "darkorchid3",
+      "rgb" : 10105549,
+      "xterm" : 98
+   },
+   {
+      "ansi" : 5,
+      "name" : "darkorchid4",
+      "rgb" : 6824587,
+      "xterm" : 54
+   },
+   {
+      "ansi" : 1,
+      "name" : "darkred",
+      "rgb" : 9109504,
+      "xterm" : 88
+   },
+   {
+      "ansi" : 3,
+      "name" : "darksalmon",
+      "rgb" : 15308410,
+      "xterm" : 174
+   },
+   {
+      "ansi" : 2,
+      "name" : "darkseagreen",
+      "rgb" : 9419919,
+      "xterm" : 108
+   },
+   {
+      "ansi" : 259,
+      "name" : "darkseagreen1",
+      "rgb" : 12713921,
+      "xterm" : 157
+   },
+   {
+      "ansi" : 259,
+      "name" : "darkseagreen2",
+      "rgb" : 11857588,
+      "xterm" : 157
+   },
+   {
+      "ansi" : 258,
+      "name" : "darkseagreen3",
+      "rgb" : 10210715,
+      "xterm" : 114
+   },
+   {
+      "ansi" : 2,
+      "name" : "darkseagreen4",
+      "rgb" : 6916969,
+      "xterm" : 65
+   },
+   {
+      "ansi" : 6,
+      "name" : "darkslateblue",
+      "rgb" : 4734347,
+      "xterm" : 60
+   },
+   {
+      "ansi" : 256,
+      "name" : "darkslategray",
+      "rgb" : 3100495,
+      "xterm" : 238
+   },
+   {
+      "ansi" : 263,
+      "name" : "darkslategray1",
+      "rgb" : 9961471,
+      "xterm" : 123
+   },
+   {
+      "ansi" : 263,
+      "name" : "darkslategray2",
+      "rgb" : 9301742,
+      "xterm" : 123
+   },
+   {
+      "ansi" : 262,
+      "name" : "darkslategray3",
+      "rgb" : 7982541,
+      "xterm" : 116
+   },
+   {
+      "ansi" : 2,
+      "name" : "darkslategray4",
+      "rgb" : 5409675,
+      "xterm" : 66
+   },
+   {
+      "ansi" : 256,
+      "name" : "darkslategrey",
+      "rgb" : 3100495,
+      "xterm" : 238
+   },
+   {
+      "ansi" : 263,
+      "name" : "darkslategrey1",
+      "rgb" : 9961471,
+      "xterm" : 123
+   },
+   {
+      "ansi" : 263,
+      "name" : "darkslategrey2",
+      "rgb" : 9301742,
+      "xterm" : 123
+   },
+   {
+      "ansi" : 262,
+      "name" : "darkslategrey3",
+      "rgb" : 7982541,
+      "xterm" : 116
+   },
+   {
+      "ansi" : 2,
+      "name" : "darkslategrey4",
+      "rgb" : 5409675,
+      "xterm" : 66
+   },
+   {
+      "ansi" : 262,
+      "name" : "darkturquoise",
+      "rgb" : 52945,
+      "xterm" : 44
+   },
+   {
+      "ansi" : 261,
+      "name" : "darkviolet",
+      "rgb" : 9699539,
+      "xterm" : 92
+   },
+   {
+      "ansi" : 257,
+      "name" : "deeppink",
+      "rgb" : 16716947,
+      "xterm" : 198
+   },
+   {
+      "ansi" : 257,
+      "name" : "deeppink1",
+      "rgb" : 16716947,
+      "xterm" : 198
+   },
+   {
+      "ansi" : 257,
+      "name" : "deeppink2",
+      "rgb" : 15602313,
+      "xterm" : 198
+   },
+   {
+      "ansi" : 261,
+      "name" : "deeppink3",
+      "rgb" : 13439094,
+      "xterm" : 162
+   },
+   {
+      "ansi" : 1,
+      "name" : "deeppink4",
+      "rgb" : 9112144,
+      "xterm" : 89
+   },
+   {
+      "ansi" : 260,
+      "name" : "deepskyblue",
+      "rgb" : 49151,
+      "xterm" : 39
+   },
+   {
+      "ansi" : 260,
+      "name" : "deepskyblue1",
+      "rgb" : 49151,
+      "xterm" : 39
+   },
+   {
+      "ansi" : 260,
+      "name" : "deepskyblue2",
+      "rgb" : 45806,
+      "xterm" : 39
+   },
+   {
+      "ansi" : 260,
+      "name" : "deepskyblue3",
+      "rgb" : 39629,
+      "xterm" : 32
+   },
+   {
+      "ansi" : 4,
+      "name" : "deepskyblue4",
+      "rgb" : 26763,
+      "xterm" : 24
+   },
+   {
+      "ansi" : 7,
+      "name" : "dimgray",
+      "rgb" : 6908265,
+      "xterm" : 242
+   },
+   {
+      "ansi" : 7,
+      "name" : "dimgrey",
+      "rgb" : 6908265,
+      "xterm" : 242
+   },
+   {
+      "ansi" : 260,
+      "name" : "dodgerblue",
+      "rgb" : 2003199,
+      "xterm" : 33
+   },
+   {
+      "ansi" : 260,
+      "name" : "dodgerblue1",
+      "rgb" : 2003199,
+      "xterm" : 33
+   },
+   {
+      "ansi" : 260,
+      "name" : "dodgerblue2",
+      "rgb" : 1869550,
+      "xterm" : 33
+   },
+   {
+      "ansi" : 260,
+      "name" : "dodgerblue3",
+      "rgb" : 1602765,
+      "xterm" : 32
+   },
+   {
+      "ansi" : 4,
+      "name" : "dodgerblue4",
+      "rgb" : 1068683,
+      "xterm" : 24
+   },
+   {
+      "ansi" : 1,
+      "name" : "firebrick",
+      "rgb" : 11674146,
+      "xterm" : 124
+   },
+   {
+      "ansi" : 257,
+      "name" : "firebrick1",
+      "rgb" : 16724016,
+      "xterm" : 203
+   },
+   {
+      "ansi" : 257,
+      "name" : "firebrick2",
+      "rgb" : 15608876,
+      "xterm" : 9
+   },
+   {
+      "ansi" : 1,
+      "name" : "firebrick3",
+      "rgb" : 13444646,
+      "xterm" : 160
+   },
+   {
+      "ansi" : 1,
+      "name" : "firebrick4",
+      "rgb" : 9116186,
+      "xterm" : 88
+   },
+   {
+      "ansi" : 263,
+      "name" : "floralwhite",
+      "rgb" : 16775920,
+      "xterm" : 15
+   },
+   {
+      "ansi" : 258,
+      "name" : "forestgreen",
+      "rgb" : 2263842,
+      "xterm" : 28
+   },
+   {
+      "ansi" : 261,
+      "name" : "fuchsia",
+      "rgb" : 16711935,
+      "xterm" : 13
+   },
+   {
+      "ansi" : 263,
+      "name" : "gainsboro",
+      "rgb" : 14474460,
+      "xterm" : 253
+   },
+   {
+      "ansi" : 263,
+      "name" : "ghostwhite",
+      "rgb" : 16316671,
+      "xterm" : 15
+   },
+   {
+      "ansi" : 259,
+      "name" : "gold",
+      "rgb" : 16766720,
+      "xterm" : 220
+   },
+   {
+      "ansi" : 259,
+      "name" : "gold1",
+      "rgb" : 16766720,
+      "xterm" : 220
+   },
+   {
+      "ansi" : 259,
+      "name" : "gold2",
+      "rgb" : 15649024,
+      "xterm" : 220
+   },
+   {
+      "ansi" : 3,
+      "name" : "gold3",
+      "rgb" : 13479168,
+      "xterm" : 178
+   },
+   {
+      "ansi" : 3,
+      "name" : "gold4",
+      "rgb" : 9139456,
+      "xterm" : 3
+   },
+   {
+      "ansi" : 3,
+      "name" : "goldenrod",
+      "rgb" : 14329120,
+      "xterm" : 178
+   },
+   {
+      "ansi" : 259,
+      "name" : "goldenrod1",
+      "rgb" : 16761125,
+      "xterm" : 214
+   },
+   {
+      "ansi" : 259,
+      "name" : "goldenrod2",
+      "rgb" : 15643682,
+      "xterm" : 214
+   },
+   {
+      "ansi" : 3,
+      "name" : "goldenrod3",
+      "rgb" : 13474589,
+      "xterm" : 172
+   },
+   {
+      "ansi" : 2,
+      "name" : "goldenrod4",
+      "rgb" : 9136404,
+      "xterm" : 94
+   },
+   {
+      "ansi" : 7,
+      "name" : "gray",
+      "rgb" : 12500670,
+      "xterm" : 7
+   },
+   {
+      "ansi" : 0,
+      "name" : "gray0",
+      "rgb" : 0,
+      "xterm" : 16
+   },
+   {
+      "ansi" : 0,
+      "name" : "gray1",
+      "rgb" : 197379,
+      "xterm" : 0
+   },
+   {
+      "ansi" : 256,
+      "name" : "gray10",
+      "rgb" : 1710618,
+      "xterm" : 234
+   },
+   {
+      "ansi" : 263,
+      "name" : "gray100",
+      "rgb" : 16777215,
+      "xterm" : 231
+   },
+   {
+      "ansi" : 256,
+      "name" : "gray11",
+      "rgb" : 1842204,
+      "xterm" : 234
+   },
+   {
+      "ansi" : 256,
+      "name" : "gray12",
+      "rgb" : 2039583,
+      "xterm" : 234
+   },
+   {
+      "ansi" : 256,
+      "name" : "gray13",
+      "rgb" : 2171169,
+      "xterm" : 234
+   },
+   {
+      "ansi" : 256,
+      "name" : "gray14",
+      "rgb" : 2368548,
+      "xterm" : 235
+   },
+   {
+      "ansi" : 256,
+      "name" : "gray15",
+      "rgb" : 2500134,
+      "xterm" : 235
+   },
+   {
+      "ansi" : 256,
+      "name" : "gray16",
+      "rgb" : 2697513,
+      "xterm" : 235
+   },
+   {
+      "ansi" : 256,
+      "name" : "gray17",
+      "rgb" : 2829099,
+      "xterm" : 235
+   },
+   {
+      "ansi" : 256,
+      "name" : "gray18",
+      "rgb" : 3026478,
+      "xterm" : 236
+   },
+   {
+      "ansi" : 256,
+      "name" : "gray19",
+      "rgb" : 3158064,
+      "xterm" : 236
+   },
+   {
+      "ansi" : 0,
+      "name" : "gray2",
+      "rgb" : 328965,
+      "xterm" : 232
+   },
+   {
+      "ansi" : 256,
+      "name" : "gray20",
+      "rgb" : 3355443,
+      "xterm" : 236
+   },
+   {
+      "ansi" : 256,
+      "name" : "gray21",
+      "rgb" : 3552822,
+      "xterm" : 237
+   },
+   {
+      "ansi" : 256,
+      "name" : "gray22",
+      "rgb" : 3684408,
+      "xterm" : 237
+   },
+   {
+      "ansi" : 256,
+      "name" : "gray23",
+      "rgb" : 3881787,
+      "xterm" : 237
+   },
+   {
+      "ansi" : 256,
+      "name" : "gray24",
+      "rgb" : 4013373,
+      "xterm" : 237
+   },
+   {
+      "ansi" : 256,
+      "name" : "gray25",
+      "rgb" : 4210752,
+      "xterm" : 238
+   },
+   {
+      "ansi" : 256,
+      "name" : "gray26",
+      "rgb" : 4342338,
+      "xterm" : 238
+   },
+   {
+      "ansi" : 256,
+      "name" : "gray27",
+      "rgb" : 4539717,
+      "xterm" : 238
+   },
+   {
+      "ansi" : 256,
+      "name" : "gray28",
+      "rgb" : 4671303,
+      "xterm" : 238
+   },
+   {
+      "ansi" : 256,
+      "name" : "gray29",
+      "rgb" : 4868682,
+      "xterm" : 239
+   },
+   {
+      "ansi" : 0,
+      "name" : "gray3",
+      "rgb" : 526344,
+      "xterm" : 232
+   },
+   {
+      "ansi" : 256,
+      "name" : "gray30",
+      "rgb" : 5066061,
+      "xterm" : 239
+   },
+   {
+      "ansi" : 256,
+      "name" : "gray31",
+      "rgb" : 5197647,
+      "xterm" : 239
+   },
+   {
+      "ansi" : 256,
+      "name" : "gray32",
+      "rgb" : 5395026,
+      "xterm" : 239
+   },
+   {
+      "ansi" : 256,
+      "name" : "gray33",
+      "rgb" : 5526612,
+      "xterm" : 240
+   },
+   {
+      "ansi" : 256,
+      "name" : "gray34",
+      "rgb" : 5723991,
+      "xterm" : 240
+   },
+   {
+      "ansi" : 256,
+      "name" : "gray35",
+      "rgb" : 5855577,
+      "xterm" : 240
+   },
+   {
+      "ansi" : 2,
+      "name" : "gray36",
+      "rgb" : 6052956,
+      "xterm" : 59
+   },
+   {
+      "ansi" : 2,
+      "name" : "gray37",
+      "rgb" : 6184542,
+      "xterm" : 59
+   },
+   {
+      "ansi" : 7,
+      "name" : "gray38",
+      "rgb" : 6381921,
+      "xterm" : 241
+   },
+   {
+      "ansi" : 7,
+      "name" : "gray39",
+      "rgb" : 6513507,
+      "xterm" : 241
+   },
+   {
+      "ansi" : 0,
+      "name" : "gray4",
+      "rgb" : 657930,
+      "xterm" : 232
+   },
+   {
+      "ansi" : 7,
+      "name" : "gray40",
+      "rgb" : 6710886,
+      "xterm" : 241
+   },
+   {
+      "ansi" : 7,
+      "name" : "gray41",
+      "rgb" : 6908265,
+      "xterm" : 242
+   },
+   {
+      "ansi" : 7,
+      "name" : "gray42",
+      "rgb" : 7039851,
+      "xterm" : 242
+   },
+   {
+      "ansi" : 7,
+      "name" : "gray43",
+      "rgb" : 7237230,
+      "xterm" : 242
+   },
+   {
+      "ansi" : 7,
+      "name" : "gray44",
+      "rgb" : 7368816,
+      "xterm" : 242
+   },
+   {
+      "ansi" : 7,
+      "name" : "gray45",
+      "rgb" : 7566195,
+      "xterm" : 243
+   },
+   {
+      "ansi" : 7,
+      "name" : "gray46",
+      "rgb" : 7697781,
+      "xterm" : 243
+   },
+   {
+      "ansi" : 7,
+      "name" : "gray47",
+      "rgb" : 7895160,
+      "xterm" : 243
+   },
+   {
+      "ansi" : 7,
+      "name" : "gray48",
+      "rgb" : 8026746,
+      "xterm" : 243
+   },
+   {
+      "ansi" : 256,
+      "name" : "gray49",
+      "rgb" : 8224125,
+      "xterm" : 8
+   },
+   {
+      "ansi" : 0,
+      "name" : "gray5",
+      "rgb" : 855309,
+      "xterm" : 232
+   },
+   {
+      "ansi" : 256,
+      "name" : "gray50",
+      "rgb" : 8355711,
+      "xterm" : 8
+   },
+   {
+      "ansi" : 256,
+      "name" : "gray51",
+      "rgb" : 8553090,
+      "xterm" : 8
+   },
+   {
+      "ansi" : 2,
+      "name" : "gray52",
+      "rgb" : 8750469,
+      "xterm" : 102
+   },
+   {
+      "ansi" : 2,
+      "name" : "gray53",
+      "rgb" : 8882055,
+      "xterm" : 102
+   },
+   {
+      "ansi" : 7,
+      "name" : "gray54",
+      "rgb" : 9079434,
+      "xterm" : 245
+   },
+   {
+      "ansi" : 7,
+      "name" : "gray55",
+      "rgb" : 9211020,
+      "xterm" : 245
+   },
+   {
+      "ansi" : 7,
+      "name" : "gray56",
+      "rgb" : 9408399,
+      "xterm" : 245
+   },
+   {
+      "ansi" : 7,
+      "name" : "gray57",
+      "rgb" : 9539985,
+      "xterm" : 246
+   },
+   {
+      "ansi" : 7,
+      "name" : "gray58",
+      "rgb" : 9737364,
+      "xterm" : 246
+   },
+   {
+      "ansi" : 7,
+      "name" : "gray59",
+      "rgb" : 9868950,
+      "xterm" : 246
+   },
+   {
+      "ansi" : 0,
+      "name" : "gray6",
+      "rgb" : 986895,
+      "xterm" : 233
+   },
+   {
+      "ansi" : 7,
+      "name" : "gray60",
+      "rgb" : 10066329,
+      "xterm" : 246
+   },
+   {
+      "ansi" : 7,
+      "name" : "gray61",
+      "rgb" : 10263708,
+      "xterm" : 247
+   },
+   {
+      "ansi" : 7,
+      "name" : "gray62",
+      "rgb" : 10395294,
+      "xterm" : 247
+   },
+   {
+      "ansi" : 7,
+      "name" : "gray63",
+      "rgb" : 10592673,
+      "xterm" : 247
+   },
+   {
+      "ansi" : 7,
+      "name" : "gray64",
+      "rgb" : 10724259,
+      "xterm" : 247
+   },
+   {
+      "ansi" : 263,
+      "name" : "gray65",
+      "rgb" : 10921638,
+      "xterm" : 248
+   },
+   {
+      "ansi" : 263,
+      "name" : "gray66",
+      "rgb" : 11053224,
+      "xterm" : 248
+   },
+   {
+      "ansi" : 263,
+      "name" : "gray67",
+      "rgb" : 11250603,
+      "xterm" : 248
+   },
+   {
+      "ansi" : 261,
+      "name" : "gray68",
+      "rgb" : 11382189,
+      "xterm" : 145
+   },
+   {
+      "ansi" : 261,
+      "name" : "gray69",
+      "rgb" : 11579568,
+      "xterm" : 145
+   },
+   {
+      "ansi" : 0,
+      "name" : "gray7",
+      "rgb" : 1184274,
+      "xterm" : 233
+   },
+   {
+      "ansi" : 263,
+      "name" : "gray70",
+      "rgb" : 11776947,
+      "xterm" : 249
+   },
+   {
+      "ansi" : 263,
+      "name" : "gray71",
+      "rgb" : 11908533,
+      "xterm" : 249
+   },
+   {
+      "ansi" : 263,
+      "name" : "gray72",
+      "rgb" : 12105912,
+      "xterm" : 250
+   },
+   {
+      "ansi" : 263,
+      "name" : "gray73",
+      "rgb" : 12237498,
+      "xterm" : 250
+   },
+   {
+      "ansi" : 263,
+      "name" : "gray74",
+      "rgb" : 12434877,
+      "xterm" : 250
+   },
+   {
+      "ansi" : 7,
+      "name" : "gray75",
+      "rgb" : 12566463,
+      "xterm" : 7
+   },
+   {
+      "ansi" : 7,
+      "name" : "gray76",
+      "rgb" : 12763842,
+      "xterm" : 7
+   },
+   {
+      "ansi" : 263,
+      "name" : "gray77",
+      "rgb" : 12895428,
+      "xterm" : 251
+   },
+   {
+      "ansi" : 263,
+      "name" : "gray78",
+      "rgb" : 13092807,
+      "xterm" : 251
+   },
+   {
+      "ansi" : 263,
+      "name" : "gray79",
+      "rgb" : 13224393,
+      "xterm" : 251
+   },
+   {
+      "ansi" : 0,
+      "name" : "gray8",
+      "rgb" : 1315860,
+      "xterm" : 233
+   },
+   {
+      "ansi" : 263,
+      "name" : "gray80",
+      "rgb" : 13421772,
+      "xterm" : 252
+   },
+   {
+      "ansi" : 263,
+      "name" : "gray81",
+      "rgb" : 13619151,
+      "xterm" : 252
+   },
+   {
+      "ansi" : 263,
+      "name" : "gray82",
+      "rgb" : 13750737,
+      "xterm" : 252
+   },
+   {
+      "ansi" : 263,
+      "name" : "gray83",
+      "rgb" : 13948116,
+      "xterm" : 188
+   },
+   {
+      "ansi" : 263,
+      "name" : "gray84",
+      "rgb" : 14079702,
+      "xterm" : 188
+   },
+   {
+      "ansi" : 263,
+      "name" : "gray85",
+      "rgb" : 14277081,
+      "xterm" : 253
+   },
+   {
+      "ansi" : 263,
+      "name" : "gray86",
+      "rgb" : 14408667,
+      "xterm" : 253
+   },
+   {
+      "ansi" : 263,
+      "name" : "gray87",
+      "rgb" : 14606046,
+      "xterm" : 253
+   },
+   {
+      "ansi" : 263,
+      "name" : "gray88",
+      "rgb" : 14737632,
+      "xterm" : 254
+   },
+   {
+      "ansi" : 263,
+      "name" : "gray89",
+      "rgb" : 14935011,
+      "xterm" : 254
+   },
+   {
+      "ansi" : 0,
+      "name" : "gray9",
+      "rgb" : 1513239,
+      "xterm" : 233
+   },
+   {
+      "ansi" : 263,
+      "name" : "gray90",
+      "rgb" : 15066597,
+      "xterm" : 254
+   },
+   {
+      "ansi" : 263,
+      "name" : "gray91",
+      "rgb" : 15263976,
+      "xterm" : 254
+   },
+   {
+      "ansi" : 263,
+      "name" : "gray92",
+      "rgb" : 15461355,
+      "xterm" : 255
+   },
+   {
+      "ansi" : 263,
+      "name" : "gray93",
+      "rgb" : 15592941,
+      "xterm" : 255
+   },
+   {
+      "ansi" : 263,
+      "name" : "gray94",
+      "rgb" : 15790320,
+      "xterm" : 255
+   },
+   {
+      "ansi" : 263,
+      "name" : "gray95",
+      "rgb" : 15921906,
+      "xterm" : 255
+   },
+   {
+      "ansi" : 263,
+      "name" : "gray96",
+      "rgb" : 16119285,
+      "xterm" : 255
+   },
+   {
+      "ansi" : 263,
+      "name" : "gray97",
+      "rgb" : 16250871,
+      "xterm" : 15
+   },
+   {
+      "ansi" : 263,
+      "name" : "gray98",
+      "rgb" : 16448250,
+      "xterm" : 15
+   },
+   {
+      "ansi" : 263,
+      "name" : "gray99",
+      "rgb" : 16579836,
+      "xterm" : 15
+   },
+   {
+      "ansi" : 258,
+      "name" : "green",
+      "rgb" : 65280,
+      "xterm" : 46
+   },
+   {
+      "ansi" : 258,
+      "name" : "green1",
+      "rgb" : 65280,
+      "xterm" : 46
+   },
+   {
+      "ansi" : 258,
+      "name" : "green2",
+      "rgb" : 60928,
+      "xterm" : 10
+   },
+   {
+      "ansi" : 258,
+      "name" : "green3",
+      "rgb" : 52480,
+      "xterm" : 40
+   },
+   {
+      "ansi" : 258,
+      "name" : "green4",
+      "rgb" : 35584,
+      "xterm" : 28
+   },
+   {
+      "ansi" : 259,
+      "name" : "greenyellow",
+      "rgb" : 11403055,
+      "xterm" : 154
+   },
+   {
+      "ansi" : 7,
+      "name" : "grey",
+      "rgb" : 12500670,
+      "xterm" : 7
+   },
+   {
+      "ansi" : 0,
+      "name" : "grey0",
+      "rgb" : 0,
+      "xterm" : 16
+   },
+   {
+      "ansi" : 0,
+      "name" : "grey1",
+      "rgb" : 197379,
+      "xterm" : 0
+   },
+   {
+      "ansi" : 256,
+      "name" : "grey10",
+      "rgb" : 1710618,
+      "xterm" : 234
+   },
+   {
+      "ansi" : 263,
+      "name" : "grey100",
+      "rgb" : 16777215,
+      "xterm" : 231
+   },
+   {
+      "ansi" : 256,
+      "name" : "grey11",
+      "rgb" : 1842204,
+      "xterm" : 234
+   },
+   {
+      "ansi" : 256,
+      "name" : "grey12",
+      "rgb" : 2039583,
+      "xterm" : 234
+   },
+   {
+      "ansi" : 256,
+      "name" : "grey13",
+      "rgb" : 2171169,
+      "xterm" : 234
+   },
+   {
+      "ansi" : 256,
+      "name" : "grey14",
+      "rgb" : 2368548,
+      "xterm" : 235
+   },
+   {
+      "ansi" : 256,
+      "name" : "grey15",
+      "rgb" : 2500134,
+      "xterm" : 235
+   },
+   {
+      "ansi" : 256,
+      "name" : "grey16",
+      "rgb" : 2697513,
+      "xterm" : 235
+   },
+   {
+      "ansi" : 256,
+      "name" : "grey17",
+      "rgb" : 2829099,
+      "xterm" : 235
+   },
+   {
+      "ansi" : 256,
+      "name" : "grey18",
+      "rgb" : 3026478,
+      "xterm" : 236
+   },
+   {
+      "ansi" : 256,
+      "name" : "grey19",
+      "rgb" : 3158064,
+      "xterm" : 236
+   },
+   {
+      "ansi" : 0,
+      "name" : "grey2",
+      "rgb" : 328965,
+      "xterm" : 232
+   },
+   {
+      "ansi" : 256,
+      "name" : "grey20",
+      "rgb" : 3355443,
+      "xterm" : 236
+   },
+   {
+      "ansi" : 256,
+      "name" : "grey21",
+      "rgb" : 3552822,
+      "xterm" : 237
+   },
+   {
+      "ansi" : 256,
+      "name" : "grey22",
+      "rgb" : 3684408,
+      "xterm" : 237
+   },
+   {
+      "ansi" : 256,
+      "name" : "grey23",
+      "rgb" : 3881787,
+      "xterm" : 237
+   },
+   {
+      "ansi" : 256,
+      "name" : "grey24",
+      "rgb" : 4013373,
+      "xterm" : 237
+   },
+   {
+      "ansi" : 256,
+      "name" : "grey25",
+      "rgb" : 4210752,
+      "xterm" : 238
+   },
+   {
+      "ansi" : 256,
+      "name" : "grey26",
+      "rgb" : 4342338,
+      "xterm" : 238
+   },
+   {
+      "ansi" : 256,
+      "name" : "grey27",
+      "rgb" : 4539717,
+      "xterm" : 238
+   },
+   {
+      "ansi" : 256,
+      "name" : "grey28",
+      "rgb" : 4671303,
+      "xterm" : 238
+   },
+   {
+      "ansi" : 256,
+      "name" : "grey29",
+      "rgb" : 4868682,
+      "xterm" : 239
+   },
+   {
+      "ansi" : 0,
+      "name" : "grey3",
+      "rgb" : 526344,
+      "xterm" : 232
+   },
+   {
+      "ansi" : 256,
+      "name" : "grey30",
+      "rgb" : 5066061,
+      "xterm" : 239
+   },
+   {
+      "ansi" : 256,
+      "name" : "grey31",
+      "rgb" : 5197647,
+      "xterm" : 239
+   },
+   {
+      "ansi" : 256,
+      "name" : "grey32",
+      "rgb" : 5395026,
+      "xterm" : 239
+   },
+   {
+      "ansi" : 256,
+      "name" : "grey33",
+      "rgb" : 5526612,
+      "xterm" : 240
+   },
+   {
+      "ansi" : 256,
+      "name" : "grey34",
+      "rgb" : 5723991,
+      "xterm" : 240
+   },
+   {
+      "ansi" : 256,
+      "name" : "grey35",
+      "rgb" : 5855577,
+      "xterm" : 240
+   },
+   {
+      "ansi" : 2,
+      "name" : "grey36",
+      "rgb" : 6052956,
+      "xterm" : 59
+   },
+   {
+      "ansi" : 2,
+      "name" : "grey37",
+      "rgb" : 6184542,
+      "xterm" : 59
+   },
+   {
+      "ansi" : 7,
+      "name" : "grey38",
+      "rgb" : 6381921,
+      "xterm" : 241
+   },
+   {
+      "ansi" : 7,
+      "name" : "grey39",
+      "rgb" : 6513507,
+      "xterm" : 241
+   },
+   {
+      "ansi" : 0,
+      "name" : "grey4",
+      "rgb" : 657930,
+      "xterm" : 232
+   },
+   {
+      "ansi" : 7,
+      "name" : "grey40",
+      "rgb" : 6710886,
+      "xterm" : 241
+   },
+   {
+      "ansi" : 7,
+      "name" : "grey41",
+      "rgb" : 6908265,
+      "xterm" : 242
+   },
+   {
+      "ansi" : 7,
+      "name" : "grey42",
+      "rgb" : 7039851,
+      "xterm" : 242
+   },
+   {
+      "ansi" : 7,
+      "name" : "grey43",
+      "rgb" : 7237230,
+      "xterm" : 242
+   },
+   {
+      "ansi" : 7,
+      "name" : "grey44",
+      "rgb" : 7368816,
+      "xterm" : 242
+   },
+   {
+      "ansi" : 7,
+      "name" : "grey45",
+      "rgb" : 7566195,
+      "xterm" : 243
+   },
+   {
+      "ansi" : 7,
+      "name" : "grey46",
+      "rgb" : 7697781,
+      "xterm" : 243
+   },
+   {
+      "ansi" : 7,
+      "name" : "grey47",
+      "rgb" : 7895160,
+      "xterm" : 243
+   },
+   {
+      "ansi" : 7,
+      "name" : "grey48",
+      "rgb" : 8026746,
+      "xterm" : 243
+   },
+   {
+      "ansi" : 256,
+      "name" : "grey49",
+      "rgb" : 8224125,
+      "xterm" : 8
+   },
+   {
+      "ansi" : 0,
+      "name" : "grey5",
+      "rgb" : 855309,
+      "xterm" : 232
+   },
+   {
+      "ansi" : 256,
+      "name" : "grey50",
+      "rgb" : 8355711,
+      "xterm" : 8
+   },
+   {
+      "ansi" : 256,
+      "name" : "grey51",
+      "rgb" : 8553090,
+      "xterm" : 8
+   },
+   {
+      "ansi" : 2,
+      "name" : "grey52",
+      "rgb" : 8750469,
+      "xterm" : 102
+   },
+   {
+      "ansi" : 2,
+      "name" : "grey53",
+      "rgb" : 8882055,
+      "xterm" : 102
+   },
+   {
+      "ansi" : 7,
+      "name" : "grey54",
+      "rgb" : 9079434,
+      "xterm" : 245
+   },
+   {
+      "ansi" : 7,
+      "name" : "grey55",
+      "rgb" : 9211020,
+      "xterm" : 245
+   },
+   {
+      "ansi" : 7,
+      "name" : "grey56",
+      "rgb" : 9408399,
+      "xterm" : 245
+   },
+   {
+      "ansi" : 7,
+      "name" : "grey57",
+      "rgb" : 9539985,
+      "xterm" : 246
+   },
+   {
+      "ansi" : 7,
+      "name" : "grey58",
+      "rgb" : 9737364,
+      "xterm" : 246
+   },
+   {
+      "ansi" : 7,
+      "name" : "grey59",
+      "rgb" : 9868950,
+      "xterm" : 246
+   },
+   {
+      "ansi" : 0,
+      "name" : "grey6",
+      "rgb" : 986895,
+      "xterm" : 233
+   },
+   {
+      "ansi" : 7,
+      "name" : "grey60",
+      "rgb" : 10066329,
+      "xterm" : 246
+   },
+   {
+      "ansi" : 7,
+      "name" : "grey61",
+      "rgb" : 10263708,
+      "xterm" : 247
+   },
+   {
+      "ansi" : 7,
+      "name" : "grey62",
+      "rgb" : 10395294,
+      "xterm" : 247
+   },
+   {
+      "ansi" : 7,
+      "name" : "grey63",
+      "rgb" : 10592673,
+      "xterm" : 247
+   },
+   {
+      "ansi" : 7,
+      "name" : "grey64",
+      "rgb" : 10724259,
+      "xterm" : 247
+   },
+   {
+      "ansi" : 263,
+      "name" : "grey65",
+      "rgb" : 10921638,
+      "xterm" : 248
+   },
+   {
+      "ansi" : 263,
+      "name" : "grey66",
+      "rgb" : 11053224,
+      "xterm" : 248
+   },
+   {
+      "ansi" : 263,
+      "name" : "grey67",
+      "rgb" : 11250603,
+      "xterm" : 248
+   },
+   {
+      "ansi" : 261,
+      "name" : "grey68",
+      "rgb" : 11382189,
+      "xterm" : 145
+   },
+   {
+      "ansi" : 261,
+      "name" : "grey69",
+      "rgb" : 11579568,
+      "xterm" : 145
+   },
+   {
+      "ansi" : 0,
+      "name" : "grey7",
+      "rgb" : 1184274,
+      "xterm" : 233
+   },
+   {
+      "ansi" : 263,
+      "name" : "grey70",
+      "rgb" : 11776947,
+      "xterm" : 249
+   },
+   {
+      "ansi" : 263,
+      "name" : "grey71",
+      "rgb" : 11908533,
+      "xterm" : 249
+   },
+   {
+      "ansi" : 263,
+      "name" : "grey72",
+      "rgb" : 12105912,
+      "xterm" : 250
+   },
+   {
+      "ansi" : 263,
+      "name" : "grey73",
+      "rgb" : 12237498,
+      "xterm" : 250
+   },
+   {
+      "ansi" : 263,
+      "name" : "grey74",
+      "rgb" : 12434877,
+      "xterm" : 250
+   },
+   {
+      "ansi" : 7,
+      "name" : "grey75",
+      "rgb" : 12566463,
+      "xterm" : 7
+   },
+   {
+      "ansi" : 7,
+      "name" : "grey76",
+      "rgb" : 12763842,
+      "xterm" : 7
+   },
+   {
+      "ansi" : 263,
+      "name" : "grey77",
+      "rgb" : 12895428,
+      "xterm" : 251
+   },
+   {
+      "ansi" : 263,
+      "name" : "grey78",
+      "rgb" : 13092807,
+      "xterm" : 251
+   },
+   {
+      "ansi" : 263,
+      "name" : "grey79",
+      "rgb" : 13224393,
+      "xterm" : 251
+   },
+   {
+      "ansi" : 0,
+      "name" : "grey8",
+      "rgb" : 1315860,
+      "xterm" : 233
+   },
+   {
+      "ansi" : 263,
+      "name" : "grey80",
+      "rgb" : 13421772,
+      "xterm" : 252
+   },
+   {
+      "ansi" : 263,
+      "name" : "grey81",
+      "rgb" : 13619151,
+      "xterm" : 252
+   },
+   {
+      "ansi" : 263,
+      "name" : "grey82",
+      "rgb" : 13750737,
+      "xterm" : 252
+   },
+   {
+      "ansi" : 263,
+      "name" : "grey83",
+      "rgb" : 13948116,
+      "xterm" : 188
+   },
+   {
+      "ansi" : 263,
+      "name" : "grey84",
+      "rgb" : 14079702,
+      "xterm" : 188
+   },
+   {
+      "ansi" : 263,
+      "name" : "grey85",
+      "rgb" : 14277081,
+      "xterm" : 253
+   },
+   {
+      "ansi" : 263,
+      "name" : "grey86",
+      "rgb" : 14408667,
+      "xterm" : 253
+   },
+   {
+      "ansi" : 263,
+      "name" : "grey87",
+      "rgb" : 14606046,
+      "xterm" : 253
+   },
+   {
+      "ansi" : 263,
+      "name" : "grey88",
+      "rgb" : 14737632,
+      "xterm" : 254
+   },
+   {
+      "ansi" : 263,
+      "name" : "grey89",
+      "rgb" : 14935011,
+      "xterm" : 254
+   },
+   {
+      "ansi" : 0,
+      "name" : "grey9",
+      "rgb" : 1513239,
+      "xterm" : 233
+   },
+   {
+      "ansi" : 263,
+      "name" : "grey90",
+      "rgb" : 15066597,
+      "xterm" : 254
+   },
+   {
+      "ansi" : 263,
+      "name" : "grey91",
+      "rgb" : 15263976,
+      "xterm" : 254
+   },
+   {
+      "ansi" : 263,
+      "name" : "grey92",
+      "rgb" : 15461355,
+      "xterm" : 255
+   },
+   {
+      "ansi" : 263,
+      "name" : "grey93",
+      "rgb" : 15592941,
+      "xterm" : 255
+   },
+   {
+      "ansi" : 263,
+      "name" : "grey94",
+      "rgb" : 15790320,
+      "xterm" : 255
+   },
+   {
+      "ansi" : 263,
+      "name" : "grey95",
+      "rgb" : 15921906,
+      "xterm" : 255
+   },
+   {
+      "ansi" : 263,
+      "name" : "grey96",
+      "rgb" : 16119285,
+      "xterm" : 255
+   },
+   {
+      "ansi" : 263,
+      "name" : "grey97",
+      "rgb" : 16250871,
+      "xterm" : 15
+   },
+   {
+      "ansi" : 263,
+      "name" : "grey98",
+      "rgb" : 16448250,
+      "xterm" : 15
+   },
+   {
+      "ansi" : 263,
+      "name" : "grey99",
+      "rgb" : 16579836,
+      "xterm" : 15
+   },
+   {
+      "ansi" : 263,
+      "name" : "honeydew",
+      "rgb" : 15794160,
+      "xterm" : 255
+   },
+   {
+      "ansi" : 263,
+      "name" : "honeydew1",
+      "rgb" : 15794160,
+      "xterm" : 255
+   },
+   {
+      "ansi" : 263,
+      "name" : "honeydew2",
+      "rgb" : 14741216,
+      "xterm" : 254
+   },
+   {
+      "ansi" : 263,
+      "name" : "honeydew3",
+      "rgb" : 12701121,
+      "xterm" : 251
+   },
+   {
+      "ansi" : 2,
+      "name" : "honeydew4",
+      "rgb" : 8620931,
+      "xterm" : 102
+   },
+   {
+      "ansi" : 261,
+      "name" : "hotpink",
+      "rgb" : 16738740,
+      "xterm" : 205
+   },
+   {
+      "ansi" : 261,
+      "name" : "hotpink1",
+      "rgb" : 16740020,
+      "xterm" : 205
+   },
+   {
+      "ansi" : 261,
+      "name" : "hotpink2",
+      "rgb" : 15624871,
+      "xterm" : 205
+   },
+   {
+      "ansi" : 257,
+      "name" : "hotpink3",
+      "rgb" : 13459600,
+      "xterm" : 168
+   },
+   {
+      "ansi" : 1,
+      "name" : "hotpink4",
+      "rgb" : 9124450,
+      "xterm" : 95
+   },
+   {
+      "ansi" : 257,
+      "name" : "indianred",
+      "rgb" : 13458524,
+      "xterm" : 167
+   },
+   {
+      "ansi" : 257,
+      "name" : "indianred1",
+      "rgb" : 16738922,
+      "xterm" : 203
+   },
+   {
+      "ansi" : 257,
+      "name" : "indianred2",
+      "rgb" : 15623011,
+      "xterm" : 203
+   },
+   {
+      "ansi" : 257,
+      "name" : "indianred3",
+      "rgb" : 13456725,
+      "xterm" : 167
+   },
+   {
+      "ansi" : 1,
+      "name" : "indianred4",
+      "rgb" : 9124410,
+      "xterm" : 95
+   },
+   {
+      "ansi" : 263,
+      "name" : "ivory",
+      "rgb" : 16777200,
+      "xterm" : 15
+   },
+   {
+      "ansi" : 263,
+      "name" : "ivory1",
+      "rgb" : 16777200,
+      "xterm" : 15
+   },
+   {
+      "ansi" : 263,
+      "name" : "ivory2",
+      "rgb" : 15658720,
+      "xterm" : 255
+   },
+   {
+      "ansi" : 263,
+      "name" : "ivory3",
+      "rgb" : 13487553,
+      "xterm" : 251
+   },
+   {
+      "ansi" : 2,
+      "name" : "ivory4",
+      "rgb" : 9145219,
+      "xterm" : 102
+   },
+   {
+      "ansi" : 259,
+      "name" : "khaki",
+      "rgb" : 15787660,
+      "xterm" : 222
+   },
+   {
+      "ansi" : 259,
+      "name" : "khaki1",
+      "rgb" : 16774799,
+      "xterm" : 228
+   },
+   {
+      "ansi" : 259,
+      "name" : "khaki2",
+      "rgb" : 15656581,
+      "xterm" : 222
+   },
+   {
+      "ansi" : 3,
+      "name" : "khaki3",
+      "rgb" : 13485683,
+      "xterm" : 185
+   },
+   {
+      "ansi" : 2,
+      "name" : "khaki4",
+      "rgb" : 9143886,
+      "xterm" : 101
+   },
+   {
+      "ansi" : 263,
+      "name" : "lavender",
+      "rgb" : 15132410,
+      "xterm" : 255
+   },
+   {
+      "ansi" : 263,
+      "name" : "lavenderblush",
+      "rgb" : 16773365,
+      "xterm" : 15
+   },
+   {
+      "ansi" : 263,
+      "name" : "lavenderblush1",
+      "rgb" : 16773365,
+      "xterm" : 15
+   },
+   {
+      "ansi" : 263,
+      "name" : "lavenderblush2",
+      "rgb" : 15655141,
+      "xterm" : 254
+   },
+   {
+      "ansi" : 263,
+      "name" : "lavenderblush3",
+      "rgb" : 13484485,
+      "xterm" : 251
+   },
+   {
+      "ansi" : 2,
+      "name" : "lavenderblush4",
+      "rgb" : 9143174,
+      "xterm" : 102
+   },
+   {
+      "ansi" : 258,
+      "name" : "lawngreen",
+      "rgb" : 8190976,
+      "xterm" : 118
+   },
+   {
+      "ansi" : 263,
+      "name" : "lemonchiffon",
+      "rgb" : 16775885,
+      "xterm" : 230
+   },
+   {
+      "ansi" : 263,
+      "name" : "lemonchiffon1",
+      "rgb" : 16775885,
+      "xterm" : 230
+   },
+   {
+      "ansi" : 263,
+      "name" : "lemonchiffon2",
+      "rgb" : 15657407,
+      "xterm" : 223
+   },
+   {
+      "ansi" : 263,
+      "name" : "lemonchiffon3",
+      "rgb" : 13486501,
+      "xterm" : 187
+   },
+   {
+      "ansi" : 2,
+      "name" : "lemonchiffon4",
+      "rgb" : 9144688,
+      "xterm" : 101
+   },
+   {
+      "ansi" : 263,
+      "name" : "lightblue",
+      "rgb" : 11393254,
+      "xterm" : 152
+   },
+   {
+      "ansi" : 263,
+      "name" : "lightblue1",
+      "rgb" : 12578815,
+      "xterm" : 159
+   },
+   {
+      "ansi" : 263,
+      "name" : "lightblue2",
+      "rgb" : 11722734,
+      "xterm" : 153
+   },
+   {
+      "ansi" : 262,
+      "name" : "lightblue3",
+      "rgb" : 10141901,
+      "xterm" : 110
+   },
+   {
+      "ansi" : 2,
+      "name" : "lightblue4",
+      "rgb" : 6849419,
+      "xterm" : 66
+   },
+   {
+      "ansi" : 261,
+      "name" : "lightcoral",
+      "rgb" : 15761536,
+      "xterm" : 210
+   },
+   {
+      "ansi" : 263,
+      "name" : "lightcyan",
+      "rgb" : 14745599,
+      "xterm" : 195
+   },
+   {
+      "ansi" : 263,
+      "name" : "lightcyan1",
+      "rgb" : 14745599,
+      "xterm" : 195
+   },
+   {
+      "ansi" : 263,
+      "name" : "lightcyan2",
+      "rgb" : 13758190,
+      "xterm" : 254
+   },
+   {
+      "ansi" : 263,
+      "name" : "lightcyan3",
+      "rgb" : 11849165,
+      "xterm" : 152
+   },
+   {
+      "ansi" : 2,
+      "name" : "lightcyan4",
+      "rgb" : 8031115,
+      "xterm" : 102
+   },
+   {
+      "ansi" : 259,
+      "name" : "lightgoldenrod",
+      "rgb" : 15654274,
+      "xterm" : 222
+   },
+   {
+      "ansi" : 259,
+      "name" : "lightgoldenrod1",
+      "rgb" : 16772235,
+      "xterm" : 228
+   },
+   {
+      "ansi" : 259,
+      "name" : "lightgoldenrod2",
+      "rgb" : 15654018,
+      "xterm" : 222
+   },
+   {
+      "ansi" : 3,
+      "name" : "lightgoldenrod3",
+      "rgb" : 13483632,
+      "xterm" : 179
+   },
+   {
+      "ansi" : 2,
+      "name" : "lightgoldenrod4",
+      "rgb" : 9142604,
+      "xterm" : 101
+   },
+   {
+      "ansi" : 263,
+      "name" : "lightgoldenrodyellow",
+      "rgb" : 16448210,
+      "xterm" : 230
+   },
+   {
+      "ansi" : 263,
+      "name" : "lightgray",
+      "rgb" : 13882323,
+      "xterm" : 252
+   },
+   {
+      "ansi" : 258,
+      "name" : "lightgreen",
+      "rgb" : 9498256,
+      "xterm" : 120
+   },
+   {
+      "ansi" : 263,
+      "name" : "lightgrey",
+      "rgb" : 13882323,
+      "xterm" : 252
+   },
+   {
+      "ansi" : 263,
+      "name" : "lightpink",
+      "rgb" : 16758465,
+      "xterm" : 217
+   },
+   {
+      "ansi" : 263,
+      "name" : "lightpink1",
+      "rgb" : 16756409,
+      "xterm" : 217
+   },
+   {
+      "ansi" : 263,
+      "name" : "lightpink2",
+      "rgb" : 15639213,
+      "xterm" : 217
+   },
+   {
+      "ansi" : 3,
+      "name" : "lightpink3",
+      "rgb" : 13470869,
+      "xterm" : 174
+   },
+   {
+      "ansi" : 1,
+      "name" : "lightpink4",
+      "rgb" : 9133925,
+      "xterm" : 95
+   },
+   {
+      "ansi" : 263,
+      "name" : "lightsalmon",
+      "rgb" : 16752762,
+      "xterm" : 216
+   },
+   {
+      "ansi" : 263,
+      "name" : "lightsalmon1",
+      "rgb" : 16752762,
+      "xterm" : 216
+   },
+   {
+      "ansi" : 257,
+      "name" : "lightsalmon2",
+      "rgb" : 15635826,
+      "xterm" : 209
+   },
+   {
+      "ansi" : 3,
+      "name" : "lightsalmon3",
+      "rgb" : 13468002,
+      "xterm" : 173
+   },
+   {
+      "ansi" : 1,
+      "name" : "lightsalmon4",
+      "rgb" : 9131842,
+      "xterm" : 95
+   },
+   {
+      "ansi" : 262,
+      "name" : "lightseagreen",
+      "rgb" : 2142890,
+      "xterm" : 37
+   },
+   {
+      "ansi" : 262,
+      "name" : "lightskyblue",
+      "rgb" : 8900346,
+      "xterm" : 117
+   },
+   {
+      "ansi" : 263,
+      "name" : "lightskyblue1",
+      "rgb" : 11592447,
+      "xterm" : 153
+   },
+   {
+      "ansi" : 263,
+      "name" : "lightskyblue2",
+      "rgb" : 10802158,
+      "xterm" : 153
+   },
+   {
+      "ansi" : 262,
+      "name" : "lightskyblue3",
+      "rgb" : 9287373,
+      "xterm" : 110
+   },
+   {
+      "ansi" : 2,
+      "name" : "lightskyblue4",
+      "rgb" : 6323083,
+      "xterm" : 66
+   },
+   {
+      "ansi" : 261,
+      "name" : "lightslateblue",
+      "rgb" : 8679679,
+      "xterm" : 99
+   },
+   {
+      "ansi" : 2,
+      "name" : "lightslategray",
+      "rgb" : 7833753,
+      "xterm" : 102
+   },
+   {
+      "ansi" : 2,
+      "name" : "lightslategrey",
+      "rgb" : 7833753,
+      "xterm" : 102
+   },
+   {
+      "ansi" : 263,
+      "name" : "lightsteelblue",
+      "rgb" : 11584734,
+      "xterm" : 152
+   },
+   {
+      "ansi" : 263,
+      "name" : "lightsteelblue1",
+      "rgb" : 13296127,
+      "xterm" : 189
+   },
+   {
+      "ansi" : 263,
+      "name" : "lightsteelblue2",
+      "rgb" : 12374766,
+      "xterm" : 153
+   },
+   {
+      "ansi" : 261,
+      "name" : "lightsteelblue3",
+      "rgb" : 10663373,
+      "xterm" : 146
+   },
+   {
+      "ansi" : 2,
+      "name" : "lightsteelblue4",
+      "rgb" : 7240587,
+      "xterm" : 66
+   },
+   {
+      "ansi" : 263,
+      "name" : "lightyellow",
+      "rgb" : 16777184,
+      "xterm" : 230
+   },
+   {
+      "ansi" : 263,
+      "name" : "lightyellow1",
+      "rgb" : 16777184,
+      "xterm" : 230
+   },
+   {
+      "ansi" : 263,
+      "name" : "lightyellow2",
+      "rgb" : 15658705,
+      "xterm" : 254
+   },
+   {
+      "ansi" : 263,
+      "name" : "lightyellow3",
+      "rgb" : 13487540,
+      "xterm" : 187
+   },
+   {
+      "ansi" : 2,
+      "name" : "lightyellow4",
+      "rgb" : 9145210,
+      "xterm" : 102
+   },
+   {
+      "ansi" : 258,
+      "name" : "lime",
+      "rgb" : 65280,
+      "xterm" : 10
+   },
+   {
+      "ansi" : 258,
+      "name" : "limegreen",
+      "rgb" : 3329330,
+      "xterm" : 77
+   },
+   {
+      "ansi" : 263,
+      "name" : "linen",
+      "rgb" : 16445670,
+      "xterm" : 255
+   },
+   {
+      "ansi" : 261,
+      "name" : "magenta",
+      "rgb" : 16711935,
+      "xterm" : 201
+   },
+   {
+      "ansi" : 261,
+      "name" : "magenta1",
+      "rgb" : 16711935,
+      "xterm" : 201
+   },
+   {
+      "ansi" : 261,
+      "name" : "magenta2",
+      "rgb" : 15597806,
+      "xterm" : 13
+   },
+   {
+      "ansi" : 261,
+      "name" : "magenta3",
+      "rgb" : 13435085,
+      "xterm" : 164
+   },
+   {
+      "ansi" : 5,
+      "name" : "magenta4",
+      "rgb" : 9109643,
+      "xterm" : 90
+   },
+   {
+      "ansi" : 257,
+      "name" : "maroon",
+      "rgb" : 11546720,
+      "xterm" : 131
+   },
+   {
+      "ansi" : 261,
+      "name" : "maroon1",
+      "rgb" : 16725171,
+      "xterm" : 205
+   },
+   {
+      "ansi" : 261,
+      "name" : "maroon2",
+      "rgb" : 15610023,
+      "xterm" : 205
+   },
+   {
+      "ansi" : 261,
+      "name" : "maroon3",
+      "rgb" : 13445520,
+      "xterm" : 162
+   },
+   {
+      "ansi" : 1,
+      "name" : "maroon4",
+      "rgb" : 9116770,
+      "xterm" : 89
+   },
+   {
+      "ansi" : 262,
+      "name" : "mediumaquamarine",
+      "rgb" : 6737322,
+      "xterm" : 79
+   },
+   {
+      "ansi" : 260,
+      "name" : "mediumblue",
+      "rgb" : 205,
+      "xterm" : 20
+   },
+   {
+      "ansi" : 261,
+      "name" : "mediumorchid",
+      "rgb" : 12211667,
+      "xterm" : 134
+   },
+   {
+      "ansi" : 261,
+      "name" : "mediumorchid1",
+      "rgb" : 14706431,
+      "xterm" : 171
+   },
+   {
+      "ansi" : 261,
+      "name" : "mediumorchid2",
+      "rgb" : 13721582,
+      "xterm" : 171
+   },
+   {
+      "ansi" : 261,
+      "name" : "mediumorchid3",
+      "rgb" : 11817677,
+      "xterm" : 134
+   },
+   {
+      "ansi" : 5,
+      "name" : "mediumorchid4",
+      "rgb" : 8009611,
+      "xterm" : 96
+   },
+   {
+      "ansi" : 261,
+      "name" : "mediumpurple",
+      "rgb" : 9662683,
+      "xterm" : 98
+   },
+   {
+      "ansi" : 261,
+      "name" : "mediumpurple1",
+      "rgb" : 11240191,
+      "xterm" : 141
+   },
+   {
+      "ansi" : 261,
+      "name" : "mediumpurple2",
+      "rgb" : 10451438,
+      "xterm" : 141
+   },
+   {
+      "ansi" : 261,
+      "name" : "mediumpurple3",
+      "rgb" : 9005261,
+      "xterm" : 98
+   },
+   {
+      "ansi" : 6,
+      "name" : "mediumpurple4",
+      "rgb" : 6113163,
+      "xterm" : 60
+   },
+   {
+      "ansi" : 2,
+      "name" : "mediumseagreen",
+      "rgb" : 3978097,
+      "xterm" : 71
+   },
+   {
+      "ansi" : 261,
+      "name" : "mediumslateblue",
+      "rgb" : 8087790,
+      "xterm" : 99
+   },
+   {
+      "ansi" : 258,
+      "name" : "mediumspringgreen",
+      "rgb" : 64154,
+      "xterm" : 48
+   },
+   {
+      "ansi" : 262,
+      "name" : "mediumturquoise",
+      "rgb" : 4772300,
+      "xterm" : 80
+   },
+   {
+      "ansi" : 261,
+      "name" : "mediumvioletred",
+      "rgb" : 13047173,
+      "xterm" : 162
+   },
+   {
+      "ansi" : 4,
+      "name" : "midnightblue",
+      "rgb" : 1644912,
+      "xterm" : 4
+   },
+   {
+      "ansi" : 263,
+      "name" : "mintcream",
+      "rgb" : 16121850,
+      "xterm" : 15
+   },
+   {
+      "ansi" : 263,
+      "name" : "mistyrose",
+      "rgb" : 16770273,
+      "xterm" : 224
+   },
+   {
+      "ansi" : 263,
+      "name" : "mistyrose1",
+      "rgb" : 16770273,
+      "xterm" : 224
+   },
+   {
+      "ansi" : 263,
+      "name" : "mistyrose2",
+      "rgb" : 15652306,
+      "xterm" : 224
+   },
+   {
+      "ansi" : 261,
+      "name" : "mistyrose3",
+      "rgb" : 13481909,
+      "xterm" : 181
+   },
+   {
+      "ansi" : 256,
+      "name" : "mistyrose4",
+      "rgb" : 9141627,
+      "xterm" : 8
+   },
+   {
+      "ansi" : 263,
+      "name" : "moccasin",
+      "rgb" : 16770229,
+      "xterm" : 223
+   },
+   {
+      "ansi" : 263,
+      "name" : "navajowhite",
+      "rgb" : 16768685,
+      "xterm" : 223
+   },
+   {
+      "ansi" : 263,
+      "name" : "navajowhite1",
+      "rgb" : 16768685,
+      "xterm" : 223
+   },
+   {
+      "ansi" : 263,
+      "name" : "navajowhite2",
+      "rgb" : 15650721,
+      "xterm" : 223
+   },
+   {
+      "ansi" : 259,
+      "name" : "navajowhite3",
+      "rgb" : 13480843,
+      "xterm" : 180
+   },
+   {
+      "ansi" : 2,
+      "name" : "navajowhite4",
+      "rgb" : 9140574,
+      "xterm" : 101
+   },
+   {
+      "ansi" : 4,
+      "name" : "navy",
+      "rgb" : 128,
+      "xterm" : 4
+   },
+   {
+      "ansi" : 4,
+      "name" : "navyblue",
+      "rgb" : 128,
+      "xterm" : 4
+   },
+   {
+      "ansi" : 263,
+      "name" : "oldlace",
+      "rgb" : 16643558,
+      "xterm" : 230
+   },
+   {
+      "ansi" : 3,
+      "name" : "olive",
+      "rgb" : 8421376,
+      "xterm" : 3
+   },
+   {
+      "ansi" : 2,
+      "name" : "olivedrab",
+      "rgb" : 7048739,
+      "xterm" : 64
+   },
+   {
+      "ansi" : 259,
+      "name" : "olivedrab1",
+      "rgb" : 12648254,
+      "xterm" : 155
+   },
+   {
+      "ansi" : 259,
+      "name" : "olivedrab2",
+      "rgb" : 11791930,
+      "xterm" : 155
+   },
+   {
+      "ansi" : 258,
+      "name" : "olivedrab3",
+      "rgb" : 10145074,
+      "xterm" : 113
+   },
+   {
+      "ansi" : 2,
+      "name" : "olivedrab4",
+      "rgb" : 6916898,
+      "xterm" : 64
+   },
+   {
+      "ansi" : 259,
+      "name" : "orange",
+      "rgb" : 16753920,
+      "xterm" : 214
+   },
+   {
+      "ansi" : 259,
+      "name" : "orange1",
+      "rgb" : 16753920,
+      "xterm" : 214
+   },
+   {
+      "ansi" : 257,
+      "name" : "orange2",
+      "rgb" : 15636992,
+      "xterm" : 208
+   },
+   {
+      "ansi" : 3,
+      "name" : "orange3",
+      "rgb" : 13468928,
+      "xterm" : 172
+   },
+   {
+      "ansi" : 2,
+      "name" : "orange4",
+      "rgb" : 9132544,
+      "xterm" : 94
+   },
+   {
+      "ansi" : 257,
+      "name" : "orangered",
+      "rgb" : 16729344,
+      "xterm" : 202
+   },
+   {
+      "ansi" : 257,
+      "name" : "orangered1",
+      "rgb" : 16729344,
+      "xterm" : 202
+   },
+   {
+      "ansi" : 257,
+      "name" : "orangered2",
+      "rgb" : 15613952,
+      "xterm" : 202
+   },
+   {
+      "ansi" : 257,
+      "name" : "orangered3",
+      "rgb" : 13448960,
+      "xterm" : 166
+   },
+   {
+      "ansi" : 1,
+      "name" : "orangered4",
+      "rgb" : 9118976,
+      "xterm" : 88
+   },
+   {
+      "ansi" : 261,
+      "name" : "orchid",
+      "rgb" : 14315734,
+      "xterm" : 170
+   },
+   {
+      "ansi" : 261,
+      "name" : "orchid1",
+      "rgb" : 16745466,
+      "xterm" : 213
+   },
+   {
+      "ansi" : 261,
+      "name" : "orchid2",
+      "rgb" : 15629033,
+      "xterm" : 212
+   },
+   {
+      "ansi" : 261,
+      "name" : "orchid3",
+      "rgb" : 13461961,
+      "xterm" : 170
+   },
+   {
+      "ansi" : 5,
+      "name" : "orchid4",
+      "rgb" : 9127817,
+      "xterm" : 96
+   },
+   {
+      "ansi" : 263,
+      "name" : "palegoldenrod",
+      "rgb" : 15657130,
+      "xterm" : 223
+   },
+   {
+      "ansi" : 258,
+      "name" : "palegreen",
+      "rgb" : 10025880,
+      "xterm" : 120
+   },
+   {
+      "ansi" : 258,
+      "name" : "palegreen1",
+      "rgb" : 10157978,
+      "xterm" : 120
+   },
+   {
+      "ansi" : 258,
+      "name" : "palegreen2",
+      "rgb" : 9498256,
+      "xterm" : 120
+   },
+   {
+      "ansi" : 258,
+      "name" : "palegreen3",
+      "rgb" : 8179068,
+      "xterm" : 114
+   },
+   {
+      "ansi" : 2,
+      "name" : "palegreen4",
+      "rgb" : 5540692,
+      "xterm" : 65
+   },
+   {
+      "ansi" : 263,
+      "name" : "paleturquoise",
+      "rgb" : 11529966,
+      "xterm" : 159
+   },
+   {
+      "ansi" : 263,
+      "name" : "paleturquoise1",
+      "rgb" : 12320767,
+      "xterm" : 159
+   },
+   {
+      "ansi" : 263,
+      "name" : "paleturquoise2",
+      "rgb" : 11464430,
+      "xterm" : 159
+   },
+   {
+      "ansi" : 262,
+      "name" : "paleturquoise3",
+      "rgb" : 9883085,
+      "xterm" : 116
+   },
+   {
+      "ansi" : 2,
+      "name" : "paleturquoise4",
+      "rgb" : 6720395,
+      "xterm" : 66
+   },
+   {
+      "ansi" : 257,
+      "name" : "palevioletred",
+      "rgb" : 14381203,
+      "xterm" : 168
+   },
+   {
+      "ansi" : 261,
+      "name" : "palevioletred1",
+      "rgb" : 16745131,
+      "xterm" : 211
+   },
+   {
+      "ansi" : 261,
+      "name" : "palevioletred2",
+      "rgb" : 15628703,
+      "xterm" : 211
+   },
+   {
+      "ansi" : 257,
+      "name" : "palevioletred3",
+      "rgb" : 13461641,
+      "xterm" : 168
+   },
+   {
+      "ansi" : 1,
+      "name" : "palevioletred4",
+      "rgb" : 9127773,
+      "xterm" : 95
+   },
+   {
+      "ansi" : 263,
+      "name" : "papayawhip",
+      "rgb" : 16773077,
+      "xterm" : 230
+   },
+   {
+      "ansi" : 263,
+      "name" : "peachpuff",
+      "rgb" : 16767673,
+      "xterm" : 223
+   },
+   {
+      "ansi" : 263,
+      "name" : "peachpuff1",
+      "rgb" : 16767673,
+      "xterm" : 223
+   },
+   {
+      "ansi" : 263,
+      "name" : "peachpuff2",
+      "rgb" : 15649709,
+      "xterm" : 223
+   },
+   {
+      "ansi" : 259,
+      "name" : "peachpuff3",
+      "rgb" : 13479829,
+      "xterm" : 180
+   },
+   {
+      "ansi" : 2,
+      "name" : "peachpuff4",
+      "rgb" : 9140069,
+      "xterm" : 101
+   },
+   {
+      "ansi" : 3,
+      "name" : "peru",
+      "rgb" : 13468991,
+      "xterm" : 173
+   },
+   {
+      "ansi" : 263,
+      "name" : "pink",
+      "rgb" : 16761035,
+      "xterm" : 218
+   },
+   {
+      "ansi" : 263,
+      "name" : "pink1",
+      "rgb" : 16758213,
+      "xterm" : 218
+   },
+   {
+      "ansi" : 263,
+      "name" : "pink2",
+      "rgb" : 15641016,
+      "xterm" : 217
+   },
+   {
+      "ansi" : 261,
+      "name" : "pink3",
+      "rgb" : 13472158,
+      "xterm" : 175
+   },
+   {
+      "ansi" : 1,
+      "name" : "pink4",
+      "rgb" : 9134956,
+      "xterm" : 95
+   },
+   {
+      "ansi" : 261,
+      "name" : "plum",
+      "rgb" : 14524637,
+      "xterm" : 182
+   },
+   {
+      "ansi" : 263,
+      "name" : "plum1",
+      "rgb" : 16759807,
+      "xterm" : 219
+   },
+   {
+      "ansi" : 263,
+      "name" : "plum2",
+      "rgb" : 15642350,
+      "xterm" : 219
+   },
+   {
+      "ansi" : 261,
+      "name" : "plum3",
+      "rgb" : 13473485,
+      "xterm" : 176
+   },
+   {
+      "ansi" : 5,
+      "name" : "plum4",
+      "rgb" : 9135755,
+      "xterm" : 96
+   },
+   {
+      "ansi" : 263,
+      "name" : "powderblue",
+      "rgb" : 11591910,
+      "xterm" : 152
+   },
+   {
+      "ansi" : 261,
+      "name" : "purple",
+      "rgb" : 10494192,
+      "xterm" : 129
+   },
+   {
+      "ansi" : 261,
+      "name" : "purple1",
+      "rgb" : 10170623,
+      "xterm" : 99
+   },
+   {
+      "ansi" : 261,
+      "name" : "purple2",
+      "rgb" : 9514222,
+      "xterm" : 93
+   },
+   {
+      "ansi" : 261,
+      "name" : "purple3",
+      "rgb" : 8201933,
+      "xterm" : 92
+   },
+   {
+      "ansi" : 5,
+      "name" : "purple4",
+      "rgb" : 5577355,
+      "xterm" : 54
+   },
+   {
+      "ansi" : 257,
+      "name" : "red",
+      "rgb" : 16711680,
+      "xterm" : 196
+   },
+   {
+      "ansi" : 257,
+      "name" : "red1",
+      "rgb" : 16711680,
+      "xterm" : 196
+   },
+   {
+      "ansi" : 257,
+      "name" : "red2",
+      "rgb" : 15597568,
+      "xterm" : 9
+   },
+   {
+      "ansi" : 1,
+      "name" : "red3",
+      "rgb" : 13434880,
+      "xterm" : 160
+   },
+   {
+      "ansi" : 1,
+      "name" : "red4",
+      "rgb" : 9109504,
+      "xterm" : 88
+   },
+   {
+      "ansi" : 261,
+      "name" : "rosybrown",
+      "rgb" : 12357519,
+      "xterm" : 138
+   },
+   {
+      "ansi" : 263,
+      "name" : "rosybrown1",
+      "rgb" : 16761281,
+      "xterm" : 217
+   },
+   {
+      "ansi" : 263,
+      "name" : "rosybrown2",
+      "rgb" : 15643828,
+      "xterm" : 217
+   },
+   {
+      "ansi" : 3,
+      "name" : "rosybrown3",
+      "rgb" : 13474715,
+      "xterm" : 174
+   },
+   {
+      "ansi" : 1,
+      "name" : "rosybrown4",
+      "rgb" : 9136489,
+      "xterm" : 95
+   },
+   {
+      "ansi" : 260,
+      "name" : "royalblue",
+      "rgb" : 4286945,
+      "xterm" : 62
+   },
+   {
+      "ansi" : 260,
+      "name" : "royalblue1",
+      "rgb" : 4749055,
+      "xterm" : 69
+   },
+   {
+      "ansi" : 260,
+      "name" : "royalblue2",
+      "rgb" : 4419310,
+      "xterm" : 63
+   },
+   {
+      "ansi" : 260,
+      "name" : "royalblue3",
+      "rgb" : 3825613,
+      "xterm" : 62
+   },
+   {
+      "ansi" : 4,
+      "name" : "royalblue4",
+      "rgb" : 2572427,
+      "xterm" : 24
+   },
+   {
+      "ansi" : 2,
+      "name" : "saddlebrown",
+      "rgb" : 9127187,
+      "xterm" : 94
+   },
+   {
+      "ansi" : 257,
+      "name" : "salmon",
+      "rgb" : 16416882,
+      "xterm" : 209
+   },
+   {
+      "ansi" : 257,
+      "name" : "salmon1",
+      "rgb" : 16747625,
+      "xterm" : 209
+   },
+   {
+      "ansi" : 257,
+      "name" : "salmon2",
+      "rgb" : 15630946,
+      "xterm" : 209
+   },
+   {
+      "ansi" : 257,
+      "name" : "salmon3",
+      "rgb" : 13463636,
+      "xterm" : 167
+   },
+   {
+      "ansi" : 1,
+      "name" : "salmon4",
+      "rgb" : 9129017,
+      "xterm" : 95
+   },
+   {
+      "ansi" : 259,
+      "name" : "sandybrown",
+      "rgb" : 16032864,
+      "xterm" : 215
+   },
+   {
+      "ansi" : 2,
+      "name" : "seagreen",
+      "rgb" : 3050327,
+      "xterm" : 29
+   },
+   {
+      "ansi" : 258,
+      "name" : "seagreen1",
+      "rgb" : 5570463,
+      "xterm" : 85
+   },
+   {
+      "ansi" : 258,
+      "name" : "seagreen2",
+      "rgb" : 5172884,
+      "xterm" : 84
+   },
+   {
+      "ansi" : 258,
+      "name" : "seagreen3",
+      "rgb" : 4443520,
+      "xterm" : 78
+   },
+   {
+      "ansi" : 2,
+      "name" : "seagreen4",
+      "rgb" : 3050327,
+      "xterm" : 29
+   },
+   {
+      "ansi" : 263,
+      "name" : "seashell",
+      "rgb" : 16774638,
+      "xterm" : 255
+   },
+   {
+      "ansi" : 263,
+      "name" : "seashell1",
+      "rgb" : 16774638,
+      "xterm" : 255
+   },
+   {
+      "ansi" : 263,
+      "name" : "seashell2",
+      "rgb" : 15656414,
+      "xterm" : 254
+   },
+   {
+      "ansi" : 263,
+      "name" : "seashell3",
+      "rgb" : 13485503,
+      "xterm" : 251
+   },
+   {
+      "ansi" : 2,
+      "name" : "seashell4",
+      "rgb" : 9143938,
+      "xterm" : 102
+   },
+   {
+      "ansi" : 257,
+      "name" : "sienna",
+      "rgb" : 10506797,
+      "xterm" : 130
+   },
+   {
+      "ansi" : 257,
+      "name" : "sienna1",
+      "rgb" : 16745031,
+      "xterm" : 209
+   },
+   {
+      "ansi" : 257,
+      "name" : "sienna2",
+      "rgb" : 15628610,
+      "xterm" : 209
+   },
+   {
+      "ansi" : 257,
+      "name" : "sienna3",
+      "rgb" : 13461561,
+      "xterm" : 167
+   },
+   {
+      "ansi" : 2,
+      "name" : "sienna4",
+      "rgb" : 9127718,
+      "xterm" : 94
+   },
+   {
+      "ansi" : 7,
+      "name" : "silver",
+      "rgb" : 12632256,
+      "xterm" : 7
+   },
+   {
+      "ansi" : 262,
+      "name" : "skyblue",
+      "rgb" : 8900331,
+      "xterm" : 116
+   },
+   {
+      "ansi" : 262,
+      "name" : "skyblue1",
+      "rgb" : 8900351,
+      "xterm" : 117
+   },
+   {
+      "ansi" : 262,
+      "name" : "skyblue2",
+      "rgb" : 8306926,
+      "xterm" : 111
+   },
+   {
+      "ansi" : 262,
+      "name" : "skyblue3",
+      "rgb" : 7120589,
+      "xterm" : 74
+   },
+   {
+      "ansi" : 6,
+      "name" : "skyblue4",
+      "rgb" : 4878475,
+      "xterm" : 60
+   },
+   {
+      "ansi" : 260,
+      "name" : "slateblue",
+      "rgb" : 6970061,
+      "xterm" : 62
+   },
+   {
+      "ansi" : 261,
+      "name" : "slateblue1",
+      "rgb" : 8613887,
+      "xterm" : 99
+   },
+   {
+      "ansi" : 261,
+      "name" : "slateblue2",
+      "rgb" : 8021998,
+      "xterm" : 99
+   },
+   {
+      "ansi" : 260,
+      "name" : "slateblue3",
+      "rgb" : 6904269,
+      "xterm" : 62
+   },
+   {
+      "ansi" : 6,
+      "name" : "slateblue4",
+      "rgb" : 4668555,
+      "xterm" : 60
+   },
+   {
+      "ansi" : 2,
+      "name" : "slategray",
+      "rgb" : 7372944,
+      "xterm" : 66
+   },
+   {
+      "ansi" : 263,
+      "name" : "slategray1",
+      "rgb" : 13034239,
+      "xterm" : 189
+   },
+   {
+      "ansi" : 263,
+      "name" : "slategray2",
+      "rgb" : 12178414,
+      "xterm" : 153
+   },
+   {
+      "ansi" : 261,
+      "name" : "slategray3",
+      "rgb" : 10467021,
+      "xterm" : 146
+   },
+   {
+      "ansi" : 2,
+      "name" : "slategray4",
+      "rgb" : 7109515,
+      "xterm" : 66
+   },
+   {
+      "ansi" : 2,
+      "name" : "slategrey",
+      "rgb" : 7372944,
+      "xterm" : 66
+   },
+   {
+      "ansi" : 263,
+      "name" : "slategrey1",
+      "rgb" : 13034239,
+      "xterm" : 189
+   },
+   {
+      "ansi" : 263,
+      "name" : "slategrey2",
+      "rgb" : 12178414,
+      "xterm" : 153
+   },
+   {
+      "ansi" : 261,
+      "name" : "slategrey3",
+      "rgb" : 10467021,
+      "xterm" : 146
+   },
+   {
+      "ansi" : 2,
+      "name" : "slategrey4",
+      "rgb" : 7109515,
+      "xterm" : 66
+   },
+   {
+      "ansi" : 263,
+      "name" : "snow",
+      "rgb" : 16775930,
+      "xterm" : 15
+   },
+   {
+      "ansi" : 263,
+      "name" : "snow1",
+      "rgb" : 16775930,
+      "xterm" : 15
+   },
+   {
+      "ansi" : 263,
+      "name" : "snow2",
+      "rgb" : 15657449,
+      "xterm" : 255
+   },
+   {
+      "ansi" : 263,
+      "name" : "snow3",
+      "rgb" : 13486537,
+      "xterm" : 251
+   },
+   {
+      "ansi" : 7,
+      "name" : "snow4",
+      "rgb" : 9144713,
+      "xterm" : 245
+   },
+   {
+      "ansi" : 258,
+      "name" : "springgreen",
+      "rgb" : 65407,
+      "xterm" : 48
+   },
+   {
+      "ansi" : 258,
+      "name" : "springgreen1",
+      "rgb" : 65407,
+      "xterm" : 48
+   },
+   {
+      "ansi" : 258,
+      "name" : "springgreen2",
+      "rgb" : 61046,
+      "xterm" : 48
+   },
+   {
+      "ansi" : 258,
+      "name" : "springgreen3",
+      "rgb" : 52582,
+      "xterm" : 41
+   },
+   {
+      "ansi" : 2,
+      "name" : "springgreen4",
+      "rgb" : 35653,
+      "xterm" : 29
+   },
+   {
+      "ansi" : 6,
+      "name" : "steelblue",
+      "rgb" : 4620980,
+      "xterm" : 67
+   },
+   {
+      "ansi" : 262,
+      "name" : "steelblue1",
+      "rgb" : 6535423,
+      "xterm" : 75
+   },
+   {
+      "ansi" : 262,
+      "name" : "steelblue2",
+      "rgb" : 6073582,
+      "xterm" : 75
+   },
+   {
+      "ansi" : 6,
+      "name" : "steelblue3",
+      "rgb" : 5215437,
+      "xterm" : 68
+   },
+   {
+      "ansi" : 6,
+      "name" : "steelblue4",
+      "rgb" : 3564683,
+      "xterm" : 60
+   },
+   {
+      "ansi" : 259,
+      "name" : "tan",
+      "rgb" : 13808780,
+      "xterm" : 180
+   },
+   {
+      "ansi" : 259,
+      "name" : "tan1",
+      "rgb" : 16753999,
+      "xterm" : 215
+   },
+   {
+      "ansi" : 257,
+      "name" : "tan2",
+      "rgb" : 15637065,
+      "xterm" : 209
+   },
+   {
+      "ansi" : 3,
+      "name" : "tan3",
+      "rgb" : 13468991,
+      "xterm" : 173
+   },
+   {
+      "ansi" : 2,
+      "name" : "tan4",
+      "rgb" : 9132587,
+      "xterm" : 94
+   },
+   {
+      "ansi" : 6,
+      "name" : "teal",
+      "rgb" : 32896,
+      "xterm" : 6
+   },
+   {
+      "ansi" : 261,
+      "name" : "thistle",
+      "rgb" : 14204888,
+      "xterm" : 182
+   },
+   {
+      "ansi" : 263,
+      "name" : "thistle1",
+      "rgb" : 16769535,
+      "xterm" : 225
+   },
+   {
+      "ansi" : 263,
+      "name" : "thistle2",
+      "rgb" : 15651566,
+      "xterm" : 254
+   },
+   {
+      "ansi" : 261,
+      "name" : "thistle3",
+      "rgb" : 13481421,
+      "xterm" : 182
+   },
+   {
+      "ansi" : 2,
+      "name" : "thistle4",
+      "rgb" : 9141131,
+      "xterm" : 102
+   },
+   {
+      "ansi" : 257,
+      "name" : "tomato",
+      "rgb" : 16737095,
+      "xterm" : 203
+   },
+   {
+      "ansi" : 257,
+      "name" : "tomato1",
+      "rgb" : 16737095,
+      "xterm" : 203
+   },
+   {
+      "ansi" : 257,
+      "name" : "tomato2",
+      "rgb" : 15621186,
+      "xterm" : 203
+   },
+   {
+      "ansi" : 257,
+      "name" : "tomato3",
+      "rgb" : 13455161,
+      "xterm" : 167
+   },
+   {
+      "ansi" : 2,
+      "name" : "tomato4",
+      "rgb" : 9123366,
+      "xterm" : 94
+   },
+   {
+      "ansi" : 262,
+      "name" : "turquoise",
+      "rgb" : 4251856,
+      "xterm" : 80
+   },
+   {
+      "ansi" : 262,
+      "name" : "turquoise1",
+      "rgb" : 62975,
+      "xterm" : 14
+   },
+   {
+      "ansi" : 262,
+      "name" : "turquoise2",
+      "rgb" : 58862,
+      "xterm" : 45
+   },
+   {
+      "ansi" : 262,
+      "name" : "turquoise3",
+      "rgb" : 50637,
+      "xterm" : 44
+   },
+   {
+      "ansi" : 6,
+      "name" : "turquoise4",
+      "rgb" : 34443,
+      "xterm" : 30
+   },
+   {
+      "ansi" : 261,
+      "name" : "violet",
+      "rgb" : 15631086,
+      "xterm" : 213
+   },
+   {
+      "ansi" : 261,
+      "name" : "violetred",
+      "rgb" : 13639824,
+      "xterm" : 162
+   },
+   {
+      "ansi" : 257,
+      "name" : "violetred1",
+      "rgb" : 16727702,
+      "xterm" : 204
+   },
+   {
+      "ansi" : 257,
+      "name" : "violetred2",
+      "rgb" : 15612556,
+      "xterm" : 204
+   },
+   {
+      "ansi" : 257,
+      "name" : "violetred3",
+      "rgb" : 13447800,
+      "xterm" : 168
+   },
+   {
+      "ansi" : 1,
+      "name" : "violetred4",
+      "rgb" : 9118290,
+      "xterm" : 89
+   },
+   {
+      "ansi" : 263,
+      "name" : "wheat",
+      "rgb" : 16113331,
+      "xterm" : 223
+   },
+   {
+      "ansi" : 263,
+      "name" : "wheat1",
+      "rgb" : 16771002,
+      "xterm" : 223
+   },
+   {
+      "ansi" : 263,
+      "name" : "wheat2",
+      "rgb" : 15653038,
+      "xterm" : 223
+   },
+   {
+      "ansi" : 259,
+      "name" : "wheat3",
+      "rgb" : 13482646,
+      "xterm" : 180
+   },
+   {
+      "ansi" : 2,
+      "name" : "wheat4",
+      "rgb" : 9141862,
+      "xterm" : 101
+   },
+   {
+      "ansi" : 263,
+      "name" : "white",
+      "rgb" : 16777215,
+      "xterm" : 231
+   },
+   {
+      "ansi" : 263,
+      "name" : "whitesmoke",
+      "rgb" : 16119285,
+      "xterm" : 255
+   },
+   {
+      "ansi" : 0,
+      "name" : "xterm0",
+      "rgb" : 0,
+      "xterm" : 0
+   },
+   {
+      "ansi" : 1,
+      "name" : "xterm1",
+      "rgb" : 8388608,
+      "xterm" : 1
+   },
+   {
+      "ansi" : 258,
+      "name" : "xterm10",
+      "rgb" : 65280,
+      "xterm" : 10
+   },
+   {
+      "ansi" : 2,
+      "name" : "xterm100",
+      "rgb" : 8881920,
+      "xterm" : 100
+   },
+   {
+      "ansi" : 2,
+      "name" : "xterm101",
+      "rgb" : 8882015,
+      "xterm" : 101
+   },
+   {
+      "ansi" : 2,
+      "name" : "xterm102",
+      "rgb" : 8882055,
+      "xterm" : 102
+   },
+   {
+      "ansi" : 6,
+      "name" : "xterm103",
+      "rgb" : 8882095,
+      "xterm" : 103
+   },
+   {
+      "ansi" : 260,
+      "name" : "xterm104",
+      "rgb" : 8882135,
+      "xterm" : 104
+   },
+   {
+      "ansi" : 260,
+      "name" : "xterm105",
+      "rgb" : 8882175,
+      "xterm" : 105
+   },
+   {
+      "ansi" : 2,
+      "name" : "xterm106",
+      "rgb" : 8892160,
+      "xterm" : 106
+   },
+   {
+      "ansi" : 2,
+      "name" : "xterm107",
+      "rgb" : 8892255,
+      "xterm" : 107
+   },
+   {
+      "ansi" : 2,
+      "name" : "xterm108",
+      "rgb" : 8892295,
+      "xterm" : 108
+   },
+   {
+      "ansi" : 6,
+      "name" : "xterm109",
+      "rgb" : 8892335,
+      "xterm" : 109
+   },
+   {
+      "ansi" : 259,
+      "name" : "xterm11",
+      "rgb" : 16776960,
+      "xterm" : 11
+   },
+   {
+      "ansi" : 262,
+      "name" : "xterm110",
+      "rgb" : 8892375,
+      "xterm" : 110
+   },
+   {
+      "ansi" : 262,
+      "name" : "xterm111",
+      "rgb" : 8892415,
+      "xterm" : 111
+   },
+   {
+      "ansi" : 258,
+      "name" : "xterm112",
+      "rgb" : 8902400,
+      "xterm" : 112
+   },
+   {
+      "ansi" : 258,
+      "name" : "xterm113",
+      "rgb" : 8902495,
+      "xterm" : 113
+   },
+   {
+      "ansi" : 258,
+      "name" : "xterm114",
+      "rgb" : 8902535,
+      "xterm" : 114
+   },
+   {
+      "ansi" : 258,
+      "name" : "xterm115",
+      "rgb" : 8902575,
+      "xterm" : 115
+   },
+   {
+      "ansi" : 262,
+      "name" : "xterm116",
+      "rgb" : 8902615,
+      "xterm" : 116
+   },
+   {
+      "ansi" : 262,
+      "name" : "xterm117",
+      "rgb" : 8902655,
+      "xterm" : 117
+   },
+   {
+      "ansi" : 258,
+      "name" : "xterm118",
+      "rgb" : 8912640,
+      "xterm" : 118
+   },
+   {
+      "ansi" : 258,
+      "name" : "xterm119",
+      "rgb" : 8912735,
+      "xterm" : 119
+   },
+   {
+      "ansi" : 260,
+      "name" : "xterm12",
+      "rgb" : 255,
+      "xterm" : 12
+   },
+   {
+      "ansi" : 258,
+      "name" : "xterm120",
+      "rgb" : 8912775,
+      "xterm" : 120
+   },
+   {
+      "ansi" : 258,
+      "name" : "xterm121",
+      "rgb" : 8912815,
+      "xterm" : 121
+   },
+   {
+      "ansi" : 263,
+      "name" : "xterm122",
+      "rgb" : 8912855,
+      "xterm" : 122
+   },
+   {
+      "ansi" : 263,
+      "name" : "xterm123",
+      "rgb" : 8912895,
+      "xterm" : 123
+   },
+   {
+      "ansi" : 1,
+      "name" : "xterm124",
+      "rgb" : 11468800,
+      "xterm" : 124
+   },
+   {
+      "ansi" : 5,
+      "name" : "xterm125",
+      "rgb" : 11468895,
+      "xterm" : 125
+   },
+   {
+      "ansi" : 5,
+      "name" : "xterm126",
+      "rgb" : 11468935,
+      "xterm" : 126
+   },
+   {
+      "ansi" : 261,
+      "name" : "xterm127",
+      "rgb" : 11468975,
+      "xterm" : 127
+   },
+   {
+      "ansi" : 261,
+      "name" : "xterm128",
+      "rgb" : 11469015,
+      "xterm" : 128
+   },
+   {
+      "ansi" : 261,
+      "name" : "xterm129",
+      "rgb" : 11469055,
+      "xterm" : 129
+   },
+   {
+      "ansi" : 261,
+      "name" : "xterm13",
+      "rgb" : 16711935,
+      "xterm" : 13
+   },
+   {
+      "ansi" : 257,
+      "name" : "xterm130",
+      "rgb" : 11493120,
+      "xterm" : 130
+   },
+   {
+      "ansi" : 257,
+      "name" : "xterm131",
+      "rgb" : 11493215,
+      "xterm" : 131
+   },
+   {
+      "ansi" : 257,
+      "name" : "xterm132",
+      "rgb" : 11493255,
+      "xterm" : 132
+   },
+   {
+      "ansi" : 261,
+      "name" : "xterm133",
+      "rgb" : 11493295,
+      "xterm" : 133
+   },
+   {
+      "ansi" : 261,
+      "name" : "xterm134",
+      "rgb" : 11493335,
+      "xterm" : 134
+   },
+   {
+      "ansi" : 261,
+      "name" : "xterm135",
+      "rgb" : 11493375,
+      "xterm" : 135
+   },
+   {
+      "ansi" : 3,
+      "name" : "xterm136",
+      "rgb" : 11503360,
+      "xterm" : 136
+   },
+   {
+      "ansi" : 3,
+      "name" : "xterm137",
+      "rgb" : 11503455,
+      "xterm" : 137
+   },
+   {
+      "ansi" : 261,
+      "name" : "xterm138",
+      "rgb" : 11503495,
+      "xterm" : 138
+   },
+   {
+      "ansi" : 261,
+      "name" : "xterm139",
+      "rgb" : 11503535,
+      "xterm" : 139
+   },
+   {
+      "ansi" : 262,
+      "name" : "xterm14",
+      "rgb" : 65535,
+      "xterm" : 14
+   },
+   {
+      "ansi" : 261,
+      "name" : "xterm140",
+      "rgb" : 11503575,
+      "xterm" : 140
+   },
+   {
+      "ansi" : 261,
+      "name" : "xterm141",
+      "rgb" : 11503615,
+      "xterm" : 141
+   },
+   {
+      "ansi" : 3,
+      "name" : "xterm142",
+      "rgb" : 11513600,
+      "xterm" : 142
+   },
+   {
+      "ansi" : 3,
+      "name" : "xterm143",
+      "rgb" : 11513695,
+      "xterm" : 143
+   },
+   {
+      "ansi" : 3,
+      "name" : "xterm144",
+      "rgb" : 11513735,
+      "xterm" : 144
+   },
+   {
+      "ansi" : 261,
+      "name" : "xterm145",
+      "rgb" : 11513775,
+      "xterm" : 145
+   },
+   {
+      "ansi" : 261,
+      "name" : "xterm146",
+      "rgb" : 11513815,
+      "xterm" : 146
+   },
+   {
+      "ansi" : 261,
+      "name" : "xterm147",
+      "rgb" : 11513855,
+      "xterm" : 147
+   },
+   {
+      "ansi" : 259,
+      "name" : "xterm148",
+      "rgb" : 11523840,
+      "xterm" : 148
+   },
+   {
+      "ansi" : 259,
+      "name" : "xterm149",
+      "rgb" : 11523935,
+      "xterm" : 149
+   },
+   {
+      "ansi" : 263,
+      "name" : "xterm15",
+      "rgb" : 16777215,
+      "xterm" : 15
+   },
+   {
+      "ansi" : 259,
+      "name" : "xterm150",
+      "rgb" : 11523975,
+      "xterm" : 150
+   },
+   {
+      "ansi" : 263,
+      "name" : "xterm151",
+      "rgb" : 11524015,
+      "xterm" : 151
+   },
+   {
+      "ansi" : 263,
+      "name" : "xterm152",
+      "rgb" : 11524055,
+      "xterm" : 152
+   },
+   {
+      "ansi" : 263,
+      "name" : "xterm153",
+      "rgb" : 11524095,
+      "xterm" : 153
+   },
+   {
+      "ansi" : 259,
+      "name" : "xterm154",
+      "rgb" : 11534080,
+      "xterm" : 154
+   },
+   {
+      "ansi" : 259,
+      "name" : "xterm155",
+      "rgb" : 11534175,
+      "xterm" : 155
+   },
+   {
+      "ansi" : 259,
+      "name" : "xterm156",
+      "rgb" : 11534215,
+      "xterm" : 156
+   },
+   {
+      "ansi" : 259,
+      "name" : "xterm157",
+      "rgb" : 11534255,
+      "xterm" : 157
+   },
+   {
+      "ansi" : 263,
+      "name" : "xterm158",
+      "rgb" : 11534295,
+      "xterm" : 158
+   },
+   {
+      "ansi" : 263,
+      "name" : "xterm159",
+      "rgb" : 11534335,
+      "xterm" : 159
+   },
+   {
+      "ansi" : 0,
+      "name" : "xterm16",
+      "rgb" : 0,
+      "xterm" : 16
+   },
+   {
+      "ansi" : 1,
+      "name" : "xterm160",
+      "rgb" : 14090240,
+      "xterm" : 160
+   },
+   {
+      "ansi" : 257,
+      "name" : "xterm161",
+      "rgb" : 14090335,
+      "xterm" : 161
+   },
+   {
+      "ansi" : 261,
+      "name" : "xterm162",
+      "rgb" : 14090375,
+      "xterm" : 162
+   },
+   {
+      "ansi" : 261,
+      "name" : "xterm163",
+      "rgb" : 14090415,
+      "xterm" : 163
+   },
+   {
+      "ansi" : 261,
+      "name" : "xterm164",
+      "rgb" : 14090455,
+      "xterm" : 164
+   },
+   {
+      "ansi" : 261,
+      "name" : "xterm165",
+      "rgb" : 14090495,
+      "xterm" : 165
+   },
+   {
+      "ansi" : 257,
+      "name" : "xterm166",
+      "rgb" : 14114560,
+      "xterm" : 166
+   },
+   {
+      "ansi" : 257,
+      "name" : "xterm167",
+      "rgb" : 14114655,
+      "xterm" : 167
+   },
+   {
+      "ansi" : 257,
+      "name" : "xterm168",
+      "rgb" : 14114695,
+      "xterm" : 168
+   },
+   {
+      "ansi" : 261,
+      "name" : "xterm169",
+      "rgb" : 14114735,
+      "xterm" : 169
+   },
+   {
+      "ansi" : 4,
+      "name" : "xterm17",
+      "rgb" : 95,
+      "xterm" : 17
+   },
+   {
+      "ansi" : 261,
+      "name" : "xterm170",
+      "rgb" : 14114775,
+      "xterm" : 170
+   },
+   {
+      "ansi" : 261,
+      "name" : "xterm171",
+      "rgb" : 14114815,
+      "xterm" : 171
+   },
+   {
+      "ansi" : 3,
+      "name" : "xterm172",
+      "rgb" : 14124800,
+      "xterm" : 172
+   },
+   {
+      "ansi" : 3,
+      "name" : "xterm173",
+      "rgb" : 14124895,
+      "xterm" : 173
+   },
+   {
+      "ansi" : 3,
+      "name" : "xterm174",
+      "rgb" : 14124935,
+      "xterm" : 174
+   },
+   {
+      "ansi" : 261,
+      "name" : "xterm175",
+      "rgb" : 14124975,
+      "xterm" : 175
+   },
+   {
+      "ansi" : 261,
+      "name" : "xterm176",
+      "rgb" : 14125015,
+      "xterm" : 176
+   },
+   {
+      "ansi" : 261,
+      "name" : "xterm177",
+      "rgb" : 14125055,
+      "xterm" : 177
+   },
+   {
+      "ansi" : 3,
+      "name" : "xterm178",
+      "rgb" : 14135040,
+      "xterm" : 178
+   },
+   {
+      "ansi" : 3,
+      "name" : "xterm179",
+      "rgb" : 14135135,
+      "xterm" : 179
+   },
+   {
+      "ansi" : 4,
+      "name" : "xterm18",
+      "rgb" : 135,
+      "xterm" : 18
+   },
+   {
+      "ansi" : 259,
+      "name" : "xterm180",
+      "rgb" : 14135175,
+      "xterm" : 180
+   },
+   {
+      "ansi" : 261,
+      "name" : "xterm181",
+      "rgb" : 14135215,
+      "xterm" : 181
+   },
+   {
+      "ansi" : 261,
+      "name" : "xterm182",
+      "rgb" : 14135255,
+      "xterm" : 182
+   },
+   {
+      "ansi" : 261,
+      "name" : "xterm183",
+      "rgb" : 14135295,
+      "xterm" : 183
+   },
+   {
+      "ansi" : 3,
+      "name" : "xterm184",
+      "rgb" : 14145280,
+      "xterm" : 184
+   },
+   {
+      "ansi" : 3,
+      "name" : "xterm185",
+      "rgb" : 14145375,
+      "xterm" : 185
+   },
+   {
+      "ansi" : 259,
+      "name" : "xterm186",
+      "rgb" : 14145415,
+      "xterm" : 186
+   },
+   {
+      "ansi" : 263,
+      "name" : "xterm187",
+      "rgb" : 14145455,
+      "xterm" : 187
+   },
+   {
+      "ansi" : 263,
+      "name" : "xterm188",
+      "rgb" : 14145495,
+      "xterm" : 188
+   },
+   {
+      "ansi" : 263,
+      "name" : "xterm189",
+      "rgb" : 14145535,
+      "xterm" : 189
+   },
+   {
+      "ansi" : 4,
+      "name" : "xterm19",
+      "rgb" : 175,
+      "xterm" : 19
+   },
+   {
+      "ansi" : 259,
+      "name" : "xterm190",
+      "rgb" : 14155520,
+      "xterm" : 190
+   },
+   {
+      "ansi" : 259,
+      "name" : "xterm191",
+      "rgb" : 14155615,
+      "xterm" : 191
+   },
+   {
+      "ansi" : 259,
+      "name" : "xterm192",
+      "rgb" : 14155655,
+      "xterm" : 192
+   },
+   {
+      "ansi" : 263,
+      "name" : "xterm193",
+      "rgb" : 14155695,
+      "xterm" : 193
+   },
+   {
+      "ansi" : 263,
+      "name" : "xterm194",
+      "rgb" : 14155735,
+      "xterm" : 194
+   },
+   {
+      "ansi" : 263,
+      "name" : "xterm195",
+      "rgb" : 14155775,
+      "xterm" : 195
+   },
+   {
+      "ansi" : 257,
+      "name" : "xterm196",
+      "rgb" : 16711680,
+      "xterm" : 196
+   },
+   {
+      "ansi" : 257,
+      "name" : "xterm197",
+      "rgb" : 16711775,
+      "xterm" : 197
+   },
+   {
+      "ansi" : 257,
+      "name" : "xterm198",
+      "rgb" : 16711815,
+      "xterm" : 198
+   },
+   {
+      "ansi" : 261,
+      "name" : "xterm199",
+      "rgb" : 16711855,
+      "xterm" : 199
+   },
+   {
+      "ansi" : 2,
+      "name" : "xterm2",
+      "rgb" : 32768,
+      "xterm" : 2
+   },
+   {
+      "ansi" : 260,
+      "name" : "xterm20",
+      "rgb" : 215,
+      "xterm" : 20
+   },
+   {
+      "ansi" : 261,
+      "name" : "xterm200",
+      "rgb" : 16711895,
+      "xterm" : 200
+   },
+   {
+      "ansi" : 261,
+      "name" : "xterm201",
+      "rgb" : 16711935,
+      "xterm" : 201
+   },
+   {
+      "ansi" : 257,
+      "name" : "xterm202",
+      "rgb" : 16736000,
+      "xterm" : 202
+   },
+   {
+      "ansi" : 257,
+      "name" : "xterm203",
+      "rgb" : 16736095,
+      "xterm" : 203
+   },
+   {
+      "ansi" : 257,
+      "name" : "xterm204",
+      "rgb" : 16736135,
+      "xterm" : 204
+   },
+   {
+      "ansi" : 261,
+      "name" : "xterm205",
+      "rgb" : 16736175,
+      "xterm" : 205
+   },
+   {
+      "ansi" : 261,
+      "name" : "xterm206",
+      "rgb" : 16736215,
+      "xterm" : 206
+   },
+   {
+      "ansi" : 261,
+      "name" : "xterm207",
+      "rgb" : 16736255,
+      "xterm" : 207
+   },
+   {
+      "ansi" : 257,
+      "name" : "xterm208",
+      "rgb" : 16746240,
+      "xterm" : 208
+   },
+   {
+      "ansi" : 257,
+      "name" : "xterm209",
+      "rgb" : 16746335,
+      "xterm" : 209
+   },
+   {
+      "ansi" : 260,
+      "name" : "xterm21",
+      "rgb" : 255,
+      "xterm" : 21
+   },
+   {
+      "ansi" : 261,
+      "name" : "xterm210",
+      "rgb" : 16746375,
+      "xterm" : 210
+   },
+   {
+      "ansi" : 261,
+      "name" : "xterm211",
+      "rgb" : 16746415,
+      "xterm" : 211
+   },
+   {
+      "ansi" : 261,
+      "name" : "xterm212",
+      "rgb" : 16746455,
+      "xterm" : 212
+   },
+   {
+      "ansi" : 261,
+      "name" : "xterm213",
+      "rgb" : 16746495,
+      "xterm" : 213
+   },
+   {
+      "ansi" : 259,
+      "name" : "xterm214",
+      "rgb" : 16756480,
+      "xterm" : 214
+   },
+   {
+      "ansi" : 259,
+      "name" : "xterm215",
+      "rgb" : 16756575,
+      "xterm" : 215
+   },
+   {
+      "ansi" : 263,
+      "name" : "xterm216",
+      "rgb" : 16756615,
+      "xterm" : 216
+   },
+   {
+      "ansi" : 263,
+      "name" : "xterm217",
+      "rgb" : 16756655,
+      "xterm" : 217
+   },
+   {
+      "ansi" : 263,
+      "name" : "xterm218",
+      "rgb" : 16756695,
+      "xterm" : 218
+   },
+   {
+      "ansi" : 263,
+      "name" : "xterm219",
+      "rgb" : 16756735,
+      "xterm" : 219
+   },
+   {
+      "ansi" : 2,
+      "name" : "xterm22",
+      "rgb" : 24320,
+      "xterm" : 22
+   },
+   {
+      "ansi" : 259,
+      "name" : "xterm220",
+      "rgb" : 16766720,
+      "xterm" : 220
+   },
+   {
+      "ansi" : 259,
+      "name" : "xterm221",
+      "rgb" : 16766815,
+      "xterm" : 221
+   },
+   {
+      "ansi" : 259,
+      "name" : "xterm222",
+      "rgb" : 16766855,
+      "xterm" : 222
+   },
+   {
+      "ansi" : 263,
+      "name" : "xterm223",
+      "rgb" : 16766895,
+      "xterm" : 223
+   },
+   {
+      "ansi" : 263,
+      "name" : "xterm224",
+      "rgb" : 16766935,
+      "xterm" : 224
+   },
+   {
+      "ansi" : 263,
+      "name" : "xterm225",
+      "rgb" : 16766975,
+      "xterm" : 225
+   },
+   {
+      "ansi" : 259,
+      "name" : "xterm226",
+      "rgb" : 16776960,
+      "xterm" : 226
+   },
+   {
+      "ansi" : 259,
+      "name" : "xterm227",
+      "rgb" : 16777055,
+      "xterm" : 227
+   },
+   {
+      "ansi" : 259,
+      "name" : "xterm228",
+      "rgb" : 16777095,
+      "xterm" : 228
+   },
+   {
+      "ansi" : 259,
+      "name" : "xterm229",
+      "rgb" : 16777135,
+      "xterm" : 229
+   },
+   {
+      "ansi" : 6,
+      "name" : "xterm23",
+      "rgb" : 24415,
+      "xterm" : 23
+   },
+   {
+      "ansi" : 263,
+      "name" : "xterm230",
+      "rgb" : 16777175,
+      "xterm" : 230
+   },
+   {
+      "ansi" : 263,
+      "name" : "xterm231",
+      "rgb" : 16777215,
+      "xterm" : 231
+   },
+   {
+      "ansi" : 0,
+      "name" : "xterm232",
+      "rgb" : 526344,
+      "xterm" : 232
+   },
+   {
+      "ansi" : 0,
+      "name" : "xterm233",
+      "rgb" : 1184274,
+      "xterm" : 233
+   },
+   {
+      "ansi" : 256,
+      "name" : "xterm234",
+      "rgb" : 1842204,
+      "xterm" : 234
+   },
+   {
+      "ansi" : 256,
+      "name" : "xterm235",
+      "rgb" : 2500134,
+      "xterm" : 235
+   },
+   {
+      "ansi" : 256,
+      "name" : "xterm236",
+      "rgb" : 3158064,
+      "xterm" : 236
+   },
+   {
+      "ansi" : 256,
+      "name" : "xterm237",
+      "rgb" : 3815994,
+      "xterm" : 237
+   },
+   {
+      "ansi" : 256,
+      "name" : "xterm238",
+      "rgb" : 4473924,
+      "xterm" : 238
+   },
+   {
+      "ansi" : 256,
+      "name" : "xterm239",
+      "rgb" : 5131854,
+      "xterm" : 239
+   },
+   {
+      "ansi" : 4,
+      "name" : "xterm24",
+      "rgb" : 24455,
+      "xterm" : 24
+   },
+   {
+      "ansi" : 256,
+      "name" : "xterm240",
+      "rgb" : 5789784,
+      "xterm" : 240
+   },
+   {
+      "ansi" : 7,
+      "name" : "xterm241",
+      "rgb" : 6447714,
+      "xterm" : 241
+   },
+   {
+      "ansi" : 7,
+      "name" : "xterm242",
+      "rgb" : 7105644,
+      "xterm" : 242
+   },
+   {
+      "ansi" : 7,
+      "name" : "xterm243",
+      "rgb" : 7763574,
+      "xterm" : 243
+   },
+   {
+      "ansi" : 7,
+      "name" : "xterm244",
+      "rgb" : 8421504,
+      "xterm" : 244
+   },
+   {
+      "ansi" : 7,
+      "name" : "xterm245",
+      "rgb" : 9079434,
+      "xterm" : 245
+   },
+   {
+      "ansi" : 7,
+      "name" : "xterm246",
+      "rgb" : 9737364,
+      "xterm" : 246
+   },
+   {
+      "ansi" : 7,
+      "name" : "xterm247",
+      "rgb" : 10395294,
+      "xterm" : 247
+   },
+   {
+      "ansi" : 263,
+      "name" : "xterm248",
+      "rgb" : 11053224,
+      "xterm" : 248
+   },
+   {
+      "ansi" : 263,
+      "name" : "xterm249",
+      "rgb" : 11711154,
+      "xterm" : 249
+   },
+   {
+      "ansi" : 260,
+      "name" : "xterm25",
+      "rgb" : 24495,
+      "xterm" : 25
+   },
+   {
+      "ansi" : 263,
+      "name" : "xterm250",
+      "rgb" : 12369084,
+      "xterm" : 250
+   },
+   {
+      "ansi" : 263,
+      "name" : "xterm251",
+      "rgb" : 13027014,
+      "xterm" : 251
+   },
+   {
+      "ansi" : 263,
+      "name" : "xterm252",
+      "rgb" : 13684944,
+      "xterm" : 252
+   },
+   {
+      "ansi" : 263,
+      "name" : "xterm253",
+      "rgb" : 14342874,
+      "xterm" : 253
+   },
+   {
+      "ansi" : 263,
+      "name" : "xterm254",
+      "rgb" : 15000804,
+      "xterm" : 254
+   },
+   {
+      "ansi" : 263,
+      "name" : "xterm255",
+      "rgb" : 15658734,
+      "xterm" : 255
+   },
+   {
+      "ansi" : 260,
+      "name" : "xterm26",
+      "rgb" : 24535,
+      "xterm" : 26
+   },
+   {
+      "ansi" : 260,
+      "name" : "xterm27",
+      "rgb" : 24575,
+      "xterm" : 27
+   },
+   {
+      "ansi" : 258,
+      "name" : "xterm28",
+      "rgb" : 34560,
+      "xterm" : 28
+   },
+   {
+      "ansi" : 2,
+      "name" : "xterm29",
+      "rgb" : 34655,
+      "xterm" : 29
+   },
+   {
+      "ansi" : 3,
+      "name" : "xterm3",
+      "rgb" : 8421376,
+      "xterm" : 3
+   },
+   {
+      "ansi" : 6,
+      "name" : "xterm30",
+      "rgb" : 34695,
+      "xterm" : 30
+   },
+   {
+      "ansi" : 260,
+      "name" : "xterm31",
+      "rgb" : 34735,
+      "xterm" : 31
+   },
+   {
+      "ansi" : 260,
+      "name" : "xterm32",
+      "rgb" : 34775,
+      "xterm" : 32
+   },
+   {
+      "ansi" : 260,
+      "name" : "xterm33",
+      "rgb" : 34815,
+      "xterm" : 33
+   },
+   {
+      "ansi" : 258,
+      "name" : "xterm34",
+      "rgb" : 44800,
+      "xterm" : 34
+   },
+   {
+      "ansi" : 258,
+      "name" : "xterm35",
+      "rgb" : 44895,
+      "xterm" : 35
+   },
+   {
+      "ansi" : 262,
+      "name" : "xterm36",
+      "rgb" : 44935,
+      "xterm" : 36
+   },
+   {
+      "ansi" : 262,
+      "name" : "xterm37",
+      "rgb" : 44975,
+      "xterm" : 37
+   },
+   {
+      "ansi" : 260,
+      "name" : "xterm38",
+      "rgb" : 45015,
+      "xterm" : 38
+   },
+   {
+      "ansi" : 260,
+      "name" : "xterm39",
+      "rgb" : 45055,
+      "xterm" : 39
+   },
+   {
+      "ansi" : 4,
+      "name" : "xterm4",
+      "rgb" : 128,
+      "xterm" : 4
+   },
+   {
+      "ansi" : 258,
+      "name" : "xterm40",
+      "rgb" : 55040,
+      "xterm" : 40
+   },
+   {
+      "ansi" : 258,
+      "name" : "xterm41",
+      "rgb" : 55135,
+      "xterm" : 41
+   },
+   {
+      "ansi" : 258,
+      "name" : "xterm42",
+      "rgb" : 55175,
+      "xterm" : 42
+   },
+   {
+      "ansi" : 262,
+      "name" : "xterm43",
+      "rgb" : 55215,
+      "xterm" : 43
+   },
+   {
+      "ansi" : 262,
+      "name" : "xterm44",
+      "rgb" : 55255,
+      "xterm" : 44
+   },
+   {
+      "ansi" : 262,
+      "name" : "xterm45",
+      "rgb" : 55295,
+      "xterm" : 45
+   },
+   {
+      "ansi" : 258,
+      "name" : "xterm46",
+      "rgb" : 65280,
+      "xterm" : 46
+   },
+   {
+      "ansi" : 258,
+      "name" : "xterm47",
+      "rgb" : 65375,
+      "xterm" : 47
+   },
+   {
+      "ansi" : 258,
+      "name" : "xterm48",
+      "rgb" : 65415,
+      "xterm" : 48
+   },
+   {
+      "ansi" : 262,
+      "name" : "xterm49",
+      "rgb" : 65455,
+      "xterm" : 49
+   },
+   {
+      "ansi" : 5,
+      "name" : "xterm5",
+      "rgb" : 8388736,
+      "xterm" : 5
+   },
+   {
+      "ansi" : 262,
+      "name" : "xterm50",
+      "rgb" : 65495,
+      "xterm" : 50
+   },
+   {
+      "ansi" : 262,
+      "name" : "xterm51",
+      "rgb" : 65535,
+      "xterm" : 51
+   },
+   {
+      "ansi" : 1,
+      "name" : "xterm52",
+      "rgb" : 6225920,
+      "xterm" : 52
+   },
+   {
+      "ansi" : 5,
+      "name" : "xterm53",
+      "rgb" : 6226015,
+      "xterm" : 53
+   },
+   {
+      "ansi" : 5,
+      "name" : "xterm54",
+      "rgb" : 6226055,
+      "xterm" : 54
+   },
+   {
+      "ansi" : 260,
+      "name" : "xterm55",
+      "rgb" : 6226095,
+      "xterm" : 55
+   },
+   {
+      "ansi" : 260,
+      "name" : "xterm56",
+      "rgb" : 6226135,
+      "xterm" : 56
+   },
+   {
+      "ansi" : 260,
+      "name" : "xterm57",
+      "rgb" : 6226175,
+      "xterm" : 57
+   },
+   {
+      "ansi" : 2,
+      "name" : "xterm58",
+      "rgb" : 6250240,
+      "xterm" : 58
+   },
+   {
+      "ansi" : 2,
+      "name" : "xterm59",
+      "rgb" : 6250335,
+      "xterm" : 59
+   },
+   {
+      "ansi" : 6,
+      "name" : "xterm6",
+      "rgb" : 32896,
+      "xterm" : 6
+   },
+   {
+      "ansi" : 6,
+      "name" : "xterm60",
+      "rgb" : 6250375,
+      "xterm" : 60
+   },
+   {
+      "ansi" : 260,
+      "name" : "xterm61",
+      "rgb" : 6250415,
+      "xterm" : 61
+   },
+   {
+      "ansi" : 260,
+      "name" : "xterm62",
+      "rgb" : 6250455,
+      "xterm" : 62
+   },
+   {
+      "ansi" : 260,
+      "name" : "xterm63",
+      "rgb" : 6250495,
+      "xterm" : 63
+   },
+   {
+      "ansi" : 2,
+      "name" : "xterm64",
+      "rgb" : 6260480,
+      "xterm" : 64
+   },
+   {
+      "ansi" : 2,
+      "name" : "xterm65",
+      "rgb" : 6260575,
+      "xterm" : 65
+   },
+   {
+      "ansi" : 2,
+      "name" : "xterm66",
+      "rgb" : 6260615,
+      "xterm" : 66
+   },
+   {
+      "ansi" : 6,
+      "name" : "xterm67",
+      "rgb" : 6260655,
+      "xterm" : 67
+   },
+   {
+      "ansi" : 6,
+      "name" : "xterm68",
+      "rgb" : 6260695,
+      "xterm" : 68
+   },
+   {
+      "ansi" : 260,
+      "name" : "xterm69",
+      "rgb" : 6260735,
+      "xterm" : 69
+   },
+   {
+      "ansi" : 7,
+      "name" : "xterm7",
+      "rgb" : 12632256,
+      "xterm" : 7
+   },
+   {
+      "ansi" : 258,
+      "name" : "xterm70",
+      "rgb" : 6270720,
+      "xterm" : 70
+   },
+   {
+      "ansi" : 2,
+      "name" : "xterm71",
+      "rgb" : 6270815,
+      "xterm" : 71
+   },
+   {
+      "ansi" : 2,
+      "name" : "xterm72",
+      "rgb" : 6270855,
+      "xterm" : 72
+   },
+   {
+      "ansi" : 6,
+      "name" : "xterm73",
+      "rgb" : 6270895,
+      "xterm" : 73
+   },
+   {
+      "ansi" : 262,
+      "name" : "xterm74",
+      "rgb" : 6270935,
+      "xterm" : 74
+   },
+   {
+      "ansi" : 262,
+      "name" : "xterm75",
+      "rgb" : 6270975,
+      "xterm" : 75
+   },
+   {
+      "ansi" : 258,
+      "name" : "xterm76",
+      "rgb" : 6280960,
+      "xterm" : 76
+   },
+   {
+      "ansi" : 258,
+      "name" : "xterm77",
+      "rgb" : 6281055,
+      "xterm" : 77
+   },
+   {
+      "ansi" : 258,
+      "name" : "xterm78",
+      "rgb" : 6281095,
+      "xterm" : 78
+   },
+   {
+      "ansi" : 262,
+      "name" : "xterm79",
+      "rgb" : 6281135,
+      "xterm" : 79
+   },
+   {
+      "ansi" : 256,
+      "name" : "xterm8",
+      "rgb" : 8421504,
+      "xterm" : 8
+   },
+   {
+      "ansi" : 262,
+      "name" : "xterm80",
+      "rgb" : 6281175,
+      "xterm" : 80
+   },
+   {
+      "ansi" : 262,
+      "name" : "xterm81",
+      "rgb" : 6281215,
+      "xterm" : 81
+   },
+   {
+      "ansi" : 258,
+      "name" : "xterm82",
+      "rgb" : 6291200,
+      "xterm" : 82
+   },
+   {
+      "ansi" : 258,
+      "name" : "xterm83",
+      "rgb" : 6291295,
+      "xterm" : 83
+   },
+   {
+      "ansi" : 258,
+      "name" : "xterm84",
+      "rgb" : 6291335,
+      "xterm" : 84
+   },
+   {
+      "ansi" : 258,
+      "name" : "xterm85",
+      "rgb" : 6291375,
+      "xterm" : 85
+   },
+   {
+      "ansi" : 262,
+      "name" : "xterm86",
+      "rgb" : 6291415,
+      "xterm" : 86
+   },
+   {
+      "ansi" : 262,
+      "name" : "xterm87",
+      "rgb" : 6291455,
+      "xterm" : 87
+   },
+   {
+      "ansi" : 1,
+      "name" : "xterm88",
+      "rgb" : 8847360,
+      "xterm" : 88
+   },
+   {
+      "ansi" : 1,
+      "name" : "xterm89",
+      "rgb" : 8847455,
+      "xterm" : 89
+   },
+   {
+      "ansi" : 257,
+      "name" : "xterm9",
+      "rgb" : 16711680,
+      "xterm" : 9
+   },
+   {
+      "ansi" : 5,
+      "name" : "xterm90",
+      "rgb" : 8847495,
+      "xterm" : 90
+   },
+   {
+      "ansi" : 5,
+      "name" : "xterm91",
+      "rgb" : 8847535,
+      "xterm" : 91
+   },
+   {
+      "ansi" : 261,
+      "name" : "xterm92",
+      "rgb" : 8847575,
+      "xterm" : 92
+   },
+   {
+      "ansi" : 261,
+      "name" : "xterm93",
+      "rgb" : 8847615,
+      "xterm" : 93
+   },
+   {
+      "ansi" : 2,
+      "name" : "xterm94",
+      "rgb" : 8871680,
+      "xterm" : 94
+   },
+   {
+      "ansi" : 1,
+      "name" : "xterm95",
+      "rgb" : 8871775,
+      "xterm" : 95
+   },
+   {
+      "ansi" : 5,
+      "name" : "xterm96",
+      "rgb" : 8871815,
+      "xterm" : 96
+   },
+   {
+      "ansi" : 5,
+      "name" : "xterm97",
+      "rgb" : 8871855,
+      "xterm" : 97
+   },
+   {
+      "ansi" : 261,
+      "name" : "xterm98",
+      "rgb" : 8871895,
+      "xterm" : 98
+   },
+   {
+      "ansi" : 261,
+      "name" : "xterm99",
+      "rgb" : 8871935,
+      "xterm" : 99
+   },
+   {
+      "ansi" : 259,
+      "name" : "yellow",
+      "rgb" : 16776960,
+      "xterm" : 226
+   },
+   {
+      "ansi" : 259,
+      "name" : "yellow1",
+      "rgb" : 16776960,
+      "xterm" : 226
+   },
+   {
+      "ansi" : 259,
+      "name" : "yellow2",
+      "rgb" : 15658496,
+      "xterm" : 11
+   },
+   {
+      "ansi" : 3,
+      "name" : "yellow3",
+      "rgb" : 13487360,
+      "xterm" : 184
+   },
+   {
+      "ansi" : 2,
+      "name" : "yellow4",
+      "rgb" : 9145088,
+      "xterm" : 100
+   },
+   {
+      "ansi" : 258,
+      "name" : "yellowgreen",
+      "rgb" : 10145074,
+      "xterm" : 113
+   }
+]

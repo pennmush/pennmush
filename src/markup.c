@@ -24,10 +24,10 @@
 #include "mymalloc.h"
 #include "parse.h"
 #include "pueblo.h"
-#include "rgb.h"
 #include "strutil.h"
 #include "mushsql.h"
 #include "charconv.h"
+#include "map_file.h"
 
 #define ANSI_BEGIN "\x1B["
 #define ANSI_FINISH "m"
@@ -74,6 +74,38 @@ bool colorname_lookup(const char *name, int len, int *rgb, int *ansi,
                       int *xnum);
 bool rgb_lookup(int rgb, int *ansi, int *xnum);
 
+/** Info on a color from the 16-color ANSI palette */
+struct COLORMAP_16 {
+  int id;         /**< Code for this color (0-7) */
+  char desc;      /**< Lowercase char representing color */
+  uint8_t hilite; /**< Is this char highlighted? */
+  uint32_t hex;   /**< Hex code for this color */
+};
+
+/* Taken from the xterm color chart on wikipedia */
+struct COLORMAP_16 colormap_16[] = {
+  /* normal colors */
+  {0, 'x', 0, 0x000000},
+  {1, 'r', 0, 0xcd0000},
+  {2, 'g', 0, 0x00cd00},
+  {3, 'y', 0, 0xcdcd00},
+  {4, 'b', 0, 0x0000ee},
+  {5, 'm', 0, 0xcd00cd},
+  {6, 'c', 0, 0x00cdcd},
+  {7, 'w', 0, 0xe5e5e5},
+
+  /* Hilite colors */
+  {0, 'x', 1, 0x7f7f7f},
+  {1, 'r', 1, 0xff0000},
+  {2, 'g', 1, 0x00ff00},
+  {3, 'y', 1, 0xffff00},
+  {4, 'b', 1, 0x5c5cff},
+  {5, 'm', 1, 0xff00ff},
+  {6, 'c', 1, 0x00ffff},
+  {7, 'w', 1, 0xffffff},
+
+  {-1, 0, 0, 0}};
+
 /* Populate the RGB color to name mapping */
 void
 build_rgb_map(void)
@@ -81,7 +113,7 @@ build_rgb_map(void)
   sqlite3 *sqldb;
   sqlite3_stmt *creator;
   int status;
-  int n;
+  MAPPED_FILE *mf;
   char *errmsg;
   const char query[] =
     "INSERT INTO colors(name, rgb, xterm, ansi) SELECT "
@@ -113,21 +145,21 @@ build_rgb_map(void)
     return;
   }
 
-  for (n = 0; colors_json[n]; n += 1) {
-    /* Consider reading from a file instead of compiled in json strings? */
-    sqlite3_bind_text(creator, 1, colors_json[n], strlen(colors_json[n]),
-                      SQLITE_STATIC);
-    do {
-      status = sqlite3_step(creator);
-    } while (is_busy_status(status));
-    if (status != SQLITE_DONE) {
-      do_rawlog(LT_ERR, "Unable to populate colors table: %s",
-                sqlite3_errstr(status));
-      break;
-    }
-    sqlite3_reset(creator);
+  mf = map_file(options.colors_file, 0);
+  if (!mf) {
+    sqlite3_finalize(creator);
+    return;
+  }
+  sqlite3_bind_text(creator, 1, mf->data, mf->len, SQLITE_STATIC);
+  do {
+    status = sqlite3_step(creator);
+  } while (is_busy_status(status));
+  if (status != SQLITE_DONE) {
+    do_rawlog(LT_ERR, "Unable to populate colors table: %s",
+              sqlite3_errstr(status));
   }
   sqlite3_finalize(creator);
+  unmap_file(mf);
 }
 
 /* ARGSUSED */

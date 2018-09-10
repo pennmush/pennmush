@@ -6,11 +6,11 @@ Instructions:
 2. Install dependencies and build tools: At the bash prompt, run:
     sudo apt-get install make gcc libpcre3-dev libssl-dev libevent-openssl-2.0 gperf
 3. Get the source for Penn if you don't already have it: At the bash prompt, run:
-    wget http://download.pennmush.org/Source/pennmush-1.8.6p0.tar.gz
+    wget http://download.pennmush.org/Source/pennmush-1.8.7p0.tar.gz
    Or whatever version you need. Alternatively, apt-get install git and use that:
     git clone https://github.com/pennmush/pennmush
 4. Now extract like normal:
-    tar xzf pennmush-1.8.6p0.tar.gz; cd pennmush-1.8.6p0
+    tar xzf pennmush-1.8.7p0.tar.gz; cd pennmush-1.8.7p0
 5. Configure Penn:
     ./configure
 
@@ -21,7 +21,7 @@ Instructions:
 6. Compile like usual:
     make update; make install
 7. Edit game/mush.cnf as needed.
-7. Run like usual:
+8. Run like usual:
     cd game; ./restart
 
 

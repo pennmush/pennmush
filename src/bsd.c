@@ -1080,7 +1080,7 @@ handle_curl_msg(CURLMsg *msg)
 
     curl_easy_getinfo(handle, CURLINFO_PRIVATE, &resp);
 
-    if (msg->data.result == CURLE_OK) {
+    if (msg->data.result == CURLE_OK || resp->too_big) {
       if (curl_easy_getinfo(handle, CURLINFO_RESPONSE_CODE, &respcode) ==
           CURLE_OK) {
         if (respcode) {
@@ -1107,11 +1107,13 @@ handle_curl_msg(CURLMsg *msg)
         if (is_utf8) {
           latin1 = utf8_to_latin1(body, body_size, &len, 1, "string");
           if (len >= BUFFER_LEN) {
+	    resp->too_big = 1;
             latin1[BUFFER_LEN - 1] = '\0';
           }
         } else {
           latin1 = body;
           if (body_size >= BUFFER_LEN) {
+	    resp->too_big = 1;
             body[BUFFER_LEN - 1] = '\0';
           }
         }
@@ -1122,6 +1124,9 @@ handle_curl_msg(CURLMsg *msg)
         if (body) {
           sqlite3_free(body);
         }
+      }
+      if (resp->too_big) {
+        notify(resp->thing, "Too much HTTP data received; excess truncated.");
       }
       queue_attribute_base_priv(resp->thing, resp->attrname, resp->enactor, 0,
                                 resp->pe_regs, resp->queue_type, resp->thing,

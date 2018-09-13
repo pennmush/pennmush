@@ -368,6 +368,7 @@ struct options_table {
   char
     connlog_db[FILE_PATH_LEN]; /**< Sqlite3 file to use for connection logs. */
   char dict_file[FILE_PATH_LEN]; /**< List of words to load into suggest() db */
+  char colors_file[FILE_PATH_LEN]; /**< JSON file holding the colors database */
 };
 
 typedef struct mssp MSSP;

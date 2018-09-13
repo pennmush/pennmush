@@ -573,6 +573,9 @@ sendmail_prog sendmail
 #dict_file /usr/dict/words
 dict_file /usr/share/dict/words
 
+# Name of a JSON file holding the database for named colors.
+colors_file txt/colors.json
+
 ###
 ### Logging
 ###

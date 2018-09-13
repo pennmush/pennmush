@@ -110,6 +110,7 @@
 #include "charclass.h"
 #include "cJSON.h"
 #include "memcheck.h"
+#include "map_file.h"
 
 #ifndef WIN32
 #include "wait.h"
@@ -1996,86 +1997,28 @@ fcache_read(FBLOCK *fb, const char *filename)
         fb->thing = thing;
         return fb->len;
       }
+    } else {
+      return -1;
+    }
+  } else {
+    MAPPED_FILE *mf = map_file(filename, 0);
+    if (mf) {
+      /* Copy instead of using the mapped file directly because what
+	 happens when a mapped file is edited, even if it's a private
+	 map? There don't seem to be any promises. */
+      fb->buff = mush_malloc(mf->len + 1, "fcache_data");
+      if (!fb->buff) {
+	unmap_file(mf);
+	return -1;
+      }
+      memcpy(fb->buff, mf->data, mf->len);
+      fb->buff[mf->len] = '\0';
+      fb->len = mf->len;
+      unmap_file(mf);
+    } else {
+      return -1;
     }
   }
-#ifdef WIN32
-  /* Win32 read code here */
-  {
-    HANDLE fh;
-    BY_HANDLE_FILE_INFORMATION sb;
-    DWORD r = 0;
-
-    if ((fh = CreateFile(filename, GENERIC_READ, 0, NULL, OPEN_EXISTING, 0,
-                         NULL)) == INVALID_HANDLE_VALUE)
-      return -1;
-
-    if (!GetFileInformationByHandle(fh, &sb)) {
-      CloseHandle(fh);
-      return -1;
-    }
-
-    fb->len = sb.nFileSizeLow;
-
-    if (!(fb->buff = mush_malloc(sb.nFileSizeLow, "fcache_data"))) {
-      CloseHandle(fh);
-      return -1;
-    }
-
-    if (!ReadFile(fh, fb->buff, sb.nFileSizeLow, &r, NULL) || fb->len != r) {
-      CloseHandle(fh);
-      mush_free(fb->buff, "fcache_data");
-      fb->buff = NULL;
-      return -1;
-    }
-
-    CloseHandle(fh);
-
-    fb->len = sb.nFileSizeLow;
-    return (int) fb->len;
-  }
-#else
-  /* Posix read code here */
-  {
-    int fd;
-    struct stat sb;
-
-    release_fd();
-    if ((fd = open(filename, O_RDONLY, 0)) < 0) {
-      do_rawlog(LT_ERR, "Couldn't open cached text file '%s'", filename);
-      reserve_fd();
-      return -1;
-    }
-
-    if (fstat(fd, &sb) < 0) {
-      do_rawlog(LT_ERR, "Couldn't get the size of text file '%s'", filename);
-      close(fd);
-      reserve_fd();
-      return -1;
-    }
-
-    if (!(fb->buff = mush_malloc(sb.st_size, "fcache_data"))) {
-      do_rawlog(LT_ERR, "Couldn't allocate %d bytes of memory for '%s'!",
-                (int) sb.st_size, filename);
-      close(fd);
-      reserve_fd();
-      return -1;
-    }
-
-    if (read(fd, fb->buff, sb.st_size) != sb.st_size) {
-      do_rawlog(LT_ERR, "Couldn't read all of '%s'", filename);
-      close(fd);
-      mush_free(fb->buff, "fcache_data");
-      fb->buff = NULL;
-      reserve_fd();
-      return -1;
-    }
-
-    close(fd);
-    reserve_fd();
-    fb->len = sb.st_size;
-  }
-#endif /* Posix read code */
-
   return fb->len;
 }
 

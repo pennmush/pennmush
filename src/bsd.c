@@ -848,36 +848,6 @@ set_signals(void)
 #endif
 }
 
-#ifdef WIN32
-/** Get the time using Windows function call.
- * Looks weird, but it works. :-P
- * \param now address to store timeval data.
- */
-static void
-win_gettimeofday(struct timeval *now)
-{
-
-  FILETIME win_time;
-
-  GetSystemTimeAsFileTime(&win_time);
-  /* dwLow is in 100-s nanoseconds, not microseconds */
-  now->tv_usec = win_time.dwLowDateTime % 10000000 / 10;
-
-  /* dwLow contains at most 429 least significant seconds, since 32 bits maxint
-   * is 4294967294 */
-  win_time.dwLowDateTime /= 10000000;
-
-  /* Make room for the seconds of dwLow in dwHigh */
-  /* 32 bits of 1 = 4294967295. 4294967295 / 429 = 10011578 */
-  win_time.dwHighDateTime %= 10011578;
-  win_time.dwHighDateTime *= 429;
-
-  /* And add them */
-  now->tv_sec = win_time.dwHighDateTime + win_time.dwLowDateTime;
-}
-
-#endif
-
 /** Return the difference between two timeval structs in milliseconds.
  * \param now the timeval to subtract from.
  * \param then the timeval to subtract.

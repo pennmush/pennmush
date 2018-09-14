@@ -38,7 +38,7 @@ If a *test group* should only be called after another *test group* has successfu
 
 From the test subdirectory:
 
-    $ perl runtest.pl [--valgrind] testFOO.pl ...
+    $ perl runtest.pl [--valgrind] testFOO.t ...
 
 or     
 
@@ -48,7 +48,7 @@ Note: The the hardcode tests are automatically run as well.
 
 ## Writing tests
 
-The test*.pl files are frameworks for tests, not actual perl scripts. The choice of extension was unfortunate.
+The test*.t files in the **test** subdirectory define softcode test cases.
 
 The `--valgrind` option runs the test game under valgrind to help detect memory issues.
 
@@ -57,8 +57,15 @@ Their format:
     login mortal
     expect N failures!
     run tests:
-    perl code
+    test cases
 
 All the lines above the 'run tests:' one are optional. 
 
-Look at existing files for how to write tests. Some hints: $god is always available as a test connection. If 'login mortal' was given, $mortal is too.
+The *test cases* are perl code:
+
+The `test()` function has four arguments -- the name of the test, the player to run it as (Either `$god` or `$mortal`, a softcode command, and a regular expression that should match the expected result (Or an array ref of REs).
+
+The player objects have a `command()` method that runs its argument in the game without counting as a test: `$mortal->command("think not a test");`
+
+Some hints: $god is always available as a test connection. If 'login mortal' was given, $mortal is too. See existing tests for examples of how to write new ones.
+

@@ -10,13 +10,18 @@ void test_glob_to_like(int *, int *);
 void test_is_dbref(int *, int *);
 void test_is_number(int *, int *);
 void test_is_uinteger(int *, int *);
+void test_latin1_to_utf8(int *, int *);
 void test_remove_trailing_whitespace(int *, int *);
+void test_sanitize_utf8(int *, int *);
 void test_seek_char(int *, int *);
 void test_skip_space(int *, int *);
 void test_strchr_unescaped(int *, int *);
 void test_string_prefix(int *, int *);
 void test_string_prefixe(int *, int *);
 void test_trim_space_sep(int *, int *);
+void test_utf8_to_latin1(int *, int *);
+void test_utf8_to_latin1_us(int *, int *);
+void test_valid_utf8(int *, int *);
 struct test_record {
     const char *name;
     void (*fun)(int *, int *);
@@ -40,12 +45,17 @@ static struct test_record tests[] = {
 {"is_dbref", test_is_dbref, "||", TEST_NOT_RUN},
 {"is_number", test_is_number, "||", TEST_NOT_RUN},
 {"is_uinteger", test_is_uinteger, "||", TEST_NOT_RUN},
+{"latin1_to_utf8", test_latin1_to_utf8, "||", TEST_NOT_RUN},
 {"remove_trailing_whitespace", test_remove_trailing_whitespace, "||", TEST_NOT_RUN},
+{"sanitize_utf8", test_sanitize_utf8, "||", TEST_NOT_RUN},
 {"seek_char", test_seek_char, "||", TEST_NOT_RUN},
 {"skip_space", test_skip_space, "||", TEST_NOT_RUN},
 {"strchr_unescaped", test_strchr_unescaped, "||", TEST_NOT_RUN},
 {"string_prefix", test_string_prefix, "||", TEST_NOT_RUN},
 {"string_prefixe", test_string_prefixe, "||", TEST_NOT_RUN},
 {"trim_space_sep", test_trim_space_sep, "||", TEST_NOT_RUN},
+{"utf8_to_latin1", test_utf8_to_latin1, "||", TEST_NOT_RUN},
+{"utf8_to_latin1_us", test_utf8_to_latin1_us, "||", TEST_NOT_RUN},
+{"valid_utf8", test_valid_utf8, "||", TEST_NOT_RUN},
 {NULL, NULL, NULL, TEST_NOT_RUN}
 };

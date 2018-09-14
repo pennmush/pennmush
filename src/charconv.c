@@ -26,6 +26,7 @@
 #include "charconv.h"
 #include "log.h"
 #include "strutil.h"
+#include "tests.h"
 
 /**
  * Convert a latin-1 encoded string to utf-8.
@@ -55,6 +56,17 @@ latin1_to_utf8(const char *restrict latin1, int len, int *outlen,
     *outlen = o;
   }
   return utf8;
+}
+
+TEST_GROUP(latin1_to_utf8) {
+  char *utf8;
+  int len;
+  utf8 = latin1_to_utf8("abcd", 4, &len, "string");
+  TEST("latin1_to_utf8.1", strcmp(utf8, "abcd") == 0 && len == 4);
+  mush_free(utf8, "string");
+  utf8 = latin1_to_utf8("\xE1 bc", 4, &len, "string");
+  TEST("latin1_to_utf8.2", strcmp(utf8, "\u00E1 bc") == 0 && len == 5);
+  mush_free(utf8, "string");
 }
 
 /**
@@ -612,6 +624,29 @@ utf8_to_latin1(const char *restrict utf8, int len, int *outlen, bool translit,
   return latin1;
 }
 
+TEST_GROUP(utf8_to_latin1) {
+  char *latin1;
+  int len;
+  latin1 = utf8_to_latin1("abcd", 4, &len, 0, "string");
+  TEST("utf8_to_latin1.1", strcmp(latin1, "abcd") == 0 && len == 4);
+  mush_free(latin1, "string");
+  latin1 = utf8_to_latin1("\xC3\xA1qq", 4, &len, 0, "string");
+  TEST("utf8_to_latin1.2", strcmp(latin1, "\xE1qq") == 0 && len == 3);
+  mush_free(latin1, "string");
+  latin1 = utf8_to_latin1("\xC3qq", 3, &len, 0, "string");
+  TEST("utf8_to_latin1.3", strcmp(latin1, "?qq") == 0 && len == 3);
+  mush_free(latin1, "string");
+  latin1 = utf8_to_latin1("\xE2\x80test", 6, &len, 1, "string");
+  TEST("utf8_to_latin1.4", strcmp(latin1, "?test") == 0 && len == 5);
+  mush_free(latin1, "string");
+  latin1 = utf8_to_latin1("\xE2\x80\x9Ctest\xE2\x80\x9D", -1, &len, 0, "string");
+  TEST("utf8_to_latin1.5", strcmp(latin1, "?test?") == 0 && len == 6);
+  mush_free(latin1, "string");
+  latin1 = utf8_to_latin1("\xE2\x80\x9Ctest\xE2\x80\x9D", -1, &len, 1, "string");
+  TEST("utf8_to_latin1.6", strcmp(latin1, "\"test\"") == 0 && len == 6);
+  mush_free(latin1, "string");
+}
+
 /**
  * Convert a well-formed UTF-8 encoded string to Latin-1
  *
@@ -671,6 +706,23 @@ utf8_to_latin1_us(const char *restrict utf8, int len, int *outlen,
   return latin1;
 }
 
+TEST_GROUP(utf8_to_latin1_us) {
+  char *latin1;
+  int len;
+  latin1 = utf8_to_latin1_us("abcd", 4, &len, 0, "string");
+  TEST("utf8_to_latin1_us.1", strcmp(latin1, "abcd") == 0 && len == 4);
+  mush_free(latin1, "string");
+  latin1 = utf8_to_latin1_us("\xC3\xA1qq", 4, &len, 0, "string");
+  TEST("utf8_to_latin1_us.2", strcmp(latin1, "\xE1qq") == 0 && len == 3);
+  mush_free(latin1, "string");
+  latin1 = utf8_to_latin1_us("\xE2\x80\x9Ctest\xE2\x80\x9D", -1, &len, 0, "string");
+  TEST("utf8_to_latin1_us.3", strcmp(latin1, "?test?") == 0 && len == 6);
+  mush_free(latin1, "string");
+  latin1 = utf8_to_latin1_us("\xE2\x80\x9Ctest\xE2\x80\x9D", -1, &len, 1, "string");
+  TEST("utf8_to_latin1_us.4", strcmp(latin1, "\"test\"") == 0 && len == 6);
+  mush_free(latin1, "string");
+}
+
 /**
  * Check to see if a string is valid utf-8 or not.
  * \param utf8 string to validate
@@ -691,6 +743,13 @@ valid_utf8(const char *utf8)
     }
   }
   return 0;
+}
+
+TEST_GROUP(valid_utf8) {
+  TEST("valid_utf8.1", valid_utf8("abcd"));
+  TEST("valid_utf8.2", valid_utf8("\xE2\x80\x9Ctest\xE2\x80\x9D"));
+  TEST("valid_utf8.3", valid_utf8("test\xFFtest") == 0);
+  TEST("valid_utf8.4", valid_utf8("test\xE2\x80test") == 0);
 }
 
 /** Convert a well-formed UTF-16 encoded string to UTF-8.
@@ -1440,4 +1499,21 @@ sanitize_utf8(const char *restrict orig, int len, int *outlen, const char *name)
     *outlen = o;
   }
   return san8;
+}
+
+TEST_GROUP(sanitize_utf8) {
+  char *s;
+  int len;
+  s = sanitize_utf8("abcd", 4, &len, "string");
+  TEST("sanitize_utf8.1", strcmp(s, "abcd") == 0 && len == 4);
+  mush_free(s, "string");
+  s = sanitize_utf8("\xE2\x80\x9Ctest\xE2\x80\x9D", -1, &len, "string");
+  TEST("valid_utf8.2", strcmp(s, "\xE2\x80\x9Ctest\xE2\x80\x9D") == 0 && len == 10);
+  mush_free(s, "string");
+  s = sanitize_utf8("test\xFFtest", 9, &len, "string");
+  TEST("valid_utf8.3", strcmp(s, "test\xEF\xBF\xBDtest") == 0 && len == 11);
+  mush_free(s, "string");
+  s = sanitize_utf8("test\xE2\x80test", 10, &len, "string");
+  TEST("valid_utf8.4", strcmp(s, "test\xEF\xBF\xBDtest") == 0 && len == 11);
+  mush_free(s, "string");
 }

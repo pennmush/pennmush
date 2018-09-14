@@ -39,6 +39,7 @@
 #include "notify.h"
 #include "strtree.h"
 #include "strutil.h"
+#include "tests.h"
 
 extern char *absp[], *obj[], *poss[], *subj[]; /* fundb.c */
 int global_fun_invocations;
@@ -269,6 +270,21 @@ is_boolean(char const *str)
     return 1;
 }
 
+TEST_GROUP(is_boolean)
+{
+  // TEST is_boolean REQUIRES is_integer
+  int saved = TINY_BOOLEANS;
+  options.tiny_booleans = 1;
+  TEST("is_boolean.tiny.1", is_boolean("0") == 1);
+  TEST("is_boolean.tiny.2", is_boolean("") == 0);
+  TEST("is_boolean.tiny.3", is_boolean("foo") == 0);
+  options.tiny_booleans = 0;
+  TEST("is_boolean.penn.1", is_boolean("0") == 1);
+  TEST("is_boolean.penn.2", is_boolean("") == 1);
+  TEST("is_boolean.penn.3", is_boolean("foo") == 1);
+  options.tiny_booleans = saved;
+}
+
 /** Is a string a dbref?
  * A dbref is a string starting with a #, optionally followed by a -,
  * and then followed by at least one digit, and nothing else.
@@ -279,14 +295,32 @@ is_boolean(char const *str)
 bool
 is_dbref(char const *str)
 {
-  if (!str || (*str != NUMBER_TOKEN) || !*(str + 1))
+  if (!str || (*str != NUMBER_TOKEN) || !*(str + 1)) {
     return 0;
-  if (*(str + 1) == '-') {
-    str++;
   }
-  for (str++; isdigit(*str); str++) {
+  str += 1;
+  if (*str == '-') {
+    str += 1;
+  }
+  if (!*str) {
+    return 0;
+  }
+  for (; isdigit(*str); str += 1) {
   }
   return !*str;
+}
+
+TEST_GROUP(is_dbref)
+{
+  TEST("is_dbref.1", is_dbref("") == 0);
+  TEST("is_dbref.2", is_dbref("foo") == 0);
+  TEST("is_dbref.3", is_dbref("#foo") == 0);
+  TEST("is_dbref.4", is_dbref("#-1") == 1);
+  TEST("is_dbref.5", is_dbref("#1234") == 1);
+  TEST("is_dbref.6", is_dbref("#12AB") == 0);
+  TEST("is_dbref.7", is_dbref("#") == 0);
+  TEST("is_dbref.8", is_dbref("#-") == 0);
+  TEST("is_dbref.9", is_dbref("#-A") == 0);
 }
 
 /** Is a string an objid?
@@ -350,6 +384,32 @@ is_integer(char const *str)
   return 1;
 }
 
+TEST_GROUP(is_integer)
+{
+  int saved_math = TINY_MATH;
+  int saved_null = NULL_EQ_ZERO;
+  options.tiny_math = 1;
+  TEST("is_integer.tiny.1", is_integer("") == 1);
+  TEST("is_integer.tiny.2", is_integer("foo") == 1);
+  TEST("is_integer.tiny.3", is_integer("5") == 1);
+  TEST("is_integer.tiny.4", is_integer(NULL) == 1);
+  options.tiny_math = 0;
+  TEST("is_integer.penn.1", is_integer("foo") == 0);
+  TEST("is_integer.penn.2", is_integer("5") == 1);
+  TEST("is_integer.penn.3", is_integer("  12") == 1);
+  TEST("is_integer.penn.4", is_integer(NULL) == 0);
+  TEST("is_integer.penn.5", is_integer("-5") == 1);
+  TEST("is_integer.penn.6", is_integer("2147483647") == 1); // INT_MAX
+  TEST("is_integer.penn.7", is_integer("2147483648") == 0); // INT_MAX + 1
+  TEST("is_integer.penn.8", is_integer("12foo") == 0);
+  options.null_eq_zero = 1;
+  TEST("is_integer.penn.9", is_integer("") == 1);
+  options.null_eq_zero = 0;
+  TEST("is_integer.penn.10", is_integer("") == 0);
+  options.tiny_math = saved_math;
+  options.null_eq_zero = saved_null;
+}
+
 /** Is string an unsigned integer?
  * To TinyMUSH, any string is an uinteger. To PennMUSH, a string that
  * passes parse_uint is an uinteger, and a blank string is an uinteger
@@ -381,6 +441,33 @@ is_uinteger(char const *str)
   if (errno == ERANGE || *end != '\0')
     return 0;
   return 1;
+}
+
+TEST_GROUP(is_uinteger)
+{
+  int saved_math = TINY_MATH;
+  int saved_null = NULL_EQ_ZERO;
+  options.tiny_math = 1;
+  TEST("is_uinteger.tiny.1", is_uinteger("") == 1);
+  TEST("is_uinteger.tiny.2", is_uinteger("foo") == 1);
+  TEST("is_uinteger.tiny.3", is_uinteger("5") == 1);
+  TEST("is_uinteger.tiny.4", is_uinteger(NULL) == 1);
+  TEST("is_uinteger.tiny.5", is_uinteger("-5") == 1);
+  options.tiny_math = 0;
+  TEST("is_uinteger.penn.1", is_uinteger("foo") == 0);
+  TEST("is_uinteger.penn.2", is_uinteger("5") == 1);
+  TEST("is_uinteger.penn.3", is_uinteger("  12") == 1);
+  TEST("is_uinteger.penn.4", is_uinteger(NULL) == 0);
+  TEST("is_uinteger.penn.5", is_uinteger("-5") == 0);
+  TEST("is_uinteger.penn.6", is_uinteger("4294967295") == 1); // UINT_MAX
+  TEST("is_uinteger.penn.7", is_uinteger("4294967296") == 0); // UINT_MAX + 1
+  TEST("is_uinteger.penn.8", is_uinteger("12foo") == 0);
+  options.null_eq_zero = 1;
+  TEST("is_uinteger.penn.9", is_uinteger("") == 1);
+  options.null_eq_zero = 0;
+  TEST("is_uinteger.penn.10", is_uinteger("") == 0);
+  options.tiny_math = saved_math;
+  options.null_eq_zero = saved_null;
 }
 
 /** Is string really an unsigned integer?
@@ -539,6 +626,31 @@ is_number(char const *str)
   if (*str == '\0')
     return NULL_EQ_ZERO;
   return is_strict_number(str);
+}
+
+TEST_GROUP(is_number)
+{
+  int saved_tiny = TINY_MATH;
+  int saved_null = NULL_EQ_ZERO;
+  options.tiny_math = 1;
+  TEST("is_number.tiny.1", is_number("") == 1);
+  TEST("is_number.tiny.2", is_number("foo") == 1);
+  TEST("is_number.tiny.3", is_number("5") == 1);
+  TEST("is_number.tiny.4", is_number(NULL) == 1);
+  TEST("is_number.tiny.5", is_number("-5.5") == 1);
+  options.tiny_math = 0;
+  TEST("is_number.penn.1", is_number("foo") == 0);
+  TEST("is_number.penn.2", is_number("5") == 1);
+  TEST("is_number.penn.3", is_number("  12.05") == 1);
+  TEST("is_number.penn.5", is_number("-5") == 1);
+  TEST("is_number.penn.7", is_number("2e6") == 1);
+  TEST("is_number.penn.8", is_number("12foo") == 0);
+  options.null_eq_zero = 1;
+  TEST("is_number.penn.9", is_number("") == 1);
+  options.null_eq_zero = 0;
+  TEST("is_number.penn.10", is_number("") == 0);
+  options.tiny_math = saved_tiny;
+  options.null_eq_zero = saved_null;
 }
 
 /** Convert a string containing a signed integer into an int.
@@ -2107,9 +2219,9 @@ process_expression(char *buff, char **bp, char const **str, dbref executor,
         *str += 16;
       }
 
-      // fprintf(stderr, "Skipped over '%.*s' to '%c'\n", (int)(*str - pos),
-      // pos,
-      // **str);
+// fprintf(stderr, "Skipped over '%.*s' to '%c'\n", (int)(*str - pos),
+// pos,
+// **str);
 
 #else
       /* Inlined strcspn() equivalent, to save on overhead and portability */
@@ -2151,15 +2263,13 @@ process_expression(char *buff, char **bp, char const **str, dbref executor,
        * added 17 Sep 2012. Remove when this behaviour is removed. */
       else if (tflags & PT_NOT_COMMA) {
         if (pe_info && pe_info->attrname)
-          notify_format(Owner(executor),
-                        "Unescaped comma in final arg of %s "
-                        "by #%d in %s. This behavior is "
-                        "deprecated.",
+          notify_format(Owner(executor), "Unescaped comma in final arg of %s "
+                                         "by #%d in %s. This behavior is "
+                                         "deprecated.",
                         lca_func_name, executor, pe_info->attrname);
         else
-          notify_format(Owner(executor),
-                        "Unescaped comma in final arg of %s "
-                        "by #%d. This behavior is deprecated.",
+          notify_format(Owner(executor), "Unescaped comma in final arg of %s "
+                                         "by #%d. This behavior is deprecated.",
                         lca_func_name, executor);
         tflags &= ~PT_NOT_COMMA;
       }

@@ -7,6 +7,8 @@ use warnings;
 use File::Compare;
 use File::Copy;
 use File::Temp qw/tempfile/;
+use IPC::Open2;
+
 # use feature qw/say/; # People STILL sometimes use OSes that have really ancient perl versions that don't support say. Sigh.
 
 my @tmpfiles;
@@ -25,10 +27,13 @@ foreach my $command (@ARGV) {
         make_cmds();
     } elsif ($command eq "functions") {
         make_funs();
+    } elsif ($command eq "tests") {
+        make_tests();
     } elsif ($command eq "all") {
         make_switches();
         make_cmds();
         make_funs();
+        make_tests();
     } else {
         warn "Unknown option '${command}'\n";
     }
@@ -173,3 +178,81 @@ EOH
     maybemove $tempfile, "hdrs/funs.h";
 }
 
+
+sub make_tests {
+    my @tests = scan_files_for_pattern("src/*.c", qr/TEST_GROUP\((\w+)\)/);
+    my %depends;
+    for my $dep (scan_files_for_pattern("src/*.c", qr#// TEST (\w+ REQUIRES .*)#)) {
+        my @bits = split/\s+/, $dep;
+        my $test = shift @bits;
+        shift @bits;
+        $depends{$test} = \@bits;
+    }
+
+    {
+    # Remove all tests that depend on a specific order from @tests
+    local $SIG{PIPE} = sub { warn "Unable to run tsort.\n"; exit 0; };
+    my $orderedtests = tsort(\%depends);
+    my %t = map { $_ => 1 } @$orderedtests;
+    @tests = grep { not exists $t{$_} } @tests;
+    # And put them back in the list in the right order
+    unshift @tests, @$orderedtests;
+    }
+
+    my ($HDR, $tmpfile) = tempfile("testXXXXX", SUFFIX => ".c", TMPDIR => 1);
+    push @tmpfiles, $tmpfile;
+    say $HDR "/* Auto-generated file. DO NOT EDIT */";
+    say $HDR "void test_$_(int *, int *);" for @tests;
+    print $HDR <<EOF;
+struct test_record {
+    const char *name;
+    void (*fun)(int *, int *);
+    const char *depends;
+    int status;
+};
+#define TEST_NOT_RUN 0
+#define TEST_PASSED 1
+#define TEST_FAILED 2
+#define TEST_SKIPME 3
+
+static struct test_record tests[] = {
+EOF
+
+    for my $test (@tests) {
+        local $" = "|";
+        $depends{$test} //= [];
+        print $HDR <<EOF;
+{"$test", test_$test, "|@{$depends{$test}}|", TEST_NOT_RUN},
+EOF
+    }
+
+    print $HDR <<EOF;
+{NULL, NULL, NULL, TEST_NOT_RUN}
+};
+EOF
+
+    close $HDR;
+    maybemove($tmpfile, "src/tests.inc");
+}
+
+# There are topological sort modules for Perl, but none in the core list.
+# So just pipe out to tsort(1) even though it makes me feel dirty. This is perl, not shell!
+sub tsort {
+    my $deps = shift;
+    my ($to_tsort, $from_tsort);
+    my $pid = open2($from_tsort, $to_tsort, "tsort") or die "Unable to run tsort: $!\n";
+    while (my ($item, $deplist) = each %$deps) {
+        for my $d (@$deplist) {
+            say $to_tsort "$item $d";
+        }
+    }
+    close $to_tsort;
+    my $sorted;
+    while (<$from_tsort>) {
+        chomp;
+        unshift @$sorted, $_;
+    }
+    close $from_tsort;
+    waitpid $pid, 0;
+    return $sorted;
+}

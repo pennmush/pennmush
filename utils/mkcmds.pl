@@ -189,20 +189,23 @@ sub make_tests {
         $depends{$test} = \@bits;
     }
 
-    {
-    # Remove all tests that depend on a specific order from @tests
-    local $SIG{PIPE} = sub { warn "Unable to run tsort.\n"; exit 0; };
-    my $orderedtests = tsort(\%depends);
-    my %t = map { $_ => 1 } @$orderedtests;
-    @tests = grep { not exists $t{$_} } @tests;
-    # And put them back in the list in the right order
-    unshift @tests, @$orderedtests;
+    my $err = eval {
+        # Remove all tests that depend on a specific order from @tests
+        my $orderedtests = tsort(\%depends);
+        my %t = map { $_ => 1 } @$orderedtests;
+        @tests = grep { not exists $t{$_} } @tests;
+        # And put them back in the list in the right order
+        unshift @tests, @$orderedtests;
+    };
+    if (not defined $err) {
+        warn "Unable to sort tests: $@\n";
+        return;
     }
 
     my ($HDR, $tmpfile) = tempfile("testXXXXX", SUFFIX => ".c", TMPDIR => 1);
     push @tmpfiles, $tmpfile;
-    say $HDR "/* Auto-generated file. DO NOT EDIT */";
-    say $HDR "void test_$_(int *, int *);" for @tests;
+    print $HDR "/* Auto-generated file. DO NOT EDIT */\n";
+    print $HDR "void test_$_(int *, int *);\n" for @tests;
     print $HDR <<EOF;
 struct test_record {
     const char *name;
@@ -243,7 +246,7 @@ sub tsort {
     my $pid = open2($from_tsort, $to_tsort, "tsort") or die "Unable to run tsort: $!\n";
     while (my ($item, $deplist) = each %$deps) {
         for my $d (@$deplist) {
-            say $to_tsort "$item $d";
+            print $to_tsort "$item $d\n";
         }
     }
     close $to_tsort;

@@ -14,7 +14,7 @@
             *success += 1; \
         } else { \
             *failure += 1; \
-            do_rawlog(LT_TRACE, "%s:%d: Test %s failed!\n", __FILE__, __LINE__, name); \
+            do_rawlog(LT_TRACE, "%s:%d: Test %s failed!", __FILE__, __LINE__, name); \
         } \
     } while (0)
 

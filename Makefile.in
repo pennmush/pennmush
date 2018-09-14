@@ -49,7 +49,7 @@ config.h: configure
 	@echo "to suppress this message and continue compiling."
 	@exit 1
 
-autogen: hdrs/cmds.h hdrs/funs.h hdrs/switches.h hdrs/gitinfo.h src/tests.c
+autogen: hdrs/cmds.h hdrs/funs.h hdrs/switches.h hdrs/gitinfo.h src/tests.inc
 
 hdrs/cmds.h: src/cmds.c src/command.c src/cque.c src/extchat.c src/help.c src/set.c src/sql.c Patchlevel
 	@PERL@ utils/mkcmds.pl commands

@@ -692,18 +692,6 @@ main(int argc, char **argv)
   /* save a file descriptor */
   reserve_fd();
 
-  if (enable_tests) {
-    bool r = run_tests();
-    if (r) {
-      do_rawlog(LT_ERR, "Hardcode tests all passed!");
-    } else {
-      do_rawlog(LT_ERR, "Hardcode tests had failures!");
-    }
-    if (only_test || !r) {
-      return (r ? 0 : 1);
-    }
-  }
-
   /* decide if we're in @shutdown/reboot */
   restarting = 0;
   newerr = fopen(REBOOTFILE, "r");
@@ -734,6 +722,18 @@ main(int argc, char **argv)
   globals.database_loaded = 1;
 
   set_signals();
+
+  if (enable_tests) {
+    bool r = run_tests();
+    if (r) {
+      do_rawlog(LT_ERR, "Hardcode tests all passed!");
+    } else {
+      do_rawlog(LT_ERR, "Hardcode tests had failures!");
+    }
+    if (only_test || !r) {
+      return (r ? 0 : 1);
+    }
+  }
 
 #ifdef INFO_SLAVE
   init_info_slave();

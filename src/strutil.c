@@ -1424,6 +1424,35 @@ split_token(char **sp, char sep)
   return save;
 }
 
+TEST_GROUP(split_token) {
+  char *c, *t;
+  char buff[BUFFER_LEN];
+  t = NULL;
+  c = split_token(&t, ' ');
+  TEST("split_token.1", c == NULL && t == NULL);
+  strcpy(buff, "  a b");
+  t = buff;
+  c = split_token(&t, ' ');
+  TEST("split_token.2", strcmp(c, "") == 0 && strcmp(t, "a b") == 0);
+  strcpy(buff, "a|b");
+  t = buff;
+  c = split_token(&t, '|');
+  TEST("split_token.3", strcmp(c, "a") == 0 && strcmp(t, "b") == 0);
+  strcpy(buff, "\x1B[0ma b");
+  t = buff;
+  c = split_token(&t, ' ');
+  TEST("split_token.4", strcmp(c, "\x1B[0ma") == 0 && strcmp(t, "b") == 0);
+  strcpy(buff, "   ");
+  t = buff;
+  c = split_token(&t, ' ');
+  TEST("split_token.5", c && *c == '\0' && *t == '\0');
+  strcpy(buff, "");
+  t = buff;
+  c = split_token(&t, '|');
+  TEST("split_token.6", c && *c == '\0' && t == NULL);
+}
+
+
 /** Count the number of tokens in a string.
  * \param str string to count.
  * \param sep token separator.
@@ -1490,6 +1519,18 @@ remove_word(char *list, char *word, char sep)
   return buff;
 }
 
+TEST_GROUP(remove_word) {
+  // TEST remove_word REQUIRES split_token
+  char buff[BUFFER_LEN];
+  char *c;
+  strcpy(buff, "adam boy charles");
+  c = remove_word(buff, "boy", ' ');
+  TEST("remove_word.1", strcmp(c, "adam charles") == 0);
+  strcpy(buff, "adam|boy|charles");
+  c = remove_word(buff, "charles", '|');
+  TEST("remove_word.2", strcmp(c, "adam|boy") == 0);
+}
+
 /** Return the next name in a list. A name may be a single word, or
  * a quoted string. This is used by things like page/list. The list's
  * pointer is advanced to the next name in the list.
@@ -1524,6 +1565,20 @@ next_in_list(const char **head)
 
   safe_chr('\0', buf, &p);
   return buf;
+}
+
+TEST_GROUP(next_in_list) {
+  char buff[BUFFER_LEN];
+  char *c;
+  const char *t;
+  strcpy(buff, "adam boy charles");
+  t = buff;
+  c = next_in_list(&t);
+  TEST("next_in_list.1", strcmp(c, "adam") == 0 && strcmp(t, " boy charles") == 0);
+  strcpy(buff, "\"mr. t\" ba");
+  t = buff;
+  c = next_in_list(&t);
+  TEST("next_in_list.2", strcmp(c, "mr. t") == 0 && strcmp(t, " ba") == 0);
 }
 
 #ifndef HAVE_IMAXDIV_T

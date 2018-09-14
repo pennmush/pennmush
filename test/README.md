@@ -4,7 +4,7 @@ Penn has two different test suites -- one for hardcode, one for softcode. This d
 
 # Hardcode Tests
 
-These are run at startup, after configuration files are read, but before the database is loaded. It's intended for things that can't easily be tested in softcode and things softcode tests themselves depend on working right.
+These are run at startup, after configuration files are read and the database is loaded, but before the game starts accepting connections. It's intended for things that can't easily be tested in softcode and things softcode tests themselves depend on working right.
 
 ## Running tests
 

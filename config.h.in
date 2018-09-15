@@ -380,6 +380,7 @@ typedef bool _Bool;
 #endif
 #undef SQLITE_MAX_WORKER_THREADS
 #undef SQLITE_DEFAULT_WORKER_THREADS
+#define SQLITE_DEFAULT_WAL_SYNCHRONOUS 1
 
 /* Variables and defines */
 

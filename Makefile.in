@@ -49,9 +49,9 @@ config.h: configure
 	@echo "to suppress this message and continue compiling."
 	@exit 1
 
-autogen: hdrs/cmds.h hdrs/funs.h hdrs/switches.h hdrs/gitinfo.h
+autogen: hdrs/cmds.h hdrs/funs.h hdrs/switches.h hdrs/gitinfo.h src/tests.inc
 
-hdrs/cmds.h: src/cmds.c src/command.c src/cque.c src/help.c src/set.c src/sql.c Patchlevel
+hdrs/cmds.h: src/cmds.c src/command.c src/cque.c src/extchat.c src/help.c src/set.c src/sql.c Patchlevel
 	@PERL@ utils/mkcmds.pl commands
 
 hdrs/switches.h: src/SWITCHES Patchlevel
@@ -62,6 +62,9 @@ src/switchinc.c: src/SWITCHES Patchlevel
 
 hdrs/funs.h: src/fun*.c src/bsd.c src/conf.c src/connlog.c src/extmail.c src/help.c src/markup.c src/wiz.c src/sql.c Patchlevel src/cque.c
 	@PERL@ utils/mkcmds.pl functions
+
+src/tests.inc: src/*.c
+	@PERL@ utils/mkcmds.pl tests
 
 hdrs/gitinfo.h: $(wildcard .git/HEAD .git/index)
 	@if [ -f ".git/HEAD" ]; then \

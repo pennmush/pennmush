@@ -23,10 +23,12 @@
 #include <errno.h>
 #include <string.h>
 #include <stdlib.h>
+#include <stdio.h>
 
 #include "map_file.h"
 #include "mymalloc.h"
 #include "log.h"
+#include "tests.h"
 
 /** Memory map a file.
  *
@@ -165,4 +167,59 @@ unmap_file(MAPPED_FILE *mapped)
   }
 #endif
   mush_free(mapped, "mapped_file");
+}
+
+TEST_GROUP(map_file)
+{
+  FILE *f;
+  MAPPED_FILE *m;
+  const char *fname = "mapfiletestdata.txt";
+  char data[10];
+  size_t bytes;
+  int r;
+
+  // Create a file with some data.
+  f = fopen(fname, "w");
+  TEST("map_file.create_file.1", f != NULL);
+  if (!f) {
+    goto cleanup;
+  }
+  r = fputs("abcdefg", f);
+  TEST("map_file.create_file.2", r != EOF);
+  fclose(f);
+
+  // Read-only map
+  m = map_file(fname, 0);
+  TEST("map_file.readable.1", m != NULL);
+  if (!m) {
+    goto cleanup;
+  }
+  TEST("map_file.readable.2", m->len == 7);
+  TEST("map_file.readable.3", memcmp(m->data, "abcdefg", 7) == 0);
+  unmap_file(m);
+
+  // Read-Write map, test writing.
+  m = map_file(fname, 1);
+  TEST("map_file.writable.1", m != NULL);
+  if (!m) {
+    goto cleanup;
+  }
+  TEST("map_file.writable.2", m->len == 7);
+  TEST("map_file.writable.3", memcmp(m->data, "abcdefg", 7) == 0);
+  *(((char *) m->data) + 1) = 'B';
+  TEST("map_file.writable.4", memcmp(m->data, "aBcdefg", 7) == 0);
+  unmap_file(m);
+
+  f = fopen(fname, "r");
+  TEST("map_file.open_file.1", f != NULL);
+  if (!f) {
+    goto cleanup;
+  }
+  bytes = fread(data, 1, sizeof data, f);
+  fclose(f);
+  TEST("map_file.open_file.2", bytes == 7);
+  TEST("map_file.writable.5", memcmp(data, "aBcdefg", 7) == 0);
+
+cleanup:
+  remove(fname);
 }

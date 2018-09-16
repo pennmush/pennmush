@@ -111,6 +111,7 @@
 #include "cJSON.h"
 #include "memcheck.h"
 #include "map_file.h"
+#include "tests.h"
 #include "websock.h"
 
 #ifndef WIN32
@@ -497,6 +498,7 @@ main(int argc, char **argv)
 {
   FILE *newerr;
   bool detach_session __attribute__((__unused__)) = 1;
+  bool enable_tests = 0, only_test = 0;
 
 /* disallow running as root on unix.
  * This is done as early as possible, before translation is initialized.
@@ -564,8 +566,15 @@ main(int argc, char **argv)
           }
         } else if (strcmp(argv[n], "--no-pcre-jit") == 0) {
           pcre_study_flags = 0;
-        } else
+        } else if (strcmp(argv[n], "--tests") == 0) {
+          enable_tests = 1;
+        } else if (strcmp(argv[n], "--only-tests") == 0) {
+          enable_tests = 1;
+          only_test = 1;
+          detach_session = 0;
+        } else {
           fprintf(stderr, "%s: unknown option \"%s\"\n", argv[0], argv[n]);
+        }
       } else {
         mush_strncpy(confname, argv[n], BUFFER_LEN);
         break;
@@ -710,6 +719,18 @@ main(int argc, char **argv)
   globals.database_loaded = 1;
 
   set_signals();
+
+  if (enable_tests) {
+    bool r = run_tests();
+    if (r) {
+      do_rawlog(LT_ERR, "Hardcode tests all passed!");
+    } else {
+      do_rawlog(LT_ERR, "Hardcode tests had failures!");
+    }
+    if (only_test || !r) {
+      exit(r ? 0 : 1);
+    }
+  }
 
 #ifdef INFO_SLAVE
   init_info_slave();
@@ -1071,13 +1092,13 @@ handle_curl_msg(CURLMsg *msg)
         if (is_utf8) {
           latin1 = utf8_to_latin1(body, body_size, &len, 1, "string");
           if (len >= BUFFER_LEN) {
-	    resp->too_big = 1;
+            resp->too_big = 1;
             latin1[BUFFER_LEN - 1] = '\0';
           }
         } else {
           latin1 = body;
           if (body_size >= BUFFER_LEN) {
-	    resp->too_big = 1;
+            resp->too_big = 1;
             body[BUFFER_LEN - 1] = '\0';
           }
         }
@@ -1114,7 +1135,7 @@ handle_curl_msg(CURLMsg *msg)
 static int
 check_status()
 {
-  /* Check signal handler flags */
+/* Check signal handler flags */
 #ifndef WIN32
   if (dump_error) {
     if (WIFSIGNALED(dump_status)) {
@@ -1573,7 +1594,7 @@ gameloop()
   struct timeval current_time;
 
   while (!shutdown_flag) {
-    /** let's find out how long we should wait */
+/** let's find out how long we should wait */
 #define min_timeout(store, func)                                               \
   timeout_check = func;                                                        \
   if (timeout_check < store)                                                   \
@@ -1696,13 +1717,13 @@ new_connection(int oldsock, int *result, conn_source source)
     int remote_uid = -1;
     bool good_to_read = 1;
 
-    /* As soon as the SSL slave opens a new connection to the mush, it
-       writes a string of the format 'IP^HOSTNAME\r\n'. This will thus
-       not block unless somebody's being naughty. People obviously can
-       be. So we'll wait a short time for readable data, and use a
-       non-blocking socket read anyways. If the client doesn't send
-       the hostname string fast enough, oh well.
-     */
+/* As soon as the SSL slave opens a new connection to the mush, it
+   writes a string of the format 'IP^HOSTNAME\r\n'. This will thus
+   not block unless somebody's being naughty. People obviously can
+   be. So we'll wait a short time for readable data, and use a
+   non-blocking socket read anyways. If the client doesn't send
+   the hostname string fast enough, oh well.
+ */
 
 #ifdef HAVE_POLL
     {
@@ -1973,12 +1994,12 @@ fcache_read(FBLOCK *fb, const char *filename)
     MAPPED_FILE *mf = map_file(filename, 0);
     if (mf) {
       /* Copy instead of using the mapped file directly because what
-	 happens when a mapped file is edited, even if it's a private
-	 map? There don't seem to be any promises. */
+         happens when a mapped file is edited, even if it's a private
+         map? There don't seem to be any promises. */
       fb->buff = mush_malloc(mf->len + 1, "fcache_data");
       if (!fb->buff) {
-	unmap_file(mf);
-	return -1;
+        unmap_file(mf);
+        return -1;
       }
       memcpy(fb->buff, mf->data, mf->len);
       fb->buff[mf->len] = '\0';
@@ -2053,10 +2074,9 @@ fcache_load(dbref player)
     who = fcache_read(&fcache.who_fcache[i], options.who_file[i]);
 
     if (player != NOTHING) {
-      notify_format(player,
-                    T("%s sizes:  NewUser...%d  Connect...%d  "
-                      "Guest...%d  Motd...%d  Wizmotd...%d  Quit...%d  "
-                      "Register...%d  Down...%d  Full...%d  Who...%d"),
+      notify_format(player, T("%s sizes:  NewUser...%d  Connect...%d  "
+                              "Guest...%d  Motd...%d  Wizmotd...%d  Quit...%d  "
+                              "Register...%d  Down...%d  Full...%d  Who...%d"),
                     i ? "HTMLFile" : "File", new, conn, guest, motd, wiz, quit,
                     reg, down, full, who);
     }
@@ -3510,15 +3530,14 @@ http_bounce_mud_url(DESC *d)
   char buf[BUFFER_LEN];
   char *bp = buf;
   bool has_url = strncmp(MUDURL, "http", 4) == 0;
-  safe_format(buf, &bp,
-              "HTTP/1.1 200 OK\r\n"
-              "Content-Type: text/html; charset:iso-8859-1\r\n"
-              "Pragma: no-cache\r\n"
-              "Connection: Close\r\n"
-              "\r\n"
-              "<!DOCTYPE html>\r\n"
-              "<HTML><HEAD>"
-              "<TITLE>Welcome to %s!</TITLE>",
+  safe_format(buf, &bp, "HTTP/1.1 200 OK\r\n"
+                        "Content-Type: text/html; charset:iso-8859-1\r\n"
+                        "Pragma: no-cache\r\n"
+                        "Connection: Close\r\n"
+                        "\r\n"
+                        "<!DOCTYPE html>\r\n"
+                        "<HTML><HEAD>"
+                        "<TITLE>Welcome to %s!</TITLE>",
               MUDNAME);
   if (has_url) {
     safe_format(buf, &bp, "<meta http-equiv=\"refresh\" content=\"5; url=%s\">",
@@ -3766,7 +3785,7 @@ process_http_input(DESC *d, char *buf, int len)
     break;
   }
 
-  /* Reset the timer, but only if there is one. */
+/* Reset the timer, but only if there is one. */
 waitmore:
   d->conn_timer = sq_register_in(2, http_finished_wrapper, (void *) d, NULL);
 }
@@ -4400,9 +4419,8 @@ check_connect(DESC *d, const char *msg)
     }
     if (!options.create_allow) {
       fcache_dump(d, fcache.register_fcache, NULL, NULL);
-      do_rawlog(LT_CONN,
-                "Refused registration (creation disabled) for %s from "
-                "%s on descriptor %d.\n",
+      do_rawlog(LT_CONN, "Refused registration (creation disabled) for %s from "
+                         "%s on descriptor %d.\n",
                 user, d->addr, d->descriptor);
       queue_event(SYSEVENT, "SOCKET`CREATEFAIL", "%d,%s,%d,%s,%s",
                   d->descriptor, d->ip, mark_failed(d->ip),
@@ -7657,9 +7675,8 @@ file_watch_event_in(int fd)
             do_rawlog(LT_TRACE, "Reindexing help file %s.", file);
             WATCH(file);
           } else {
-            do_rawlog(LT_ERR,
-                      "Got status change for file '%s' but I don't "
-                      "know what to do with it! Mask 0x%x",
+            do_rawlog(LT_ERR, "Got status change for file '%s' but I don't "
+                              "know what to do with it! Mask 0x%x",
                       file, ev->mask);
           }
           lastwd = ev->wd;

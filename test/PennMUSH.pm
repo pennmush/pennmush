@@ -83,7 +83,7 @@ sub start {
     die "Could not start game process properly; pid $child!\n";
   } elsif (defined($child)) {
     chdir("testgame");
-    my @execargs = ("./netmush", "--no-session", "--disable-socket-quota");
+    my @execargs = ("./netmush", "--no-session", "--disable-socket-quota", "--tests");
     if ($self->{VALGRIND}) {
       unshift @execargs, "valgrind", "--tool=memcheck", '--log-file=../valgrind-%p.log',
 	"--leak-check=full", "--track-origins=yes";

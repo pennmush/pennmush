@@ -35,6 +35,7 @@
 #include "parse.h"
 #include "pueblo.h"
 #include "charclass.h"
+#include "tests.h"
 
 /* TODO: Adding this prototype here is cheating, but it's easier for now. Clean
    this up eventually... */
@@ -137,11 +138,24 @@ chopstr(const char *str, size_t lim)
 {
   static char tbuf1[BUFFER_LEN];
   if (strlen(str) <= lim)
-    return (char *) str;
+    return (char *) str; // Not what the documentation claims!
   if (lim >= BUFFER_LEN)
     lim = BUFFER_LEN;
   mush_strncpy(tbuf1, str, lim);
   return tbuf1;
+}
+
+TEST_GROUP(chopstr)
+{
+  char test[BUFFER_LEN * 2];
+  char answer[BUFFER_LEN];
+  memset(test, 'A', sizeof test);
+  memset(answer, 'A', sizeof answer);
+  test[BUFFER_LEN * 2 - 1] = '\0';
+  answer[BUFFER_LEN - 1] = '\0';
+  TEST("chopstr.1", strcmp(chopstr("AAAA", 10), "AAAA") == 0);
+  TEST("chopstr.2", strcmp(chopstr("AAAABB", 5), "AAAA") == 0);
+  TEST("chopstr.3", strcmp(chopstr(test, BUFFER_LEN + 100), answer) == 0);
 }
 
 #if !defined(HAVE_STRCASECMP) && !defined(HAVE__STRICMP)
@@ -201,6 +215,19 @@ string_prefix(const char *RESTRICT string, const char *RESTRICT prefix)
   return *prefix == '\0';
 }
 
+TEST_GROUP(string_prefix)
+{
+  TEST("string_prefix.1", string_prefix("AAAAB", "AAAA"));
+  TEST("string_prefix.2", string_prefix("AAAAB", "aaa"));
+  TEST("string_prefix.3", string_prefix("AABB", "AAA") == 0);
+  TEST("string_prefix.4", string_prefix("AABB", "aaa") == 0);
+  TEST("string_prefix.5", string_prefix(NULL, "AAA") == 0);
+  TEST("string_prefix.6", string_prefix("AAAA", NULL) == 0);
+  TEST("string_prefix.7", string_prefix("AAAAA", ""));
+  TEST("string_prefix.8", string_prefix("", "AA") == 0);
+  TEST("string_prefix.9", string_prefix("", ""));
+}
+
 /** Does string begin with prefix?
  * This comparison is case-insensitive. An empty prefix always
  * fails.
@@ -217,6 +244,19 @@ string_prefixe(const char *RESTRICT string, const char *RESTRICT prefix)
   while (*string && *prefix && DOWNCASE(*string) == DOWNCASE(*prefix))
     string++, prefix++;
   return *prefix == '\0';
+}
+
+TEST_GROUP(string_prefixe)
+{
+  TEST("string_prefixe.1", string_prefixe("AAAAB", "AAAA"));
+  TEST("string_prefixe.2", string_prefixe("AAAAB", "aaa"));
+  TEST("string_prefixe.3", string_prefixe("AABB", "AAA") == 0);
+  TEST("string_prefixe.4", string_prefixe("AABB", "aaa") == 0);
+  TEST("string_prefixe.5", string_prefixe(NULL, "AAA") == 0);
+  TEST("string_prefixe.6", string_prefixe("AAAA", NULL) == 0);
+  TEST("string_prefixe.7", string_prefixe("AAAAA", "") == 0);
+  TEST("string_prefixe.8", string_prefixe("", "AA") == 0);
+  TEST("string_prefixe.9", string_prefixe("", "") == 0);
 }
 
 /** Match a substring at the start of a word in a string, case-insensitively.
@@ -1068,7 +1108,7 @@ safe_hexstr(uint8_t *bytes, int len, char *buff, char **bp)
 /* skip_space and seek_char are essentially right out of the 2.0 code */
 
 /** Return a pointer to the next non-space character in a string, or NULL.
- * We return NULL if given a null string or a string with only spaces.
+ * We return NULL if given a null string.
  * \param s string to search for non-spaces.
  * \return pointer to next non-space character in s.
  */
@@ -1079,6 +1119,14 @@ skip_space(const char *s)
   while (c && *c && isspace(*c))
     c++;
   return c;
+}
+
+TEST_GROUP(skip_space)
+{
+  TEST("skip_space.1", skip_space(NULL) == NULL);
+  TEST("skip_space.2", *skip_space("    ") == '\0');
+  TEST("skip_space.3", strcmp(skip_space("  AA"), "AA") == 0);
+  TEST("skip_space.4", strcmp(skip_space("AAAA"), "AAAA") == 0);
 }
 
 /** Return a pointer to next char in s which matches c, or to the terminating
@@ -1100,6 +1148,12 @@ seek_char(const char *s, char c)
     p++;
   return p;
 #endif /* HAVE_STRCHRNUL */
+}
+
+TEST_GROUP(seek_char)
+{
+  TEST("seek_char.1", *seek_char("ABA", 'B') == 'B');
+  TEST("seek_char.2", *seek_char("AAA", 'B') == '\0');
 }
 
 /** Search for all copies of old in string, and replace each with newbit.
@@ -1221,6 +1275,15 @@ copy_up_to(char *RESTRICT dest, const char *RESTRICT src, char c)
   return dest;
 }
 
+TEST_GROUP(copy_up_to)
+{
+  char dest[BUFFER_LEN];
+  TEST("copy_up_to.1", strcmp(copy_up_to(dest, "AAAA", 'B'), "AAAA") == 0);
+  TEST("copy_up_to.2", strcmp(copy_up_to(dest, "AABA", 'B'), "AA") == 0);
+  TEST("copy_up_to.3", *copy_up_to(dest, "", 'B') == '\0');
+  TEST("copy_up_to.4", *copy_up_to(dest, "B", 'B') == '\0');
+}
+
 /** Given a string and a separator, trim leading and trailing spaces
  * if the separator is a space. This destructively modifies the string.
  * \param str string to trim.
@@ -1246,6 +1309,21 @@ trim_space_sep(char *str, char sep)
   p++;
   *p = '\0';
   return str;
+}
+
+TEST_GROUP(trim_space_sep)
+{
+  char buff[BUFFER_LEN];
+  strcpy(buff, "  foo  ");
+  TEST("trim_space_sep.1", strcmp(trim_space_sep(buff, ' '), "foo") == 0);
+  strcpy(buff, "  foo  ");
+  TEST("trim_space_sep.2", strcmp(trim_space_sep(buff, 'x'), "  foo  ") == 0);
+  strcpy(buff, "foo");
+  TEST("trim_space_sep.3", strcmp(trim_space_sep(buff, ' '), "foo") == 0);
+  strcpy(buff, "  foo");
+  TEST("trim_space_sep.4", strcmp(trim_space_sep(buff, ' '), "foo") == 0);
+  strcpy(buff, "foo  ");
+  TEST("trim_space_sep.5", strcmp(trim_space_sep(buff, ' '), "foo") == 0);
 }
 
 /** Find the start of the next token in a string.
@@ -1283,6 +1361,19 @@ next_token(char *str, char sep)
       str++;
   }
   return str;
+}
+
+TEST_GROUP(next_token) {
+  char *c;
+  c = next_token("  a b", ' ');
+  TEST("next_token.1", c && *c == 'a');
+  c = next_token("a|b", '|');
+  TEST("next_token.2", c && *c == 'b');
+  c = next_token("\x1B[0ma b", ' ');
+  TEST("next_token.3", c && *c == 'b');
+  c = next_token("   ", ' ');
+  TEST("next_token.4", c && *c == '\0');
+  TEST("next_token.5", next_token("", '|') == NULL);
 }
 
 /** Split out the next token from a string, destructively modifying it.
@@ -1333,6 +1424,35 @@ split_token(char **sp, char sep)
   return save;
 }
 
+TEST_GROUP(split_token) {
+  char *c, *t;
+  char buff[BUFFER_LEN];
+  t = NULL;
+  c = split_token(&t, ' ');
+  TEST("split_token.1", c == NULL && t == NULL);
+  strcpy(buff, "  a b");
+  t = buff;
+  c = split_token(&t, ' ');
+  TEST("split_token.2", strcmp(c, "") == 0 && strcmp(t, "a b") == 0);
+  strcpy(buff, "a|b");
+  t = buff;
+  c = split_token(&t, '|');
+  TEST("split_token.3", strcmp(c, "a") == 0 && strcmp(t, "b") == 0);
+  strcpy(buff, "\x1B[0ma b");
+  t = buff;
+  c = split_token(&t, ' ');
+  TEST("split_token.4", strcmp(c, "\x1B[0ma") == 0 && strcmp(t, "b") == 0);
+  strcpy(buff, "   ");
+  t = buff;
+  c = split_token(&t, ' ');
+  TEST("split_token.5", c && *c == '\0' && *t == '\0');
+  strcpy(buff, "");
+  t = buff;
+  c = split_token(&t, '|');
+  TEST("split_token.6", c && *c == '\0' && t == NULL);
+}
+
+
 /** Count the number of tokens in a string.
  * \param str string to count.
  * \param sep token separator.
@@ -1348,6 +1468,19 @@ do_wordcount(char *str, char sep)
   for (n = 0; str; str = next_token(str, sep), n++)
     ;
   return n;
+}
+
+TEST_GROUP(do_wordcount)
+{
+  // TEST do_wordcount REQUIRES next_token
+  char buff[] = "A B C D";
+  char buff2[] = "A|B|C|D";
+  char buff3[] = "A  B  C  D";
+  TEST("do_wordcount.1", do_wordcount(buff, ' ') == 4);
+  TEST("do_wordcount.2", do_wordcount(buff2, '|') == 4);
+  TEST("do_wordcount.3", do_wordcount(buff3, ' ') == 4);
+  TEST("do_wordcount.4", do_wordcount(buff3, '|') == 1);
+  TEST("do_wordcount.5", do_wordcount("", ' ') == 0);
 }
 
 /** Given a string, a word, and a separator, remove first occurence
@@ -1386,6 +1519,18 @@ remove_word(char *list, char *word, char sep)
   return buff;
 }
 
+TEST_GROUP(remove_word) {
+  // TEST remove_word REQUIRES split_token
+  char buff[BUFFER_LEN];
+  char *c;
+  strcpy(buff, "adam boy charles");
+  c = remove_word(buff, "boy", ' ');
+  TEST("remove_word.1", strcmp(c, "adam charles") == 0);
+  strcpy(buff, "adam|boy|charles");
+  c = remove_word(buff, "charles", '|');
+  TEST("remove_word.2", strcmp(c, "adam|boy") == 0);
+}
+
 /** Return the next name in a list. A name may be a single word, or
  * a quoted string. This is used by things like page/list. The list's
  * pointer is advanced to the next name in the list.
@@ -1420,6 +1565,20 @@ next_in_list(const char **head)
 
   safe_chr('\0', buf, &p);
   return buf;
+}
+
+TEST_GROUP(next_in_list) {
+  char buff[BUFFER_LEN];
+  char *c;
+  const char *t;
+  strcpy(buff, "adam boy charles");
+  t = buff;
+  c = next_in_list(&t);
+  TEST("next_in_list.1", strcmp(c, "adam") == 0 && strcmp(t, " boy charles") == 0);
+  strcpy(buff, "\"mr. t\" ba");
+  t = buff;
+  c = next_in_list(&t);
+  TEST("next_in_list.2", strcmp(c, "mr. t") == 0 && strcmp(t, " ba") == 0);
 }
 
 #ifndef HAVE_IMAXDIV_T
@@ -1860,6 +2019,22 @@ remove_trailing_whitespace(char *buff, size_t len)
   return len;
 }
 
+TEST_GROUP(remove_trailing_whitespace)
+{
+  char buff[BUFFER_LEN];
+  strcpy(buff, "foo  \t  ");
+  TEST("remove_trailing_whitespace.1",
+       remove_trailing_whitespace(buff, strlen(buff)) == 3 &&
+         strcmp(buff, "foo") == 0);
+  strcpy(buff, "bar");
+  TEST("remove_trailing_whitespace.2",
+       remove_trailing_whitespace(buff, strlen(buff)) == 3 &&
+         strcmp(buff, "bar") == 0);
+  buff[0] = '\0';
+  TEST("remove_trailing_whitespace.3",
+       remove_trailing_whitespace(buff, 0) == 0);
+}
+
 int
 safe_chr(char c, char *buff, char **bp)
 {
@@ -1891,6 +2066,17 @@ strchr_unescaped(char *s, int c)
   if (s[i])
     return &(s[i]);
   return NULL;
+}
+
+TEST_GROUP(strchr_unescaped)
+{
+  TEST("strchr_unescaped.1",
+       strcmp(strchr_unescaped("$foo\\:bar:there", ':'), ":there") == 0);
+  TEST("strchr_unescaped.2", strchr_unescaped("$foo\\:noescape", ':') == NULL);
+  TEST("strchr_unescaped.3",
+       strcmp(strchr_unescaped("$foo\\\\:noescape", ':'), ":noescape") == 0);
+  TEST("strchr_unescaped.4", strchr_unescaped(NULL, ':') == NULL);
+  TEST("strchr_unescaped.5", strchr_unescaped("nosuchthing", ':') == NULL);
 }
 
 /* keystr format:
@@ -1975,6 +2161,24 @@ glob_to_like(const char *orig, char esc, int *len)
   return like;
 }
 
+TEST_GROUP(glob_to_like)
+{
+  char *g;
+  int len;
+  g = glob_to_like("foo*", '$', &len);
+  TEST("glob_to_like.1", strcmp(g, "foo%") == 0 && len == 4);
+  mush_free(g, "string");
+  g = glob_to_like("f?o", '$', &len);
+  TEST("glob_to_like.2", strcmp(g, "f_o") == 0 && len == 3);
+  mush_free(g, "string");
+  g = glob_to_like("*foo%bar*", '$', &len);
+  TEST("glob_to_like.3", strcmp(g, "%foo$%bar%") == 0 && len == 10);
+  mush_free(g, "string");
+  g = glob_to_like("", '$', &len);
+  TEST("glob_to_like.4", g && *g == '\0' && len == 0);
+  mush_free(g, "string");
+}
+
 /** Escape SQL like wildcards from a string.
  *
  * \param orig the string to escape.
@@ -2006,4 +2210,22 @@ escape_like(const char *orig, char esc, int *len)
   }
 
   return like;
+}
+
+TEST_GROUP(escape_like)
+{
+  char *g;
+  int len;
+  g = escape_like("foo%", '$', &len);
+  TEST("escape_like.1", strcmp(g, "foo$%") == 0 && len == 5);
+  mush_free(g, "string");
+  g = escape_like("f_o", '$', &len);
+  TEST("escape_like.2", strcmp(g, "f$_o") == 0 && len == 4);
+  mush_free(g, "string");
+  g = escape_like("foobar", '$', &len);
+  TEST("escape_like.3", strcmp(g, "foobar") == 0 && len == 6);
+  mush_free(g, "string");
+  g = escape_like("", '$', &len);
+  TEST("escape_like.4", g && *g == '\0' && len == 0);
+  mush_free(g, "string");
 }

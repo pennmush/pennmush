@@ -29,9 +29,9 @@ C_FILES=access.c atr_tab.c attrib.c boolexp.c bsd.c bufferq.c		\
 	pcg_basic.c player.c plyrlist.c predicat.c privtab.c		\
 	info_master.c ptab.c remember.c rob.c services.c set.c sig.c	\
 	sort.c speech.c spellfix.c sql.c sqlite3.c ssl_master.c		\
-	strdup.c strtree.c strutil.c tables.c timer.c tz.c unparse.c	\
-	utf_impl.c utils.c version.c wait.c warnings.c websock.c	\
-	wild.c wiz.c
+	strdup.c strtree.c strutil.c tables.c testframework.c timer.c	\
+	tz.c unparse.c utf_impl.c utils.c version.c wait.c warnings.c	\
+	websock.c wild.c wiz.c
 
 
 # .o versions of above - these are used in the build
@@ -47,9 +47,9 @@ O_FILES=access.o atr_tab.o attrib.o boolexp.o bsd.o bufferq.o		\
 	pcg_basic.o player.o plyrlist.o predicat.o privtab.o		\
 	info_master.o ptab.o remember.o rob.o services.o set.o sig.o	\
 	sort.o speech.o spellfix.o sql.o sqlite3.o ssl_master.o		\
-	strdup.o strtree.o strutil.o tables.o timer.o tz.o unparse.o	\
-	utf_impl.o utils.o version.o wait.o warnings.o websock.o	\
-	wild.o wiz.o
+	strdup.o strtree.o strutil.o tables.o testframework.o timer.o	\
+	tz.o unparse.o utf_impl.o utils.o version.o wait.o warnings.o	\
+	websock.o wild.o wiz.o
 
 # This is a dummy target, in case you type 'make' in the source
 # directory (likely for emacs users who M-x compile.)
@@ -375,6 +375,9 @@ bsd.o: ../hdrs/charconv.h
 bsd.o: ../hdrs/myutf8.h
 bsd.o: ../hdrs/connlog.h
 bsd.o: ../hdrs/charclass.h
+bsd.o: ../hdrs/memcheck.h
+bsd.o: ../hdrs/map_file.h
+bsd.o: ../hdrs/tests.h
 bsd.o: ../hdrs/wait.h
 bsd.o: ../hdrs/lookup.h
 bsd.o: ../hdrs/ssl_slave.h
@@ -448,7 +451,6 @@ cmdlocal.o: ../config.h
 cmdlocal.o: ../confmagic.h
 cmdlocal.o: ../options.h
 cmdlocal.o: ../hdrs/copyrite.h
-cmdlocal.o: ../config.h
 cmdlocal.o: ../hdrs/cmds.h
 cmdlocal.o: ../hdrs/command.h
 cmdlocal.o: ../hdrs/boolexp.h
@@ -469,7 +471,6 @@ cmdlocal.o: ../hdrs/mypcre.h
 cmdlocal.o: ../hdrs/parse.h
 cmdlocal.o: ../hdrs/mushsql.h
 cmdlocal.o: ../hdrs/sqlite3.h
-cmdlocal.o: ../confmagic.h
 cmds.o: ../config.h
 cmds.o: ../confmagic.h
 cmds.o: ../options.h
@@ -882,7 +883,6 @@ flaglocal.o: ../config.h
 flaglocal.o: ../confmagic.h
 flaglocal.o: ../options.h
 flaglocal.o: ../hdrs/copyrite.h
-flaglocal.o: ../config.h
 flaglocal.o: ../hdrs/conf.h
 flaglocal.o: ../hdrs/htab.h
 flaglocal.o: ../hdrs/mushtype.h
@@ -896,7 +896,6 @@ flaglocal.o: ../hdrs/dbio.h
 flaglocal.o: ../hdrs/ptab.h
 flaglocal.o: ../hdrs/chunk.h
 flaglocal.o: ../hdrs/mypcre.h
-flaglocal.o: ../confmagic.h
 flags.o: ../config.h
 flags.o: ../confmagic.h
 flags.o: ../options.h
@@ -1110,7 +1109,6 @@ funlocal.o: ../config.h
 funlocal.o: ../confmagic.h
 funlocal.o: ../options.h
 funlocal.o: ../hdrs/copyrite.h
-funlocal.o: ../config.h
 funlocal.o: ../hdrs/conf.h
 funlocal.o: ../hdrs/htab.h
 funlocal.o: ../hdrs/mushtype.h
@@ -1128,7 +1126,6 @@ funlocal.o: ../hdrs/function.h
 funlocal.o: ../hdrs/parse.h
 funlocal.o: ../hdrs/mushsql.h
 funlocal.o: ../hdrs/sqlite3.h
-funlocal.o: ../confmagic.h
 funmath.o: ../config.h
 funmath.o: ../confmagic.h
 funmath.o: ../options.h
@@ -1409,7 +1406,6 @@ local.o: ../config.h
 local.o: ../confmagic.h
 local.o: ../options.h
 local.o: ../hdrs/copyrite.h
-local.o: ../config.h
 local.o: ../hdrs/command.h
 local.o: ../hdrs/boolexp.h
 local.o: ../hdrs/chunk.h
@@ -1432,7 +1428,6 @@ local.o: ../hdrs/lock.h
 local.o: ../hdrs/parse.h
 local.o: ../hdrs/mushsql.h
 local.o: ../hdrs/sqlite3.h
-local.o: ../confmagic.h
 lock.o: ../config.h
 lock.o: ../confmagic.h
 lock.o: ../options.h
@@ -1594,10 +1589,10 @@ markup.o: ../hdrs/parse.h
 markup.o: ../hdrs/mushsql.h
 markup.o: ../hdrs/sqlite3.h
 markup.o: ../hdrs/pueblo.h
-markup.o: ../hdrs/map_file.h
 markup.o: ../hdrs/strutil.h
 markup.o: ../hdrs/charconv.h
 markup.o: ../hdrs/myutf8.h
+markup.o: ../hdrs/map_file.h
 markup.o: htmltab.c
 match.o: ../config.h
 match.o: ../confmagic.h
@@ -1836,6 +1831,7 @@ parse.o: ../hdrs/memcheck.h
 parse.o: ../hdrs/mymalloc.h
 parse.o: ../hdrs/notify.h
 parse.o: ../hdrs/strutil.h
+parse.o: ../hdrs/tests.h
 pcg_basic.o: ../config.h
 pcg_basic.o: ../confmagic.h
 pcg_basic.o: ../options.h
@@ -2230,6 +2226,17 @@ strutil.o: ../hdrs/charclass.h
 tables.o: ../config.h
 tables.o: ../confmagic.h
 tables.o: ../options.h
+testframework.o: ../config.h
+testframework.o: ../confmagic.h
+testframework.o: ../options.h
+testframework.o: ../hdrs/sqlite3.h
+testframework.o: ../hdrs/tests.h
+testframework.o: ../hdrs/log.h
+testframework.o: ../hdrs/bufferq.h
+testframework.o: ../hdrs/mushtype.h
+testframework.o: ../hdrs/copyrite.h
+testframework.o: ../hdrs/cJSON.h
+testframework.o: tests.inc
 timer.o: ../config.h
 timer.o: ../confmagic.h
 timer.o: ../options.h
@@ -2428,6 +2435,8 @@ websock.o: ../hdrs/sqlite3.h
 websock.o: ../confmagic.h
 websock.o: ../hdrs/strutil.h
 websock.o: ../hdrs/notify.h
+websock.o: ../hdrs/mymalloc.h
+websock.o: ../hdrs/connlog.h
 websock.o: ../hdrs/websock.h
 websock.o: ../hdrs/function.h
 wild.o: ../config.h

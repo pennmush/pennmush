@@ -731,7 +731,7 @@ main(int argc, char **argv)
       do_rawlog(LT_ERR, "Hardcode tests had failures!");
     }
     if (only_test || !r) {
-      return (r ? 0 : 1);
+      exit(r ? 0 : 1);
     }
   }
 

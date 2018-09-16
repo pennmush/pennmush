@@ -16,6 +16,7 @@ void test_is_dbref(int *, int *);
 void test_is_number(int *, int *);
 void test_is_uinteger(int *, int *);
 void test_latin1_to_utf8(int *, int *);
+void test_map_file(int *, int *);
 void test_next_in_list(int *, int *);
 void test_remove_trailing_whitespace(int *, int *);
 void test_sanitize_utf8(int *, int *);
@@ -58,6 +59,7 @@ static struct test_record tests[] = {
 {"is_number", test_is_number, "||", TEST_NOT_RUN},
 {"is_uinteger", test_is_uinteger, "||", TEST_NOT_RUN},
 {"latin1_to_utf8", test_latin1_to_utf8, "||", TEST_NOT_RUN},
+{"map_file", test_map_file, "||", TEST_NOT_RUN},
 {"next_in_list", test_next_in_list, "||", TEST_NOT_RUN},
 {"remove_trailing_whitespace", test_remove_trailing_whitespace, "||", TEST_NOT_RUN},
 {"sanitize_utf8", test_sanitize_utf8, "||", TEST_NOT_RUN},

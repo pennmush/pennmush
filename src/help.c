@@ -45,8 +45,8 @@
 #include "game.h"
 
 #define HELPDB_APP_ID 0x42010FF1
-#define HELPDB_VERSION 5
-#define HELPDB_VERSIONS "5"
+#define HELPDB_VERSION 6
+#define HELPDB_VERSIONS "6"
 
 #define LINE_SIZE 8192
 #define TOPIC_NAME_LEN 30
@@ -445,7 +445,6 @@ init_help_files(void)
       "NULL, topic TEXT NOT NULL COLLATE NOCASE, PRIMARY KEY(catid, pageno), "
       "FOREIGN KEY(catid, topic) REFERENCES topics(catid, name) ON DELETE "
       "CASCADE) WITHOUT ROWID;"
-      "CREATE INDEX index_starts_idx_catid_topic ON index_starts(catid, topic);"
       "CREATE VIRTUAL TABLE helpfts USING fts5(body, content='entries', "
       "content_rowid='id', tokenize=\"porter unicode61 tokenchars '@+'\");"
       "CREATE TRIGGER entries_ai AFTER INSERT ON entries BEGIN INSERT INTO "

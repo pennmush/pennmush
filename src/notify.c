@@ -225,12 +225,10 @@ static int na_depth =
   (MSG_PLAYER | MSG_TELNET | MSG_STRIPACCENTS |                                \
    MSG_XTERM256) /*    256        0         1          0    */
 
-#ifndef WITHOUT_WEBSOCKETS
 #define MSGTYPE_WEBSOCKETS (MSG_PLAYER | MSG_WEBSOCKETS)
 #define MSGTYPE_WSANSI2 (MSG_PLAYER | MSG_WEBSOCKETS | MSG_ANSI2)
 #define MSGTYPE_WSANSI16 (MSG_PLAYER | MSG_WEBSOCKETS | MSG_ANSI16)
 #define MSGTYPE_WSXTERM256 (MSG_PLAYER | MSG_WEBSOCKETS | MSG_XTERM256)
-#endif /* undef WITHOUT_WEBSOCKETS */
 
 /* Corresponding NA_* enum for each of the MSGTYPE_* groups above.
  * See table of supported protocols for meanings */
@@ -260,12 +258,10 @@ enum na_type {
   NA_TNANSI2,
   NA_TNANSI16,
   NA_TNXTERM256,
-#ifndef WITHOUT_WEBSOCKETS
   NA_WEBSOCKETS,
   NA_WSANSI2,
   NA_WSANSI16,
   NA_WSXTERM256,
-#endif     /* undef WITHOUT_WEBSOCKETS */
   NA_COUNT /* Total number of NA_* flags */
 };
 
@@ -334,9 +330,7 @@ static int
 str_type(const char *str)
 {
   int type = MSG_ALL_PLAYER;
-#ifndef WITHOUT_WEBSOCKETS
   int saw_start;
-#endif /* undef WITHOUT_WEBSOCKETS */
 #ifdef CHECK_FOR_HTML
   char *p;
 
@@ -367,7 +361,6 @@ str_type(const char *str)
   if (!(type & MSG_PUEBLO) && strstr(str, MARKUP_START "p") != NULL)
     type |= MSG_PUEBLO;
 
-#ifndef WITHOUT_WEBSOCKETS
   saw_start = 0;
   for (p = (char *) str; *p; ++p) {
     if (saw_start) {
@@ -389,7 +382,6 @@ str_type(const char *str)
       saw_start = 1;
     }
   }
-#endif /* undef WITHOUT_WEBSOCKETS */
 
 #endif /* CHECK_FOR_HTML */
 
@@ -417,11 +409,9 @@ notify_type(DESC *d)
   int colorstyle;
 
 /* Connnection type checks */
-#ifndef WITHOUT_WEBSOCKETS
   if (IsWebSocket(d)) {
     type |= MSGTYPE_WEBSOCKETS;
   }
-#endif /* undef WITHOUT_WEBSOCKETS */
   if (d->conn_flags & CONN_HTML) {
     type |= MSG_PUEBLO;
   } else if (d->conn_flags & CONN_TELNET) {
@@ -703,7 +693,6 @@ msg_to_na(int output_type)
     return NA_TNANSI16;
   case MSGTYPE_TNXTERM256:
     return NA_TNXTERM256;
-#ifndef WITHOUT_WEBSOCKETS
   case MSGTYPE_WEBSOCKETS:
     return NA_WEBSOCKETS;
   case MSGTYPE_WSANSI2:
@@ -712,7 +701,6 @@ msg_to_na(int output_type)
     return NA_WSANSI16;
   case MSGTYPE_WSXTERM256:
     return NA_WSXTERM256;
-#endif /* undef WITHOUT_WEBSOCKETS */
   }
 
   /* we should never get here. */
@@ -818,11 +806,7 @@ render_string(const char *message, int output_type)
             p++;
           }
           safe_chr('>', buff, &bp);
-#ifdef WITHOUT_WEBSOCKETS
-        } else if (output_type & MSG_MARKUP) {
-#else  /* undef WITHOUT_WEBSOCKETS */
         } else if (output_type & MSG_MARKUP || output_type & MSG_WEBSOCKETS) {
-#endif /* undef WITHOUT_WEBSOCKETS */
           /* Preserve internal markup */
           while (*p && *p != TAG_END) {
             safe_chr(*p, buff, &bp);
@@ -834,7 +818,6 @@ render_string(const char *message, int output_type)
           while (*p && *p != TAG_END)
             p++;
         }
-#ifndef WITHOUT_WEBSOCKETS
       } else if (output_type & MSG_WEBSOCKETS &&
                  (*(p + 1) == MARKUP_WS || *(p + 1) == MARKUP_WS_ALT ||
                   *(p + 1) == MARKUP_WS_ALT_END)) {
@@ -844,7 +827,6 @@ render_string(const char *message, int output_type)
           p++;
         }
         safe_chr(TAG_END, buff, &bp);
-#endif /* undef WITHOUT_WEBSOCKETS */
       } else {
         /* Unknown markup type; strip */
         while (*p && *p != TAG_END)
@@ -1927,14 +1909,12 @@ queue_write(DESC *d, const char *b, int n)
  */
 int
 queue_newwrite(DESC *d, const char *b, int n)
-#ifndef WITHOUT_WEBSOCKETS
 {
   return queue_newwrite_channel(d, b, n, WEBSOCKET_CHANNEL_AUTO);
 }
 
 int
 queue_newwrite_channel(DESC *d, const char *b, int n, char ch)
-#endif /* undef WITHOUT_WEBSOCKETS */
 {
 
   int space;
@@ -1958,7 +1938,6 @@ queue_newwrite_channel(DESC *d, const char *b, int n, char ch)
     n = utf8bytes;
   }
 
-#ifndef WITHOUT_WEBSOCKETS
   /*
    * Not ideal, but other than rewriting a lot of Penn code, the best we can do
    * is rewrite the buffer right before send().
@@ -1967,7 +1946,6 @@ queue_newwrite_channel(DESC *d, const char *b, int n, char ch)
     /* TODO: Uses a static buffer; probably safe in this case. */
     to_websocket_frame(&b, &n, ch);
   }
-#endif /* undef WITHOUT_WEBSOCKETS */
 
   if (d->source != CS_OPENSSL_SOCKET && !d->output.head) {
     /* If there's no data already buffered to write out, try writing

@@ -111,6 +111,7 @@
 #include "cJSON.h"
 #include "memcheck.h"
 #include "map_file.h"
+#include "websock.h"
 
 #ifndef WIN32
 #include "wait.h"
@@ -121,10 +122,6 @@
 #include "ssl_slave.h"
 #endif
 #endif /* !WIN32 */
-
-#ifndef WITHOUT_WEBSOCKETS
-#include "websock.h"
-#endif /* undef WITHOUT_WEBSOCKETS */
 
 #if defined(SSL_SLAVE) && !defined(WIN32)
 #define LOCAL_SOCKET 1
@@ -945,13 +942,10 @@ is_ssl_desc(DESC *d)
 static inline bool
 is_ws_desc(DESC *d)
 {
-  if (!d)
+  if (!d) {
     return 0;
-#ifndef WITHOUT_WEBSOCKETS
+  }
   return IsWebSocket(d);
-#else
-  return 0;
-#endif
 }
 
 static void
@@ -2571,12 +2565,10 @@ test_telnet(DESC *d)
      with client-side editing. Good for Broken Telnet Programs. */
   if (!TELNET_ABLE(d)) {
     static const char query[3] = {IAC, DO, TN_LINEMODE};
-#ifndef WITHOUT_WEBSOCKETS
     if ((d->conn_flags & (CONN_WEBSOCKETS_REQUEST | CONN_WEBSOCKETS))) {
       /* Don't bother testing for TELNET support. */
       return;
     }
-#endif /* undef WITHOUT_WEBSOCKETS */
     if ((d->conn_flags & (CONN_HTTP_REQUEST))) {
       /* Don't bother testing for TELNET support. */
       return;
@@ -3273,12 +3265,10 @@ process_input_helper(DESC *d, char *tbuf1, int got)
     return;
   }
 
-#ifndef WITHOUT_WEBSOCKETS
   if ((d->conn_flags & CONN_WEBSOCKETS)) {
     /* Process using WebSockets framing. */
     got = process_websocket_frame(d, tbuf1, got);
   }
-#endif /* undef WITHOUT_WEBSOCKETS */
 
   if (!d->raw_input) {
     d->raw_input = mush_malloc(MAX_COMMAND_LEN, "descriptor_raw_input");
@@ -3296,12 +3286,10 @@ process_input_helper(DESC *d, char *tbuf1, int got)
        */
       *p = '\0';
       if (is_first && is_http_request(d->raw_input)) {
-#ifndef WITHOUT_WEBSOCKETS
         if (options.use_ws && is_websocket(d->raw_input)) {
           /* Continue processing as a WebSockets upgrade request. */
           d->conn_flags |= CONN_WEBSOCKETS_REQUEST;
         } else
-#endif /* undef WITHOUT_WEBSOCKETS */
         {
           if (process_http_start(d, d->raw_input)) {
             if ((qend - q) > 0) {
@@ -3993,7 +3981,6 @@ do_command(DESC *d, char *command)
 {
   int j;
 
-#ifndef WITHOUT_WEBSOCKETS
   if (d->conn_flags & CONN_WEBSOCKETS_REQUEST) {
     /* Parse WebSockets upgrade request. */
     if (!process_websocket_request(d, command)) {
@@ -4002,7 +3989,6 @@ do_command(DESC *d, char *command)
 
     return CRES_OK;
   }
-#endif /* undef WITHOUT_WEBSOCKETS */
 
   if (!*command) {
     /* Blank lines are ignored by Penn, only used by
@@ -7194,9 +7180,7 @@ dump_reboot_db(void)
   flags |= RDBF_SSL_SLAVE | RDBF_SLAVE_FD;
 #endif
 
-#ifndef WITHOUT_WEBSOCKETS
   flags |= RDBF_WEBSOCKET_FRAME;
-#endif
 
   if (setjmp(db_err)) {
     flag_broadcast(0, 0, T("GAME: Error writing reboot database!"));
@@ -7245,9 +7229,7 @@ dump_reboot_db(void)
         putstring(f, REBOOT_DB_NOVALUE);
       putref(f, d->source);
       putstring(f, d->checksum);
-#ifndef WITHOUT_WEBSOCKETS
       putref_u64(f, d->ws_frame_len);
-#endif
       putref_u64(f, d->connlog_id);
     } /* for loop */
 
@@ -7366,17 +7348,10 @@ load_reboot_db(void)
       else
         d->checksum[0] = '\0';
       if (flags & RDBF_WEBSOCKET_FRAME) {
-#ifdef WITHOUT_WEBSOCKETS
-        (void) getref_u64(f);
-#else
         d->ws_frame_len = getref_u64(f);
-#endif
-      }
-#ifndef WITHOUT_WEBSOCKETS
-      else {
+      } else {
         d->ws_frame_len = 0;
       }
-#endif
 
       if (flags & RDBF_CONNLOG_ID) {
         d->connlog_id = getref_u64(f);

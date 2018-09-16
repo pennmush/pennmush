@@ -1390,11 +1390,10 @@ entries_from_offset(help_file *h, int off)
 
   sqlite3_stmt *indexer;
   sqlite3_str *res;
-  char *entries[3] = {NULL, NULL, NULL};
-  int lens[3] = {0, 0, 0};
-  int col = 0, status;
-  bool need_col0 = 1;
-  int pages = 0;
+  int fmtwidths[3];
+  int col = 0, pages = 0, status;
+  int ncols = 3, colspace = 0;
+
 
   indexer = prepare_statement(help_db,
                               "SELECT count(*) FROM index_starts WHERE catid = "
@@ -1416,10 +1415,21 @@ entries_from_offset(help_file *h, int off)
   indexer = prepare_statement(
     help_db,
     "WITH cat(id) AS (SELECT id FROM categories WHERE name = ?1) "
-    "SELECT name FROM topics,cat WHERE catid = cat.id AND name >= (SELECT "
-    "topic FROM index_starts WHERE catid = cat.id AND pageno = ?2) ORDER BY "
-    "name LIMIT ?3",
+    "SELECT t.name"
+    "     , lead(length(t.name), 1, 0) OVER (ORDER BY t.name)"
+    "     , lead(length(t.name), 2, 0) OVER (ORDER BY t.name)"
+    "FROM topics AS t "
+    "JOIN cat ON t.catid = cat.id "
+    "JOIN index_starts AS i ON cat.id = i.catid "
+    "WHERE t.name >= i.topic AND i.pageno = ?2 "
+    "ORDER BY t.name "
+    "LIMIT ?3",
     "help.entries.page");
+
+  if (!indexer) {
+    return NULL;
+  }
+
   sqlite3_bind_text(indexer, 1, h->command, -1, SQLITE_STATIC);
   sqlite3_bind_int(indexer, 2, off);
   sqlite3_bind_int(indexer, 3, ENTRIES_PER_PAGE);
@@ -1427,96 +1437,52 @@ entries_from_offset(help_file *h, int off)
   res = sqlite3_str_new(help_db);
 
   while (1) {
-    if (need_col0) {
-      status = sqlite3_step(indexer);
-      if (status != SQLITE_ROW) {
-        break;
-      }
-      entries[0] =
-        mush_strdup((const char *) sqlite3_column_text(indexer, 0), "string");
-      if (entries[0][0] == '&') {
-        entries[0] += 1;
-        lens[0] -= 1;
-      }
-    }
+    const char *entry;
 
     status = sqlite3_step(indexer);
     if (status != SQLITE_ROW) {
-      if (col == 0) {
-        sqlite3_str_appendf(res, " %-76.76s\n", entries[0]);
-      } else if (col == 1) {
-        sqlite3_str_appendf(res, " %-51.51s\n", entries[0]);
-      }
       break;
     }
-    entries[1] =
-      mush_strdup((const char *) sqlite3_column_text(indexer, 0), "string");
-    lens[1] = sqlite3_column_bytes(indexer, 0);
-    if (entries[1][0] == '&') {
-      entries[1] += 1;
-      lens[1] -= 1;
-    }
 
-    if (lens[0] > LONG_TOPIC) {
-      if (lens[1] > LONG_TOPIC) {
-        sqlite3_str_appendf(res, " %-76.76s\n", entries[0]);
-        mush_free(entries[0], "string");
-        entries[0] = entries[1];
-        lens[0] = lens[1];
-        entries[1] = NULL;
-        col = 1;
-        need_col0 = 0;
+    entry = (const char *) sqlite3_column_text(indexer, 0);
+
+    if (col == 0) {
+      int len0, len1, len2;
+      len0 = sqlite3_column_bytes(indexer, 0);
+      len1 = sqlite3_column_int(indexer, 1);
+      len2 = sqlite3_column_int(indexer, 2);
+      colspace = 0;
+      if (len0 > LONG_TOPIC) {
+        if (len1 > LONG_TOPIC) {
+          fmtwidths[0] = 75;
+          ncols = 1;
+        } else {
+          fmtwidths[0] = 50;
+          fmtwidths[1] = 25;
+          ncols = 2;
+          colspace = 1;
+        }
+      } else if (len1 > LONG_TOPIC) {
+        fmtwidths[0] = 25;
+        fmtwidths[1] = 50;
+        ncols = 2;
+      } else if (len2 > LONG_TOPIC) {
+        fmtwidths[0] = 25;
+        fmtwidths[1] = 25;
+        ncols = 2;
       } else {
-        sqlite3_str_appendf(res, " %-51.51s %-25.25s\n", entries[0],
-                            entries[1]);
-        mush_free(entries[0], "string");
-        mush_free(entries[1], "string");
-        entries[0] = entries[1] = NULL;
-        col = 0;
-        need_col0 = 1;
+        fmtwidths[0] = 25;
+        fmtwidths[1] = 25;
+        fmtwidths[2] = 25;
+        ncols = 3;
       }
-    } else if (lens[1] > LONG_TOPIC) {
-      sqlite3_str_appendf(res, " %-25.25s %-51.51s\n", entries[0], entries[1]);
-      mush_free(entries[0], "string");
-      mush_free(entries[1], "string");
-      entries[0] = entries[1] = NULL;
+    }
+    sqlite3_str_appendf(res, " %-*.*s", fmtwidths[col], fmtwidths[col], entry);
+    sqlite3_str_appendchar(res, colspace, ' ');
+    col += 1;
+    if (col == ncols) {
+      sqlite3_str_appendchar(res, 1, '\n');
       col = 0;
-      need_col0 = 1;
-    } else {
-      status = sqlite3_step(indexer);
-      if (status != SQLITE_ROW) {
-        sqlite3_str_appendf(res, " %-25.25s %-25.25s\n", entries[0],
-                            entries[1]);
-        mush_free(entries[0], "string");
-        mush_free(entries[1], "string");
-        entries[0] = entries[1] = NULL;
-        break;
-      }
-      entries[2] =
-        mush_strdup((const char *) sqlite3_column_text(indexer, 0), "string");
-      lens[2] = sqlite3_column_bytes(indexer, 0);
-      if (entries[2][0] == '&') {
-        entries[2] += 1;
-        lens[2] -= 1;
-      }
-      if (lens[2] > LONG_TOPIC) {
-        sqlite3_str_appendf(res, " %-25.25s %-25.25s\n", entries[0],
-                            entries[1]);
-        mush_free(entries[0], "string");
-        mush_free(entries[1], "string");
-        entries[0] = entries[2];
-        lens[0] = lens[2];
-        col = 1;
-        need_col0 = 0;
-      } else {
-        sqlite3_str_appendf(res, " %-25.25s %-25.25s %-25.25s\n", entries[0],
-                            entries[1], entries[2]);
-        mush_free(entries[0], "string");
-        mush_free(entries[1], "string");
-        mush_free(entries[2], "string");
-        col = 0;
-        need_col0 = 1;
-      }
     }
   }
   sqlite3_reset(indexer);

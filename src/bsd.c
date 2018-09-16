@@ -532,7 +532,7 @@ main(int argc, char **argv)
 #endif /* !WIN32 */
 
 #ifdef HAVE_PLEDGE
-  if (pledge("stdio rpath wpath cpath inet flock unix dns proc exec id ",
+  if (pledge("stdio rpath wpath cpath inet flock unix dns proc exec id prot_exec",
              NULL) < 0) {
     perror("pledge");
   }

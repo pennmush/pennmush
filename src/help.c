@@ -24,6 +24,9 @@
 #ifdef HAVE_UNISTD_H
 #include <unistd.h>
 #endif
+#ifdef HAVE_PTHREAD_H
+#include <pthread.h>
+#endif
 
 #include "help.h"
 #include "ansi.h"
@@ -389,6 +392,30 @@ COMMAND(cmd_helpcmd)
   }
 }
 
+#ifdef HAVE_PTHREAD_ATFORK
+static bool relaunch = 0;
+static void
+helpdb_prefork(void)
+{
+  if (help_db) {
+    close_sql_db(help_db);
+    help_db = NULL;
+    relaunch = 1;
+  } else {
+    relaunch = 0;
+  }
+}
+
+static void
+helpdb_postfork_parent(void)
+{
+  if (relaunch) {
+    help_db = open_sql_db(options.help_db, 1);
+  }
+}
+
+#endif
+
 /** Initialize the helpfile hashtable, which contains the names of thes
  * help files.
  */
@@ -466,6 +493,9 @@ init_help_files(void)
   sq_register_loop(26 * 60 * 60 + 300, optimize_db, help_db, NULL);
   init_private_vocab();
   hashinit(&help_files, 8);
+#ifdef HAVE_PTHREAD_ATFORK
+  pthread_atfork(helpdb_prefork, helpdb_postfork_parent, NULL);
+#endif
   help_init = 1;
 }
 
@@ -1392,7 +1422,6 @@ entries_from_offset(help_file *h, int off)
   int fmtwidths[3];
   int col = 0, pages = 0, status;
   int ncols = 3, colspace = 0;
-
 
   indexer = prepare_statement(help_db,
                               "SELECT count(*) FROM index_starts WHERE catid = "

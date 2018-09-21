@@ -67,33 +67,10 @@ sigrecv_setup(void)
   }
   sigrecv_fd = fds[0];
   signotifier_fd = fds[1];
-#ifdef HAVE_FCNTL
-  flags = fcntl(sigrecv_fd, F_GETFD);
-  if (flags >= 0) {
-    flags |= FD_CLOEXEC;
-    if (fcntl(sigrecv_fd, F_SETFD, flags) < 0)
-      perror("sigrecv_setup: fcntl F_SETFD");
-
-  } else {
-    perror("sigrecv_setup: fcntl F_GETFD");
-  }
-  flags = fcntl(signotifier_fd, F_GETFD);
-  if (flags >= 0) {
-    flags |= FD_CLOEXEC;
-    if (fcntl(signotifier_fd, F_SETFD, flags) < 0)
-      perror("sigrecv_setup: fcntl F_SETFD");
-  } else {
-    perror("sigrecv_setup: fcntl F_GETFD");
-  }
-  flags = fcntl(signotifier_fd, F_GETFL);
-  if (flags >= 0) {
-    flags |= O_NONBLOCK;
-    if (fcntl(signotifier_fd, F_SETFL, flags) < 0)
-      perror("sigrecv_setup: fcntl F_SETFL");
-  } else {
-    perror("sigrecv_setup: fcntl F_GETFL");
-  }
-#endif
+  set_close_exec(sigrecv_fd);
+  make_nonblocking(sigrecv_fd);
+  set_close_exec(signotifier_fd);
+  make_nonblocking(signotifier_fd);
 #endif
 #endif
 }

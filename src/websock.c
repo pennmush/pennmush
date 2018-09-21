@@ -21,8 +21,6 @@
 #include "notify.h"
 #include "mymalloc.h"
 #include "connlog.h"
-
-#ifndef WITHOUT_WEBSOCKETS
 #include "websock.h"
 
 /* Length of 16 bytes, Base64 encoded (with padding). */
@@ -687,5 +685,3 @@ FUNCTION(fun_websocket_html)
   do_fun_markup_websocket(buff, bp, nargs, args, arglens, executor,
                           WEBSOCKET_CHANNEL_HTML);
 }
-
-#endif /* undef WITHOUT_WEBSOCKETS */

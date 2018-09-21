@@ -10,5 +10,5 @@ fi
 export LC_ALL=${LOC}
 export LC_COLLATE=C
 
-exec @PERL@ runtest.pl $@ test*.pl
+exec @PERL@ runtest.pl $@ test*.t
 

@@ -38,6 +38,7 @@
 #include "strtree.h"
 
 #include "version.h"
+#include "tests.h"
 
 PTAB ptab_command;       /**< Prefix table for command names. */
 PTAB ptab_command_perms; /**< Prefix table for command permissions */
@@ -449,6 +450,18 @@ strccat(char *buff, char **bp, const char *from)
   safe_str(from, buff, bp);
 }
 
+TEST_GROUP(strccat) {
+  char buff[BUFFER_LEN];
+  char *bp = buff;
+  *bp = '\0';
+  strccat(buff, &bp, "foo");
+  *bp = '\0';
+  TEST("strccat.1", strcmp(buff, "foo") == 0);
+  strccat(buff, &bp, "bar");
+  *bp = '\0';
+  TEST("strccat.2", strcmp(buff, "foo, bar") == 0);
+}
+
 /* Comparison function for bsearch() */
 static int
 switch_cmp(const void *a, const void *b)
@@ -489,6 +502,11 @@ switch_find(COMMAND_INFO *cmd, const char *sw)
   return 0;
 }
 
+TEST_GROUP(switch_find) {
+  TEST("switch_find.1", switch_find(NULL, "LIST") > 0);
+  TEST("switch_find.2", switch_find(NULL, "NOTASWITCHEVERTHISMEEANSYOU") == 0);
+}
+
 /** Test if a particular switch was given, using name
  * \param sw the switch mask to test
  * \param name the name of the switch to test for.
@@ -501,6 +519,13 @@ SW_BY_NAME(switch_mask sw, const char *name)
     return SW_ISSET(sw, idx);
   else
     return false;
+}
+
+TEST_GROUP(SW_BY_NAME) {
+  // TEST SW_BY_NAME REQUIRES switch_find switchmask
+  switch_mask mask = switchmask("NOEVAL LIST");
+  TEST("SW_BY_NAME.1", SW_BY_NAME(mask, "LIST"));
+  TEST("SW_BY_NAME.2", SW_BY_NAME(mask, "NOTASWITCHEVERTHISMEANSYOU") == false);
 }
 
 /** Allocate and populate a COMMAND_INFO structure.
@@ -731,6 +756,14 @@ switchmask(const char *switches)
     }
   }
   return sw;
+}
+
+TEST_GROUP(switchmask) {
+  // TEST switchmask REQUIRES switch_find split_token
+  switch_mask mask = switchmask("NOEVAL LIST");
+  TEST("switchmask.1", mask != NULL);
+  TEST("switchmask.2", mask && SW_ISSET(mask, SWITCH_LIST));
+  TEST("switchmask.3", mask && SW_ISSET(mask, SWITCH_SPOOF) == 0);
 }
 
 /** Add an alias to the table of reserved aliases.

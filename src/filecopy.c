@@ -299,8 +299,16 @@ int
 rename_file(const char *origname, const char *newname)
 {
 #ifdef WIN32
-  if (ReplaceFile(origname, newname, NULL, 0, NULL, NULL)) {
+  if (ReplaceFile(newname, origname, NULL, 0, NULL, NULL)) {
     return 0;
+  } else if (GetLastError() == ERROR_FILE_NOT_FOUND) {
+    /* ReplaceFile() won't create a new file, MoveFile() won't overwrite an
+     * existing one. */
+    if (MoveFile(origname, newname)) {
+      return 0;
+    } else {
+      return -1;
+    }
   } else {
     return -1;
   }

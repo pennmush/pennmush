@@ -24,14 +24,14 @@ C_FILES=access.c atr_tab.c attrib.c boolexp.c bsd.c bufferq.c		\
 	funcrypt.c function.c fundb.c funjson.c funlist.c funlocal.c	\
 	funmath.c funmisc.c funstr.c funtime.c funufun.c game.c		\
 	hash_function.c help.c htab.c intmap.c local.c lock.c log.c	\
-	look.c malias.c markup.c match.c memcheck.c move.c mycrypt.c	\
-	mymalloc.c mysocket.c myrlimit.c myssl.c notify.c parse.c	\
-	pcg_basic.c player.c plyrlist.c predicat.c privtab.c		\
+	look.c malias.c map_file.c markup.c match.c memcheck.c move.c	\
+	mycrypt.c mymalloc.c mysocket.c myrlimit.c myssl.c notify.c	\
+	parse.c pcg_basic.c player.c plyrlist.c predicat.c privtab.c	\
 	info_master.c ptab.c remember.c rob.c services.c set.c sig.c	\
 	sort.c speech.c spellfix.c sql.c sqlite3.c ssl_master.c		\
-	strdup.c strtree.c strutil.c tables.c timer.c tz.c unparse.c	\
-	utf_impl.c utils.c version.c wait.c warnings.c websock.c	\
-	wild.c wiz.c
+	strdup.c strtree.c strutil.c tables.c testframework.c timer.c	\
+	tz.c unparse.c utf_impl.c utils.c version.c wait.c warnings.c	\
+	websock.c wild.c wiz.c
 
 
 # .o versions of above - these are used in the build
@@ -42,14 +42,14 @@ O_FILES=access.o atr_tab.o attrib.o boolexp.o bsd.o bufferq.o		\
 	funcrypt.o function.o fundb.o funjson.o funlist.o funlocal.o	\
 	funmath.o funmisc.o funstr.o funtime.o funufun.o game.o		\
 	hash_function.o help.o htab.o intmap.o local.o lock.o log.o	\
-	look.o malias.o markup.o match.o memcheck.o move.o mycrypt.o	\
-	mymalloc.o mysocket.o myrlimit.o myssl.o notify.o parse.o	\
-	pcg_basic.o player.o plyrlist.o predicat.o privtab.o		\
+	look.o malias.o map_file.o markup.o match.o memcheck.o move.o	\
+	mycrypt.o mymalloc.o mysocket.o myrlimit.o myssl.o notify.o	\
+	parse.o pcg_basic.o player.o plyrlist.o predicat.o privtab.o	\
 	info_master.o ptab.o remember.o rob.o services.o set.o sig.o	\
 	sort.o speech.o spellfix.o sql.o sqlite3.o ssl_master.o		\
-	strdup.o strtree.o strutil.o tables.o timer.o tz.o unparse.o	\
-	utf_impl.o utils.o version.o wait.o warnings.o websock.o	\
-	wild.o wiz.o
+	strdup.o strtree.o strutil.o tables.o testframework.o timer.o	\
+	tz.o unparse.o utf_impl.o utils.o version.o wait.o warnings.o	\
+	websock.o wild.o wiz.o
 
 # This is a dummy target, in case you type 'make' in the source
 # directory (likely for emacs users who M-x compile.)
@@ -183,7 +183,7 @@ depend: $(C_FILES) info_slave.c ssl_slave.c
 
 indent:
 	@INDENT@ -i --style=file *.dst $(filter-out cJSON.c cmdlocal.c funlocal.c flaglocal.c local.c remember.c spellfix.c sqlite3.c tables.c, $(C_FILES)) \
-	$(filter-out ../hdrs/buildinf.h ../hdrs/cJSON.h ../hdrs/cmds.h ../hdrs/funs.h ../hdrs/gitinfo.h ../hdrs/rgb.h ../hdrs/sqlite3.h ../hdrs/sqlite3ext.h ../hdrs/switches.h ../hdrs/version.h, $(wildcard ../hdrs/*.h)) \
+	$(filter-out ../hdrs/buildinf.h ../hdrs/cJSON.h ../hdrs/cmds.h ../hdrs/funs.h ../hdrs/gitinfo.h ../hdrs/sqlite3.h ../hdrs/sqlite3ext.h ../hdrs/switches.h ../hdrs/version.h, $(wildcard ../hdrs/*.h)) \
 	ssl_slave.c info_slave.c
 
 clean:
@@ -380,6 +380,8 @@ bsd.o: ../hdrs/charconv.h
 bsd.o: ../hdrs/connlog.h
 bsd.o: ../hdrs/charclass.h
 bsd.o: ../hdrs/memcheck.h
+bsd.o: ../hdrs/map_file.h
+bsd.o: ../hdrs/tests.h
 bsd.o: ../hdrs/wait.h
 bsd.o: ../hdrs/lookup.h
 bsd.o: ../hdrs/ssl_slave.h
@@ -1474,6 +1476,7 @@ local.o: ../hdrs/sqlite3.h
 local.o: ../hdrs/parse.h
 local.o: ../hdrs/mushsql.h
 local.o: ../hdrs/myutf8.h
+local.o: ../hdrs/sqlite3.h
 lock.o: ../config.h
 lock.o: ../confmagic.h
 lock.o: ../options.h
@@ -1602,6 +1605,17 @@ malias.o: ../hdrs/privtab.h
 malias.o: ../hdrs/pueblo.h
 malias.o: ../hdrs/strutil.h
 malias.o: ../hdrs/charclass.h
+map_file.o: ../config.h
+map_file.o: ../confmagic.h
+map_file.o: ../options.h
+map_file.o: ../hdrs/map_file.h
+map_file.o: ../hdrs/mymalloc.h
+map_file.o: ../hdrs/compile.h
+map_file.o: ../hdrs/mushtype.h
+map_file.o: ../hdrs/copyrite.h
+map_file.o: ../hdrs/cJSON.h
+map_file.o: ../hdrs/log.h
+map_file.o: ../hdrs/bufferq.h
 markup.o: ../config.h
 markup.o: ../confmagic.h
 markup.o: ../options.h
@@ -1634,8 +1648,10 @@ markup.o: ../hdrs/mymalloc.h
 markup.o: ../hdrs/parse.h
 markup.o: ../hdrs/mushsql.h
 markup.o: ../hdrs/pueblo.h
-markup.o: ../hdrs/rgb.h
+markup.o: ../hdrs/strutil.h
 markup.o: ../hdrs/charconv.h
+markup.o: ../hdrs/myutf8.h
+markup.o: ../hdrs/map_file.h
 markup.o: htmltab.c
 match.o: ../config.h
 match.o: ../confmagic.h
@@ -1885,6 +1901,8 @@ parse.o: ../hdrs/memcheck.h
 parse.o: ../hdrs/mymalloc.h
 parse.o: ../hdrs/notify.h
 parse.o: ../hdrs/charclass.h
+parse.o: ../hdrs/strutil.h
+parse.o: ../hdrs/tests.h
 pcg_basic.o: ../config.h
 pcg_basic.o: ../confmagic.h
 pcg_basic.o: ../options.h
@@ -2294,6 +2312,17 @@ strutil.o: ../hdrs/charclass.h
 tables.o: ../config.h
 tables.o: ../confmagic.h
 tables.o: ../options.h
+testframework.o: ../config.h
+testframework.o: ../confmagic.h
+testframework.o: ../options.h
+testframework.o: ../hdrs/sqlite3.h
+testframework.o: ../hdrs/tests.h
+testframework.o: ../hdrs/log.h
+testframework.o: ../hdrs/bufferq.h
+testframework.o: ../hdrs/mushtype.h
+testframework.o: ../hdrs/copyrite.h
+testframework.o: ../hdrs/cJSON.h
+testframework.o: tests.inc
 timer.o: ../config.h
 timer.o: ../confmagic.h
 timer.o: ../options.h

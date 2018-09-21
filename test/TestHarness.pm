@@ -21,7 +21,7 @@ sub new {
         -test => undef,
     );
 #    print "Looking at $script\n";
-    $script =~ /^test(.*)\.pl$/o;
+    $script =~ /^test(.*)\.t$/o;
     my $name = $1;
     $self{-name} = $name;
     warn "Duplicate test $name\n" if exists $tests{$name};

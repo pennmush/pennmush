@@ -1374,9 +1374,8 @@ db_read_attrs(PENNFILE *f, dbref i, int count)
   }
 
   if (found != count)
-    do_rawlog(LT_ERR,
-              "WARNING: Actual attribute count (%d) different than "
-              "expected count (%d).",
+    do_rawlog(LT_ERR, "WARNING: Actual attribute count (%d) different than "
+                      "expected count (%d).",
               found, count);
 }
 
@@ -2134,6 +2133,24 @@ sql_regexp_fun(sqlite3_context *ctx, int nargs __attribute__((__unused__)),
   sqlite3_result_int(ctx, nmatches > 0 ? 1 : 0);
 }
 
+/* Turn a string holding a base-16 number into an int */
+void
+sql_from_hexstr_fun(sqlite3_context *ctx, int nargs __attribute__((unused)),
+                    sqlite3_value **args)
+{
+  int t = sqlite3_value_type(args[0]);
+  if (t != SQLITE_TEXT && t != SQLITE_BLOB) {
+    return;
+  }
+  const char *hexstr = (const char *) sqlite3_value_text(args[0]);
+  char *end;
+  long num = strtol(hexstr, &end, 16);
+  if (*end != '\0') {
+    return;
+  }
+  sqlite3_result_int64(ctx, num);
+}
+
 /** Open a new connection to a sqlite3 database.
  * If given a NULL file, returns a NEW in-memory database.
  * A zero-length file, returns a new temporary-file based database.
@@ -2181,6 +2198,12 @@ open_sql_db(const char *name, bool nocreate)
          db, "regexp", 2, SQLITE_UTF8 | SQLITE_DETERMINISTIC, NULL,
          sql_regexp_fun, NULL, NULL)) != SQLITE_OK) {
     do_rawlog(LT_ERR, "Unable to register sqlite3 regexp() function: %s",
+              sqlite3_errstr(status));
+  }
+  if ((status = sqlite3_create_function(
+         db, "from_hexstr", 1, SQLITE_UTF8 | SQLITE_DETERMINISTIC, NULL,
+         sql_from_hexstr_fun, NULL, NULL)) != SQLITE_OK) {
+    do_rawlog(LT_ERR, "Unable to register sqlite3 from_hexstr() function: %s",
               sqlite3_errstr(status));
   }
   sqlite3_spellfix_init(db, NULL, NULL);
@@ -2513,11 +2536,10 @@ set_objdata(dbref thing, const char *keybase, void *data)
   }
 
   sqldb = get_shared_db();
-  setter =
-    prepare_statement(sqldb,
-                      "INSERT INTO objdata(dbref, key, ptr) VALUES(?, ?, ?) ON "
-                      "CONFLICT (dbref, key) DO UPDATE SET ptr=excluded.ptr",
-                      "objdata.set");
+  setter = prepare_statement(
+    sqldb, "INSERT INTO objdata(dbref, key, ptr) VALUES(?, ?, ?) ON "
+           "CONFLICT (dbref, key) DO UPDATE SET ptr=excluded.ptr",
+    "objdata.set");
   if (!setter) {
     return NULL;
   }

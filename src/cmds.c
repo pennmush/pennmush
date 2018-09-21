@@ -1830,7 +1830,13 @@ req_write_callback(void *contents, size_t size, size_t nmemb, void *userp)
   struct urlreq *req = userp;
   size_t realsize = size * nmemb;
   sqlite3_str_append(req->body, contents, realsize);
-  return realsize;
+  if (sqlite3_str_length(req->body) >= BUFFER_LEN) {
+    /* Raise an error and abort request. */
+    req->too_big = 1;
+    return 0;
+  } else {
+    return realsize;
+  }
 }
 
 #endif
@@ -1906,6 +1912,7 @@ COMMAND(cmd_fetch)
   req->queue_type = queue_type;
   req->attrname = mush_strdup(s, "urlreq.attrname");
   req->body = sqlite3_str_new(NULL);
+  req->too_big = 0;
   req->pe_regs = pe_regs_create(PE_REGS_ARG | PE_REGS_Q, "cmd_fetch");
   pe_regs_qcopy(req->pe_regs, queue_entry->pe_info->regvals);
 
@@ -1916,8 +1923,9 @@ COMMAND(cmd_fetch)
   curl_easy_setopt(handle, CURLOPT_VERBOSE, 0);
   curl_easy_setopt(handle, CURLOPT_NOPROGRESS, 1);
   curl_easy_setopt(handle, CURLOPT_NOSIGNAL, 1);
-  curl_easy_setopt(handle, CURLOPT_LOW_SPEED_TIME, 60);
-  curl_easy_setopt(handle, CURLOPT_LOW_SPEED_LIMIT, 30);
+  /* 1 minute timeouts should be more than ample for our needs */
+  curl_easy_setopt(handle, CURLOPT_CONNECTTIMEOUT, 60);
+  curl_easy_setopt(handle, CURLOPT_TIMEOUT, 60);
   curl_easy_setopt(handle, CURLOPT_USERAGENT, "PennMUSH/1.8");
   curl_easy_setopt(handle, CURLOPT_WRITEFUNCTION, req_write_callback);
   curl_easy_setopt(handle, CURLOPT_WRITEDATA, req);

@@ -341,6 +341,8 @@ PENNCONF conftable[] = {
   {"connlog_db", cf_str, options.connlog_db, sizeof options.help_db, 0, NULL},
   {"dict_file", cf_str, options.dict_file, sizeof options.dict_file, 0,
    "files"},
+  {"colors_file", cf_str, options.colors_file, sizeof options.colors_file, 0,
+   "files"},
 
   {NULL, NULL, NULL, 0, 0, NULL}};
 
@@ -640,9 +642,8 @@ CONFIG_FUNC(cf_priv)
 
   if (is_strict_integer(val)) {
     if (!from_cmd) {
-      do_rawlog(LT_ERR,
-                "CONFIG: Option '%s' set to an integer. Please update "
-                "to a list of values.",
+      do_rawlog(LT_ERR, "CONFIG: Option '%s' set to an integer. Please update "
+                        "to a list of values.",
                 opt);
     }
     *((privbits *) loc) = parse_integer(val);
@@ -929,9 +930,8 @@ config_set(const char *opt, char *val, int source, int restrictions)
         return 0;
       }
     } else {
-      do_rawlog(LT_ERR,
-                "CONFIG: restrict_attribute %s requires a restriction "
-                "(use 'none' for none)",
+      do_rawlog(LT_ERR, "CONFIG: restrict_attribute %s requires a restriction "
+                        "(use 'none' for none)",
                 val);
       return 0;
     }
@@ -1351,6 +1351,7 @@ conf_default_set(void)
   options.use_connlog = 1;
   strcpy(options.connlog_db, "log/connlog.db");
   strcpy(options.dict_file, "");
+  strcpy(options.colors_file, "txt/colors.json");
 }
 
 #undef set_string_option
@@ -1485,9 +1486,8 @@ config_file_checks(void)
   for (cp = hash_firstentry(&local_options); cp;
        cp = hash_nextentry(&local_options)) {
     if (!(cp->flags & (CP_OVERRIDDEN | CP_OPTIONAL))) {
-      do_rawlog(LT_ERR,
-                "CONFIG: local directive '%s' missing from cnf file. "
-                "Using default value.",
+      do_rawlog(LT_ERR, "CONFIG: local directive '%s' missing from cnf file. "
+                        "Using default value.",
                 cp->name);
     }
   }

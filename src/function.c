@@ -32,10 +32,7 @@
 #include "mushsql.h"
 #include "log.h"
 #include "charconv.h"
-
-#ifndef WITHOUT_WEBSOCKETS
 #include "websock.h"
-#endif /* undef WITHOUT_WEBSOCKETS */
 
 static void func_hash_insert(const char *name, FUN *func);
 extern void local_functions(void);
@@ -889,10 +886,8 @@ FUNTAB flist[] = {
 #ifdef DEBUG_PENNMUSH
   {"PE_REGS_DUMP", fun_pe_regs_dump, 0, 1, FN_REG},
 #endif /* DEBUG_PENNMUSH */
-#ifndef WITHOUT_WEBSOCKETS
   {"WSJSON", fun_websocket_json, 1, 2, FN_REG},
   {"WSHTML", fun_websocket_html, 1, 2, FN_REG},
-#endif /* undef WITHOUT_WEBSOCKETS */
   {NULL, NULL, 0, 0, 0}};
 
 /** Map of function restriction bits to textual names */

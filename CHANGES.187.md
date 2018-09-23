@@ -37,8 +37,8 @@ Fixes
 
 * `connrecord()` returns an error if extended connection logging is disabled. [SW]
 * `connlog()` didn't handle future dates very well. [SW]
-* dbtools programs couludn't handle attributes with quote marks in the name. Reported by [MG]. [SW,1228]
-
+* dbtools programs couldn't handle attributes with quote marks in the name. Reported by [MG]. [SW,1228]
+* @http requests in-progress during a @shutdown/reboot would leak sockets. [SW,1246]
 
 Version 1.8.7 patchlevel 0 Aug 10 2018
 ======================================

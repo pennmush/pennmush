@@ -687,6 +687,23 @@ set_keepalive(int s __attribute__((__unused__)),
   return;
 }
 
+/** Set the CLOEXEC bit on a descriptor
+ *
+ * \param fd the file descriptor to set
+ */
+void
+set_close_exec(int fd)
+{
+#ifdef HAVE_FCNTL
+  int flags = fcntl(fd, F_GETFD);
+  if (flags < 0) {
+    return;
+  }
+  flags |= FD_CLOEXEC;
+  fcntl(fd, F_SETFD, flags);
+#endif
+}
+
 /** Connect a socket, possibly making it nonblocking first.
  * From UNP, with changes. If nsec > 0, we set the socket
  * nonblocking and connect with timeout. The socket is STILL

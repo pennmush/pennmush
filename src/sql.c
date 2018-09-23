@@ -37,6 +37,9 @@
 #include <ctype.h>
 #include <string.h>
 #include <stdlib.h>
+#ifdef HAVE_PTHREAD_H
+#include <pthread.h>
+#endif
 
 #ifdef WIN32
 #include <winsock2.h>
@@ -1415,6 +1418,18 @@ penn_pg_free_sql_query(PGresult *qres)
 
 void sql_regexp_fun(sqlite3_context *, int, sqlite3_value **);
 
+#ifdef HAVE_PTHREAD_ATFORK
+/* Close before a fork. Next query will reopen the database */
+static void
+penn_sqlite3_prefork(void)
+{
+  if (sqlite3_connp) {
+    sqlite3_close_v2(sqlite3_connp);
+    sqlite3_connp = NULL;
+  }
+}
+#endif
+
 static int
 penn_sqlite3_sql_init(void)
 {
@@ -1444,6 +1459,13 @@ penn_sqlite3_sql_init(void)
     }
 
     queue_event(SYSEVENT, "SQL`CONNECT", "%s", "sqlite3");
+#ifdef HAVE_PTHREAD_ATFORK
+    static bool atfork = 0;
+    if (!atfork) {
+      pthread_atfork(penn_sqlite3_prefork, NULL, NULL);
+      atfork = 1;
+    }
+#endif
     return 1;
   }
 }

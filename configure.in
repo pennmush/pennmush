@@ -130,7 +130,7 @@ AC_CHECK_HEADERS([sys/socket.h arpa/inet.h libintl.h netdb.h netinet/tcp.h])
 AC_CHECK_HEADERS([netinet/in.h sys/un.h sys/resource.h sys/event.h sys/uio.h])
 AC_CHECK_HEADERS([poll.h sys/select.h sys/inotify.h langinfo.h crypt.h])
 AC_CHECK_HEADERS([event2/event.h event2/dns.h fenv.h sys/param.h])
-AC_CHECK_HEADERS([sys/prctl.h byteswap.h endian.h sys/endian.h])
+AC_CHECK_HEADERS([sys/prctl.h byteswap.h endian.h sys/endian.h pthread.h])
 AC_CHECK_HEADERS([sys/ucred.h], [], [], [
 AC_INCLUDES_DEFAULT
 #ifdef HAVE_SYS_PARAM_H
@@ -333,6 +333,18 @@ AC_CHECK_FUNCS([getc_unlocked fgets_unlocked putc_unlocked fputs_unlocked])
 AC_CHECK_HEADERS([memory.h strings.h])
 AC_CHECK_FUNCS([fdatasync usleep fullfsync localtime_r localtime_s gmtime_r isnan malloc_usable_size])
 AC_FUNC_STRERROR_R
+SAVED_CC="${CC}"
+CC="${PTHREAD_CC}"
+SAVED_CFLAGS="${CFLAGS}"
+CFLAGS="${CFLAGS} ${PTHREAD_CFLAGS}"
+SAVED_LIBS="$LIBS"
+LIBS="${LIBS} ${PTHREAD_LIBS}"
+AC_CHECK_FUNCS([pthread_atfork])
+CC="${SAVED_CC}"
+CFLAGS="${SAVED_CFLAGS}"
+LIBS="${SAVED_LIBS}"
+
+
 
 ### Variables, constants, defines and other misc. stuff
 

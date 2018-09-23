@@ -1839,6 +1839,14 @@ req_write_callback(void *contents, size_t size, size_t nmemb, void *userp)
   }
 }
 
+static int
+req_set_cloexec(void *clientp __attribute__((__unused__)), curl_socket_t fd,
+                curlsocktype purpose __attribute__((__unused__)))
+{
+  set_close_exec(fd);
+  return CURL_SOCKOPT_OK;
+}
+
 #endif
 
 COMMAND(cmd_fetch)
@@ -1923,6 +1931,7 @@ COMMAND(cmd_fetch)
   curl_easy_setopt(handle, CURLOPT_VERBOSE, 0);
   curl_easy_setopt(handle, CURLOPT_NOPROGRESS, 1);
   curl_easy_setopt(handle, CURLOPT_NOSIGNAL, 1);
+  curl_easy_setopt(handle, CURLOPT_SOCKOPTFUNCTION, req_set_cloexec);
   /* 1 minute timeouts should be more than ample for our needs */
   curl_easy_setopt(handle, CURLOPT_CONNECTTIMEOUT, 60);
   curl_easy_setopt(handle, CURLOPT_TIMEOUT, 60);

@@ -37,7 +37,8 @@ Fixes
 
 * `connrecord()` returns an error if extended connection logging is disabled. [SW]
 * `connlog()` didn't handle future dates very well. [SW]
-* dbtools programs couludn't handle attributes with quote marks in the name. Reported by [MT]. [SW,1228]
+* dbtools programs couldn't handle attributes with quote marks in the name. Reported by [MT]. [SW,1228]
+* `lattrp()` and similar functions didn't behave the same with attribute trees as 1.8.6. Reported by Mercutio. [SW,1233]
 
 Version 1.8.7 patchlevel 0 Aug 10 2018
 ======================================

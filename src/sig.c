@@ -24,6 +24,7 @@
 #include "conf.h"
 #include "mysocket.h"
 #include "sig.h"
+#include "log.h"
 
 int sigrecv_fd = -1;
 int signotifier_fd = -1;

@@ -738,7 +738,7 @@ time_string(void)
 
   now = time(NULL);
   ltm = localtime(&now);
-  strftime(buffer, 100, "%m/%d %T", ltm);
+  strftime(buffer, 100, "[%Y-%m-%d %H:%M:%S]", ltm);
 
   return buffer;
 }

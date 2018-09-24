@@ -251,6 +251,12 @@ check_parent_kqueue(evutil_socket_t fd, short what __attribute__((__unused__)),
 }
 #endif
 
+void
+log_cb(int severity __attribute__((__unused__)), const char *msg)
+{
+  fputerr(msg);
+}
+
 int
 main(void)
 {
@@ -268,6 +274,7 @@ main(void)
 
   main_loop = event_base_new();
   resolver = evdns_base_new(main_loop, 1);
+  event_set_log_callback(log_cb);
 
 #if defined(HAVE_PRCTL)
   if (prctl(PR_SET_PDEATHSIG, SIGUSR1, 0, 0, 0) == 0) {

@@ -534,6 +534,12 @@ check_parent_kqueue(evutil_socket_t fd, short what __attribute__((__unused__)),
 }
 #endif
 
+void
+log_cb(int severity __attribute__((__unused__)), const char *msg)
+{
+  errputs(stderr, msg);
+}
+
 int
 main(int argc __attribute__((__unused__)),
      char **argv __attribute__((__unused__)))
@@ -573,6 +579,7 @@ main(int argc __attribute__((__unused__)),
 
   main_loop = event_base_new();
   resolver = evdns_base_new(main_loop, 1);
+  event_set_log_callback(log_cb);
 
   /* Listen for incoming connections on the SSL port */
   ssl_sock = make_socket(cf.ssl_port, SOCK_STREAM, NULL, NULL, cf.ssl_ip_addr);

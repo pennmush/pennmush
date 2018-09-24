@@ -379,18 +379,18 @@ make_unix_socket(const char *filename, int socktype)
   unlink(filename);
 
   if ((s = socket(AF_LOCAL, socktype, 0)) < 0) {
-    perror("socket");
+    penn_perror("socket");
     return -1;
   }
 
   if (bind(s, (const struct sockaddr *) &addr, sizeof addr) < 0) {
-    perror("bind");
+    penn_perror("bind");
     close(s);
     return -1;
   }
 
   if (listen(s, 5) < 0) {
-    perror("listen");
+    penn_perror("listen");
     close(s);
     return -1;
   }
@@ -416,7 +416,7 @@ connect_unix_socket(const char *filename, int socktype)
   strncpy(addr.sun_path, filename, sizeof(addr.sun_path) - 1);
 
   if ((s = socket(AF_LOCAL, socktype, 0)) < 0) {
-    perror("socket");
+    penn_perror("socket");
     return -1;
   }
 
@@ -477,7 +477,7 @@ send_with_creds(int s, void *buf, size_t len)
     creds->gid = getegid();
 
     if (setsockopt(s, SOL_SOCKET, SO_PASSCRED, &sockopt, sizeof sockopt) < 0)
-      perror("setsockopt SO_PASSCRED");
+      penn_perror("setsockopt SO_PASSCRED");
 
     slen = sendmsg(s, &msg, 0);
   }
@@ -525,7 +525,7 @@ recv_with_creds(int s, void *buf, size_t len, int *remote_pid, int *remote_uid)
     socklen_t credlen = sizeof creds;
 
     if (getsockopt(s, SOL_SOCKET, SO_PEERCRED, &creds, &credlen) < 0) {
-      perror("getsockopt SO_PEERCRED");
+      penn_perror("getsockopt SO_PEERCRED");
     } else {
       *remote_pid = creds.pid;
       *remote_uid = creds.uid;
@@ -536,7 +536,7 @@ recv_with_creds(int s, void *buf, size_t len, int *remote_pid, int *remote_uid)
     struct unpcbid creds;
     socklen_t credlen = sizeof creds;
     if (getsockopt(s, 0, LOCAL_PEEREID, &creds, &credlen) < 0) {
-      perror("getsockopt LOCAL_PEEREID");
+      penn_perror("getsockopt LOCAL_PEEREID");
     } else {
       *remote_pid = creds.unp_pid;
       *remote_uid = creds.unp_euid;
@@ -547,7 +547,7 @@ recv_with_creds(int s, void *buf, size_t len, int *remote_pid, int *remote_uid)
     struct sockpeercred creds;
     socklen_t credlen = sizeof creds;
     if (getsockopt(s, SOL_SOCKET, SO_PEERCRED, &creds, &credlen) < 0) {
-      perror("getsockopt SO_PEERCRED");
+      penn_perror("getsockopt SO_PEERCRED");
     } else {
       *remote_pid = creds.pid;
       *remote_uid = creds.uid;
@@ -558,7 +558,7 @@ recv_with_creds(int s, void *buf, size_t len, int *remote_pid, int *remote_uid)
     struct xucred creds;
     socklen_t credlen = sizeof creds;
     if (getsockopt(s, 0, LOCAL_PEERCRED, &creds, &credlen) < 0) {
-      perror("getsockopt LOCAL_PEERCRED");
+      penn_perror("getsockopt LOCAL_PEERCRED");
     } else {
       /* OS X doesn't pass the pid of the process on the other end of
          the socket. */

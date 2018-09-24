@@ -261,7 +261,7 @@ main(void)
 
 #ifdef HAVE_PLEDGE
   if (pledge("stdio proc flock inet dns", NULL) < 0) {
-    perror("pledge");
+    penn_perror("pledge");
   }
 #endif
 
@@ -359,7 +359,7 @@ main(void)
 
 #ifdef HAVE_PLEDGE
   if (pledge("stdio flock dns proc", NULL) < 0) {
-    perror("pledge");
+    penn_perror("pledge");
   }
 #endif
 

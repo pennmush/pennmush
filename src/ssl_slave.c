@@ -559,7 +559,7 @@ main(int argc __attribute__((__unused__)),
 
 #ifdef HAVE_PLEDGE
   if (pledge("stdio proc rpath inet flock unix dns", NULL) < 0) {
-    perror("pledge");
+    penn_perror("pledge");
   }
 #endif
 

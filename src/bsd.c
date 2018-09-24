@@ -113,6 +113,7 @@
 #include "map_file.h"
 #include "tests.h"
 #include "websock.h"
+#include "log.h"
 
 #ifndef WIN32
 #include "wait.h"
@@ -534,7 +535,7 @@ main(int argc, char **argv)
 #ifdef HAVE_PLEDGE
   if (pledge("stdio rpath wpath cpath inet flock unix dns proc exec id ",
              NULL) < 0) {
-    perror("pledge");
+    perror("pledge"); /* Happens before logfiles are opened; no penn_perror() */
   }
 #endif
 

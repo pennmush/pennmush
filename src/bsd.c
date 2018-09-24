@@ -1718,13 +1718,13 @@ new_connection(int oldsock, int *result, conn_source source)
     int remote_uid = -1;
     bool good_to_read = 1;
 
-/* As soon as the SSL slave opens a new connection to the mush, it
-   writes a string of the format 'IP^HOSTNAME\r\n'. This will thus
-   not block unless somebody's being naughty. People obviously can
-   be. So we'll wait a short time for readable data, and use a
-   non-blocking socket read anyways. If the client doesn't send
-   the hostname string fast enough, oh well.
- */
+    /* As soon as the SSL slave opens a new connection to the mush, it
+       writes a string of the format 'IP^HOSTNAME\r\n'. This will thus
+       not block unless somebody's being naughty. People obviously can
+       be. So we'll wait a short time for readable data, and use a
+       non-blocking socket read anyways. If the client doesn't send
+       the hostname string fast enough, oh well.
+     */
 
 #ifdef HAVE_POLL
     {
@@ -2075,9 +2075,10 @@ fcache_load(dbref player)
     who = fcache_read(&fcache.who_fcache[i], options.who_file[i]);
 
     if (player != NOTHING) {
-      notify_format(player, T("%s sizes:  NewUser...%d  Connect...%d  "
-                              "Guest...%d  Motd...%d  Wizmotd...%d  Quit...%d  "
-                              "Register...%d  Down...%d  Full...%d  Who...%d"),
+      notify_format(player,
+                    T("%s sizes:  NewUser...%d  Connect...%d  "
+                      "Guest...%d  Motd...%d  Wizmotd...%d  Quit...%d  "
+                      "Register...%d  Down...%d  Full...%d  Who...%d"),
                     i ? "HTMLFile" : "File", new, conn, guest, motd, wiz, quit,
                     reg, down, full, who);
     }
@@ -3310,8 +3311,7 @@ process_input_helper(DESC *d, char *tbuf1, int got)
         if (options.use_ws && is_websocket(d->raw_input)) {
           /* Continue processing as a WebSockets upgrade request. */
           d->conn_flags |= CONN_WEBSOCKETS_REQUEST;
-        } else
-        {
+        } else {
           if (process_http_start(d, d->raw_input)) {
             if ((qend - q) > 0) {
               if (*q == '\r')
@@ -3531,14 +3531,15 @@ http_bounce_mud_url(DESC *d)
   char buf[BUFFER_LEN];
   char *bp = buf;
   bool has_url = strncmp(MUDURL, "http", 4) == 0;
-  safe_format(buf, &bp, "HTTP/1.1 200 OK\r\n"
-                        "Content-Type: text/html; charset:iso-8859-1\r\n"
-                        "Pragma: no-cache\r\n"
-                        "Connection: Close\r\n"
-                        "\r\n"
-                        "<!DOCTYPE html>\r\n"
-                        "<HTML><HEAD>"
-                        "<TITLE>Welcome to %s!</TITLE>",
+  safe_format(buf, &bp,
+              "HTTP/1.1 200 OK\r\n"
+              "Content-Type: text/html; charset:iso-8859-1\r\n"
+              "Pragma: no-cache\r\n"
+              "Connection: Close\r\n"
+              "\r\n"
+              "<!DOCTYPE html>\r\n"
+              "<HTML><HEAD>"
+              "<TITLE>Welcome to %s!</TITLE>",
               MUDNAME);
   if (has_url) {
     safe_format(buf, &bp, "<meta http-equiv=\"refresh\" content=\"5; url=%s\">",
@@ -4420,8 +4421,9 @@ check_connect(DESC *d, const char *msg)
     }
     if (!options.create_allow) {
       fcache_dump(d, fcache.register_fcache, NULL, NULL);
-      do_rawlog(LT_CONN, "Refused registration (creation disabled) for %s from "
-                         "%s on descriptor %d.\n",
+      do_rawlog(LT_CONN,
+                "Refused registration (creation disabled) for %s from "
+                "%s on descriptor %d.\n",
                 user, d->addr, d->descriptor);
       queue_event(SYSEVENT, "SOCKET`CREATEFAIL", "%d,%s,%d,%s,%s",
                   d->descriptor, d->ip, mark_failed(d->ip),
@@ -7549,8 +7551,8 @@ do_reboot(dbref player, int flag)
   execl("pennmush.exe", "pennmush.exe", "/run", NULL);
 #endif /* WIN32 */
   /* Shouldn't ever get here, but just in case... */
-  fprintf(stderr, "Unable to restart game: exec: %s\nAborting.",
-          strerror(errno));
+  do_rawlog(LT_ERR, "Unable to restart game: exec: %s\nAborting.",
+            strerror(errno));
   exit(1);
 }
 
@@ -7676,8 +7678,9 @@ file_watch_event_in(int fd)
             do_rawlog(LT_TRACE, "Reindexing help file %s.", file);
             WATCH(file);
           } else {
-            do_rawlog(LT_ERR, "Got status change for file '%s' but I don't "
-                              "know what to do with it! Mask 0x%x",
+            do_rawlog(LT_ERR,
+                      "Got status change for file '%s' but I don't "
+                      "know what to do with it! Mask 0x%x",
                       file, ev->mask);
           }
           lastwd = ev->wd;

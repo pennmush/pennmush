@@ -140,8 +140,9 @@ evdns_getnameinfo(struct evdns_base *base, const struct sockaddr *addr,
                                              callback, data);
   } else {
     lock_file(stderr);
-    fprintf(stderr, "info_slave: Attempt to resolve unknown socket family %d\n",
-            addr->sa_family);
+    fprintf(stderr,
+            "%s info_slave: Attempt to resolve unknown socket family %d\n",
+            time_string(), addr->sa_family);
     unlock_file(stderr);
     return NULL;
   }
@@ -303,8 +304,8 @@ main(void)
   event_add(watch_request, NULL);
 
   lock_file(stderr);
-  fprintf(stderr, "info_slave: starting event loop using %s.\n",
-          event_base_get_method(main_loop));
+  fprintf(stderr, "%s info_slave: starting event loop using %s.\n",
+          time_string(), event_base_get_method(main_loop));
   unlock_file(stderr);
 
   event_base_dispatch(main_loop);
@@ -508,10 +509,10 @@ eventwait_init(void)
 #ifdef HAVE_KQUEUE
   kqueue_id = kqueue();
   lock_file(stderr);
-  fputs("info_slave: trying kqueue event loop... ", stderr);
+  fprintf(stderr, "%s info_slave: trying kqueue event loop... ", time_string());
   if (kqueue_id < 0) {
     unlock_file(stderr);
-    penn_perror("error");
+    penn_perror("kqueue");
   } else {
     fputs("ok. Using kqueue!\n", stderr);
     unlock_file(stderr);

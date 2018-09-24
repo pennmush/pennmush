@@ -412,7 +412,7 @@ do_rawlog(enum log_type logtype, const char *fmt, ...)
 {
   struct log_stream *log;
   struct tm *ttm;
-  char timebuf[18];
+  char timebuf[48];
   char tbuf1[BUFFER_LEN + 50];
   va_list args;
 

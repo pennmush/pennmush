@@ -101,6 +101,20 @@ void mush_panic(const char *);
 static int connect_nonb(int sockfd, const struct sockaddr *saptr,
                         socklen_t salen, bool nonb);
 
+static const char *
+time_string(void)
+{
+  static char buffer[100];
+  time_t now;
+  struct tm *ltm;
+
+  now = time(NULL);
+  ltm = localtime(&now);
+  strftime(buffer, 100, "[%Y-%m-%d %H:%M:%S]", ltm);
+
+  return buffer;
+}
+
 bool
 is_blocking_err(int code)
 {
@@ -192,8 +206,8 @@ make_socket_conn(const char *host, int socktype, struct sockaddr *myiterface,
 
   if ((res = getaddrinfo(host, cport, &hints, &server)) != 0) {
     lock_file(stderr);
-    fprintf(stderr, "In getaddrinfo: %s\n", gai_strerror(res));
-    fprintf(stderr, "Host: %s Port %hu\n", host, port);
+    fprintf(stderr, "%s In getaddrinfo: %s (Host %s Port %hu)\n", time_string(),
+            gai_strerror(res), host, port);
     fflush(stderr);
     unlock_file(stderr);
     return -1;
@@ -201,7 +215,8 @@ make_socket_conn(const char *host, int socktype, struct sockaddr *myiterface,
 
   if (!server) {
     lock_file(stderr);
-    fprintf(stderr, "Couldn't get address for host %s port %hu\n", host, port);
+    fprintf(stderr, "%s Couldn't get address for host %s port %hu\n",
+            time_string(), host, port);
     fflush(stderr);
     unlock_file(stderr);
     return -1;
@@ -238,7 +253,8 @@ make_socket_conn(const char *host, int socktype, struct sockaddr *myiterface,
 
   if (server == NULL) {
     lock_file(stderr);
-    fprintf(stderr, "Couldn't connect to %s on port %hu\n", host, port);
+    fprintf(stderr, "%s Couldn't connect to %s on port %hu\n", time_string(),
+            host, port);
     fflush(stderr);
     unlock_file(stderr);
     return -1;
@@ -289,15 +305,20 @@ make_socket(Port_t port, int socktype, union sockaddr_u *addr, socklen_t *len,
     host = NULL;
 
   if ((res = getaddrinfo(host, cport, &hints, &server)) != 0) {
-    fprintf(stderr, "In getaddrinfo: %s\n", gai_strerror(res));
-    fprintf(stderr, "Host: %s Port %hu\n", host, port);
+    lock_file(stderr);
+    fprintf(stderr, "%s In getaddrinfo: %s (Host: %s Port %hu)\n",
+            time_string(), gai_strerror(res), host, port);
+    unlock_file(stderr);
     exit(3);
   }
 
   save = server;
 
   if (!server) {
-    fprintf(stderr, "Couldn't get address for host %s port %hu\n", host, port);
+    lock_file(stderr);
+    fprintf(stderr, "%s Couldn't get address for host %s port %hu\n",
+            time_string(), host, port);
+    unlock_file(stderr);
     exit(3);
   }
 
@@ -329,10 +350,12 @@ make_socket(Port_t port, int socktype, union sockaddr_u *addr, socklen_t *len,
 #else
     if (errno == EADDRINUSE) {
 #endif
+      lock_file(stderr);
       fprintf(stderr,
-              "Another process (Possibly another copy of this mush?) "
+              "%s Another process (Possibly another copy of this mush?) "
               "appears to be using port %hu. Aborting.\n",
-              port);
+              time_string(), port);
+      unlock_file(stderr);
       exit(1);
     }
 
@@ -341,7 +364,9 @@ make_socket(Port_t port, int socktype, union sockaddr_u *addr, socklen_t *len,
   } while ((server = server->ai_next) != NULL);
 
   if (server == NULL) {
-    fprintf(stderr, "Couldn't bind to port %d\n", port);
+    lock_file(stderr);
+    fprintf(stderr, "%s Couldn't bind to port %d\n", time_string(), port);
+    unlock_file(stderr);
     exit(4);
   }
 
@@ -353,8 +378,11 @@ make_socket(Port_t port, int socktype, union sockaddr_u *addr, socklen_t *len,
   }
 
   freeaddrinfo(save);
-  fprintf(stderr, "Listening on port %d using IPv%d.\n", port, ipv);
+  lock_file(stderr);
+  fprintf(stderr, "%s Listening on port %d using IPv%d.\n", time_string(), port,
+          ipv);
   fflush(stderr);
+  unlock_file(stderr);
   listen(s, 5);
   return s;
 }
@@ -395,7 +423,10 @@ make_unix_socket(const char *filename, int socktype)
     return -1;
   }
 
-  fprintf(stderr, "Listening on socket file %s (fd %d)\n", filename, s);
+  lock_file(stderr);
+  fprintf(stderr, "%s Listening on socket file %s (fd %d)\n", time_string(),
+          filename, s);
+  unlock_file(stderr);
 
   return s;
 }
@@ -665,23 +696,32 @@ set_keepalive(int s __attribute__((__unused__)),
 
   /* enable TCP keepalive */
   if (setsockopt(s, SOL_SOCKET, SO_KEEPALIVE, (void *) &keepalive,
-                 sizeof(keepalive)) == -1)
-    fprintf(stderr, "[%d] could not set SO_KEEPALIVE: %s\n", s,
-            strerror(errno));
+                 sizeof(keepalive)) == -1) {
+    lock_file(stderr);
+    fprintf(stderr, "%s [%d] could not set SO_KEEPALIVE: %s\n", time_string(),
+            s, strerror(errno));
+    unlock_file(stderr);
+  }
 
 /* And set the ping time to something reasonable instead of the
    default 2 hours. Linux and possibly others use TCP_KEEPIDLE to do
    this. OS X and possibly others use TCP_KEEPALIVE. */
 #if defined(TCP_KEEPIDLE)
   if (setsockopt(s, IPPROTO_TCP, TCP_KEEPIDLE, (void *) &keepidle,
-                 sizeof(keepidle)) == -1)
-    fprintf(stderr, "[%d] could not set TCP_KEEPIDLE: %s\n", s,
-            strerror(errno));
+                 sizeof(keepidle)) == -1) {
+    lock_file(stderr);
+    fprintf(stderr, "%s [%d] could not set TCP_KEEPIDLE: %s\n", time_string(),
+            s, strerror(errno));
+    unlock_file(stderr);
+  }
 #elif defined(TCP_KEEPALIVE)
   if (setsockopt(s, IPPROTO_TCP, TCP_KEEPALIVE, (void *) &keepidle,
-                 sizeof(keepidle)) == -1)
-    fprintf(stderr, "[%d] could not set TCP_KEEPALIVE: %s\n", s,
-            strerror(errno));
+                 sizeof(keepidle)) == -1) {
+    lock_file(stderr);
+    fprintf(stderr, "%s [%d] could not set TCP_KEEPALIVE: %s\n", time_string(),
+            s, strerror(errno));
+    unlock_file(stderr);
+  }
 #endif
 #endif
   return;

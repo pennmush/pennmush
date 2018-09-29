@@ -756,7 +756,7 @@ void
 penn_perror(const char *err)
 {
   lock_file(stderr);
-  fprintf(stderr, "[%s] info_slave: %s: %s\n", time_string(), err,
+  fprintf(stderr, "%s info_slave: %s: %s\n", time_string(), err,
           strerror(errno));
   unlock_file(stderr);
 }
@@ -766,6 +766,6 @@ void
 fputerr(const char *msg)
 {
   lock_file(stderr);
-  fprintf(stderr, "[%s] info_slave: %s\n", time_string(), msg);
+  fprintf(stderr, "%s info_slave: %s\n", time_string(), msg);
   unlock_file(stderr);
 }

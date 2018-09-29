@@ -661,7 +661,7 @@ void
 penn_perror(const char *err)
 {
   lock_file(stderr);
-  fprintf(stderr, "[%s] ssl_slave: %s: %s\n", time_string(), err,
+  fprintf(stderr, "%s ssl_slave: %s: %s\n", time_string(), err,
           strerror(errno));
   unlock_file(stderr);
 }
@@ -684,7 +684,7 @@ void
 errputs(FILE *fp, const char *msg)
 {
   lock_file(fp);
-  fprintf(fp, "[%s] ssl_slave: %s\n", time_string(), msg);
+  fprintf(fp, "%s ssl_slave: %s\n", time_string(), msg);
   unlock_file(fp);
 }
 

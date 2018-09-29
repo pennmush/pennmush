@@ -2262,9 +2262,8 @@ get_sql_db_id(sqlite3 *db, int *app_id, int *version)
 
 /** Run PRAGMA optmize on a sqlite3 database */
 bool
-optimize_db(void *vdb)
+optimize_db(sqlite3 *db)
 {
-  sqlite3 *db = vdb;
   char *err;
   if (sqlite3_exec(db, "PRAGMA optimize", NULL, NULL, &err) != SQLITE_OK) {
     do_rawlog(LT_ERR, "Unable to optimize database: %s", err);

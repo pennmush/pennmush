@@ -84,6 +84,16 @@ conndb_postfork_parent(void)
 
 #endif
 
+static bool
+connlog_optimize(void *vptr __attribute__((__unused__)))
+{
+  if (connlog_db) {
+    return optimize_db(connlog_db);
+  } else {
+    return false;
+  }
+}
+
 /** Intialize connlog database.
  *
  * \param rebooting true if coming up from a reboot.
@@ -277,7 +287,7 @@ init_conndb(bool rebooting)
   }
 
   sq_register_loop(90, checkpoint_event, NULL, NULL);
-  sq_register_loop(25 * 60 * 60 + 300, optimize_db, connlog_db, NULL);
+  sq_register_loop(25 * 60 * 60 + 300, connlog_optimize, NULL, NULL);
 
 #ifdef HAVE_PTHREAD_ATFORK
   pthread_atfork(conndb_prefork, conndb_postfork_parent, NULL);

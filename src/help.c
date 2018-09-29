@@ -416,6 +416,16 @@ helpdb_postfork_parent(void)
 
 #endif
 
+static bool
+help_optimize(void *vptr __attribute__((__unused__)))
+{
+  if (help_db) {
+    return optimize_db(help_db);
+  } else {
+    return false;
+  }
+}
+
 /** Initialize the helpfile hashtable, which contains the names of thes
  * help files.
  */
@@ -490,7 +500,7 @@ init_help_files(void)
       return;
     }
   }
-  sq_register_loop(26 * 60 * 60 + 300, optimize_db, help_db, NULL);
+  sq_register_loop(26 * 60 * 60 + 300, help_optimize, NULL, NULL);
   init_private_vocab();
   hashinit(&help_files, 8);
 #ifdef HAVE_PTHREAD_ATFORK

@@ -807,7 +807,7 @@ init_game_postdb(const char *conf)
 #ifndef SSL_SLAVE
   if (!ssl_init(options.ssl_private_key_file, options.ssl_ca_file,
                 options.ssl_ca_dir, options.ssl_require_client_cert)) {
-    fprintf(stderr, "SSL initialization failure\n");
+    do_rawlog(LT_ERR, "SSL initialization failure");
     options.ssl_port = 0; /* Disable ssl */
   }
 #endif
@@ -2512,8 +2512,8 @@ db_open_write(const char *fname)
   if (getcwd(workdir, BUFFER_LEN)) {
     if (chdir(workdir) < 0)
 #endif
-      fprintf(stderr, "chdir to %s failed in db_open_write, errno %d (%s)\n",
-              workdir, errno, strerror(errno));
+      do_rawlog(LT_ERR, "chdir to %s failed in db_open_write, errno %d (%s)",
+                workdir, errno, strerror(errno));
   } else {
     /* If this fails, we probably can't write to a log, either, though */
     fprintf(stderr, "getcwd failed during db_open_write, errno %d (%s)\n",

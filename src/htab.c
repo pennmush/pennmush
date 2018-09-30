@@ -55,6 +55,7 @@
 #include "hash_function.h"
 #include "htab.h"
 #include "mymalloc.h"
+#include "log.h"
 
 /* Temporary prototypes to make the compiler happy. */
 char *mush_strdup(const char *s, const char *check) __attribute_malloc__;
@@ -224,7 +225,7 @@ hash_resize(HASHTAB *htab, int newsize, int hashseed_offset)
 
   /* Massive overkill here */
   if (resize_calls > 150) {
-    fputs("Ooops. Too many attempts to resize a hash table.\n", stderr);
+    do_rawlog(LT_ERR, "Ooops. Too many attempts to resize a hash table.");
     return false;
   }
 

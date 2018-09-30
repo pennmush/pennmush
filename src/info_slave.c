@@ -140,8 +140,9 @@ evdns_getnameinfo(struct evdns_base *base, const struct sockaddr *addr,
                                              callback, data);
   } else {
     lock_file(stderr);
-    fprintf(stderr, "info_slave: Attempt to resolve unknown socket family %d\n",
-            addr->sa_family);
+    fprintf(stderr,
+            "%s info_slave: Attempt to resolve unknown socket family %d\n",
+            time_string(), addr->sa_family);
     unlock_file(stderr);
     return NULL;
   }
@@ -250,6 +251,12 @@ check_parent_kqueue(evutil_socket_t fd, short what __attribute__((__unused__)),
 }
 #endif
 
+void
+log_cb(int severity __attribute__((__unused__)), const char *msg)
+{
+  fputerr(msg);
+}
+
 int
 main(void)
 {
@@ -261,12 +268,13 @@ main(void)
 
 #ifdef HAVE_PLEDGE
   if (pledge("stdio proc flock inet dns", NULL) < 0) {
-    perror("pledge");
+    penn_perror("pledge");
   }
 #endif
 
   main_loop = event_base_new();
   resolver = evdns_base_new(main_loop, 1);
+  event_set_log_callback(log_cb);
 
 #if defined(HAVE_PRCTL)
   if (prctl(PR_SET_PDEATHSIG, SIGUSR1, 0, 0, 0) == 0) {
@@ -303,8 +311,8 @@ main(void)
   event_add(watch_request, NULL);
 
   lock_file(stderr);
-  fprintf(stderr, "info_slave: starting event loop using %s.\n",
-          event_base_get_method(main_loop));
+  fprintf(stderr, "%s info_slave: starting event loop using %s.\n",
+          time_string(), event_base_get_method(main_loop));
   unlock_file(stderr);
 
   event_base_dispatch(main_loop);
@@ -359,7 +367,7 @@ main(void)
 
 #ifdef HAVE_PLEDGE
   if (pledge("stdio flock dns proc", NULL) < 0) {
-    perror("pledge");
+    penn_perror("pledge");
   }
 #endif
 
@@ -508,10 +516,10 @@ eventwait_init(void)
 #ifdef HAVE_KQUEUE
   kqueue_id = kqueue();
   lock_file(stderr);
-  fputs("info_slave: trying kqueue event loop... ", stderr);
+  fprintf(stderr, "%s info_slave: trying kqueue event loop... ", time_string());
   if (kqueue_id < 0) {
     unlock_file(stderr);
-    penn_perror("error");
+    penn_perror("kqueue");
   } else {
     fputs("ok. Using kqueue!\n", stderr);
     unlock_file(stderr);
@@ -738,7 +746,7 @@ time_string(void)
 
   now = time(NULL);
   ltm = localtime(&now);
-  strftime(buffer, 100, "%m/%d %T", ltm);
+  strftime(buffer, 100, "[%Y-%m-%d %H:%M:%S]", ltm);
 
   return buffer;
 }
@@ -748,7 +756,7 @@ void
 penn_perror(const char *err)
 {
   lock_file(stderr);
-  fprintf(stderr, "[%s] info_slave: %s: %s\n", time_string(), err,
+  fprintf(stderr, "%s info_slave: %s: %s\n", time_string(), err,
           strerror(errno));
   unlock_file(stderr);
 }
@@ -758,6 +766,6 @@ void
 fputerr(const char *msg)
 {
   lock_file(stderr);
-  fprintf(stderr, "[%s] info_slave: %s\n", time_string(), msg);
+  fprintf(stderr, "%s info_slave: %s\n", time_string(), msg);
   unlock_file(stderr);
 }

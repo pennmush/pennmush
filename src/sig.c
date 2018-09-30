@@ -24,6 +24,7 @@
 #include "conf.h"
 #include "mysocket.h"
 #include "sig.h"
+#include "log.h"
 
 int sigrecv_fd = -1;
 int signotifier_fd = -1;
@@ -45,13 +46,13 @@ sigrecv_setup(void)
 #ifdef HAVE_EVENTFD
   sigrecv_fd = signotifier_fd = eventfd(0, EFD_CLOEXEC | EFD_NONBLOCK);
   if (sigrecv_fd < 0)
-    perror("sigrecv_setup: eventfd");
+    penn_perror("sigrecv_setup: eventfd");
 #else
   int fds[2];
 
 #ifdef HAVE_PIPE2
   if (pipe2(fds, O_CLOEXEC | O_NONBLOCK) < 0) {
-    perror("sigrecv_setup: pipe2");
+    penn_perror("sigrecv_setup: pipe2");
     return;
   }
 
@@ -62,7 +63,7 @@ sigrecv_setup(void)
   int flags;
 
   if (pipe(fds) < 0) {
-    perror("sigrecv_setup: pipe");
+    penn_perror("sigrecv_setup: pipe");
     return;
   }
   sigrecv_fd = fds[0];
@@ -82,7 +83,7 @@ sigrecv_notify(void)
 {
   int64_t data = 1;
   if (write(signotifier_fd, &data, sizeof data) < 0) {
-    perror("sigrecv_notify: write");
+    penn_perror("sigrecv_notify: write");
   }
 }
 
@@ -94,7 +95,7 @@ sigrecv_ack(void)
   int64_t data;
   if (read(sigrecv_fd, &data, sizeof data) < 0) {
     if (errno != EAGAIN)
-      perror("sigrecv_ack: read");
+      penn_perror("sigrecv_ack: read");
   }
 }
 

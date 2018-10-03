@@ -1332,8 +1332,62 @@ FUNCTION(fun_trim)
 /* ARGSUSED */
 FUNCTION(fun_lit)
 {
+  char stack[BUFFER_LEN], *sp;
+  int i, j;
+  int mismatch = 0;
+
   /* Just returns the argument, literally */
   safe_strl(args[0], arglens[0], buff, bp);
+
+  /* lit in the parser is FN_LITERAL. I want to change it to FN_NOPARSE, so the
+   * parser is completely predictable in its behavior with \s, ()s, []s and {}s.
+   *
+   * If lit()'s args[0] would break in FN_NOPARSE, then we warn about
+   * deprecation. To do that, we run a check that's basically parenmatch()
+   */
+  for (i = 0, j = 0; !mismatch && i < arglens[0]; i++) {
+    switch (args[0][i]) {
+    case '(':
+      stack[j++] = ')';
+      break;
+    case '[':
+      stack[j++] = ']';
+      break;
+    case '{':
+      stack[j++] = '}';
+      break;
+    case ']':
+    case ')':
+    case '}':
+      mismatch = 1;
+      if (j-- > 0) {
+        if (stack[j] == args[0][i]) {
+          mismatch = 0;
+        }
+      }
+      break;
+    case '\\':
+      i++;
+      break;
+    }
+  }
+  if (j > 0) mismatch = 1;
+  if (mismatch) {
+    /* Let's notify both owner of executor and the enactor. */
+    sp = stack;
+    safe_decompose_str(args[0], stack, &sp);
+    *(sp) = '\0';
+    notify_format(Owner(executor),
+                  T("LIT() is being used on object #%d in a deprecated usage. "
+                    "Please consider using: '%s'"),
+                  executor, stack);
+    if (Owner(enactor) != Owner(executor)) {
+      notify_format(Owner(enactor),
+                    T("LIT() is being used on object #%d in a deprecated usage. "
+                      "Please consider using: '%s'"),
+                    executor, stack);
+    }
+  }
 }
 
 /* ARGSUSED */

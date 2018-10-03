@@ -61,3 +61,4 @@ Fixes
 
 * `add_function` in .cnf files was not properly using the upper case'd string. [#1223, MT]
 * Various PCRE calls in the softcode have had CPU time limit watchdogs added. Discovered by Ashen-Shugar. [GM]
+* Added a 'deprecated version' indicator to `lit()` for when its parameters will break parser arguments. [GM]

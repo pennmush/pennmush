@@ -807,7 +807,7 @@ init_game_postdb(const char *conf)
 #ifndef SSL_SLAVE
   if (!ssl_init(options.ssl_private_key_file, options.ssl_ca_file,
                 options.ssl_ca_dir, options.ssl_require_client_cert)) {
-    fprintf(stderr, "SSL initialization failure\n");
+    do_rawlog(LT_ERR, "SSL initialization failure");
     options.ssl_port = 0; /* Disable ssl */
   }
 #endif
@@ -2444,10 +2444,10 @@ db_open(const char *fname)
       strcmp(options.uncompressprog, "gunzip") == 0) {
     pf->type = PFT_GZFILE;
     pf->handle.g = gzopen(filename, "rb");
-    sqlite3_free(filename);
     if (!pf->handle.g) {
       do_rawlog(LT_ERR, "Unable to open %s with libz: %s\n", filename,
                 strerror(errno));
+      sqlite3_free(filename);
       mush_free(pf, "pennfile");
       longjmp(db_err, 1);
     }
@@ -2455,6 +2455,7 @@ db_open(const char *fname)
     gzbuffer(pf->handle.g,
              1024 * 64); /* Large buffer to speed up decompression */
 #endif
+    sqlite3_free(filename);
     return pf;
   }
 #endif
@@ -2473,7 +2474,6 @@ db_open(const char *fname)
       prog = sqlite3_str_finish(fstr);
       pf->handle.f = popen(prog, "r");
       sqlite3_free(prog);
-      sqlite3_free(filename);
       /* Force the pipe to be fully buffered */
       if (pf->handle.f) {
         setvbuf(pf->handle.f, NULL, _IOFBF, 1024 * 32);
@@ -2481,7 +2481,9 @@ db_open(const char *fname)
         do_rawlog(LT_ERR, "Unable to run '%s < %s': %s", options.uncompressprog,
                   filename, strerror(errno));
       }
+      sqlite3_free(filename);
     } else {
+      sqlite3_free(filename);
       mush_free(pf, "pennfile");
       longjmp(db_err, 1);
     }
@@ -2530,8 +2532,8 @@ db_open_write(const char *fname)
   if (getcwd(workdir, BUFFER_LEN)) {
     if (chdir(workdir) < 0)
 #endif
-      fprintf(stderr, "chdir to %s failed in db_open_write, errno %d (%s)\n",
-              workdir, errno, strerror(errno));
+      do_rawlog(LT_ERR, "chdir to %s failed in db_open_write, errno %d (%s)",
+                workdir, errno, strerror(errno));
   } else {
     /* If this fails, we probably can't write to a log, either, though */
     fprintf(stderr, "getcwd failed during db_open_write, errno %d (%s)\n",
@@ -2544,16 +2546,17 @@ db_open_write(const char *fname)
   if (*options.compressprog && strcmp(options.compressprog, "gzip") == 0) {
     pf->type = PFT_GZFILE;
     pf->handle.g = gzopen(filename, "wb");
-    sqlite3_free(filename);
     if (!pf->handle.g) {
       do_rawlog(LT_ERR, "Unable to open %s with libz: %s\n", filename,
                 strerror(errno));
+      sqlite3_free(filename);
       mush_free(pf, "pennfile");
       longjmp(db_err, 1);
     }
 #ifdef HAVE_GZBUFFER
     gzbuffer(pf->handle.g, 1024 * 64);
 #endif
+    sqlite3_free(filename);
     return pf;
   }
 #endif
@@ -2566,7 +2569,6 @@ db_open_write(const char *fname)
     sqlite3_str_appendf(fstr, "%s > '%s'", options.compressprog, filename);
     prog = sqlite3_str_finish(fstr);
     pf->handle.f = popen(prog, "w");
-    sqlite3_free(filename);
     sqlite3_free(prog);
     /* Force the pipe to be fully buffered */
     if (pf->handle.f) {
@@ -2575,15 +2577,16 @@ db_open_write(const char *fname)
       do_rawlog(LT_ERR, "Unable to run '%s > %s': %s", options.compressprog,
                 filename, strerror(errno));
     }
-
+    sqlite3_free(filename);
   } else
 #endif /* WIN32 */
   {
     pf->type = PFT_FILE;
     pf->handle.f = fopen(filename, "wb");
-    sqlite3_free(filename);
-    if (!pf->handle.f)
+    if (!pf->handle.f) {
       do_rawlog(LT_ERR, "Unable to open %s: %s\n", filename, strerror(errno));
+    }
+    sqlite3_free(filename);
   }
   if (!pf->handle.f) {
     mush_free(pf, "pennfile");

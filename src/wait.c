@@ -134,7 +134,7 @@ lower_priority_by(pid_t pid __attribute__((__unused__)), int prio)
   {
     int ret = setpriority(PRIO_PROCESS, pid, newprio);
     if (ret < 0)
-      perror("setpriority");
+      penn_perror("setpriority");
     return ret;
   }
 #else
@@ -181,7 +181,7 @@ lock_fp(FILE *f __attribute__((__unused__)),
 
   ret = fcntl(fd, F_SETLKW, &lock);
   if (ret < 0)
-    perror("fcntl");
+    penn_perror("fcntl");
 
   return ret;
 #else

@@ -46,6 +46,8 @@ Minor Changes
 * Updated to use PCRE2 10.31 for regular expressions. [SW}
 * Wildcard patterns are sometimes converted to regular expressions when matched against many strings. [SW]
 * Add '--disable-socket-quota' option for our test suite [GM]
+* The list of color definitions used with `ansi()`, `colors()`, etc. is now kept in game/txt/colors.json. [SW]
+* Sqlite3 updated to 3.25.1. Biggest user-visible change is support for window functions. [SW]
 
 Softcode
 --------
@@ -61,3 +63,4 @@ Fixes
 
 * `add_function` in .cnf files was not properly using the upper case'd string. [#1223, MT]
 * Various PCRE calls in the softcode have had CPU time limit watchdogs added. Discovered by Ashen-Shugar. [GM]
+* Fixed a potential overflow bug in `@search`. Reported by eery. [MG]

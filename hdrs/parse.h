@@ -400,6 +400,7 @@ struct urlreq {
   dbref thing;
   dbref enactor;
   int queue_type;
+  int too_big;
   PE_REGS *pe_regs;
   char *attrname;
   sqlite3_str *body;

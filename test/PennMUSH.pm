@@ -74,7 +74,7 @@ sub start {
     foreach $j (1..10) {
       next unless open my $LOG, "<", "testgame/log/netmush.log";
       while ($line = <$LOG>) {
-        return $port if $line =~ /^Listening on port $port /;
+        return $port if $line =~ /Listening on port $port /;
       }
       close $LOG;
     } continue {
@@ -83,7 +83,7 @@ sub start {
     die "Could not start game process properly; pid $child!\n";
   } elsif (defined($child)) {
     chdir("testgame");
-    my @execargs = ("./netmush", "--no-session", "--disable-socket-quota");
+    my @execargs = ("./netmush", "--no-session", "--disable-socket-quota", "--tests");
     if ($self->{VALGRIND}) {
       unshift @execargs, "valgrind", "--tool=memcheck", '--log-file=../valgrind-%p.log',
 	"--leak-check=full", "--track-origins=yes";

@@ -37,6 +37,9 @@
 #include <ctype.h>
 #include <string.h>
 #include <stdlib.h>
+#ifdef HAVE_PTHREAD_H
+#include <pthread.h>
+#endif
 
 #ifdef WIN32
 #include <winsock2.h>
@@ -1250,21 +1253,22 @@ penn_mysql_sql_query(const char *q_string, int *affected_rows)
 static void
 penn_mysql_free_sql_query(MYSQL_RES *qres)
 {
-  while (mysql_fetch_row(qres))
-    ;
+  /* "When using mysql_use_result(), you must execute
+     mysql_fetch_row() until a NULL value is returned, otherwise, the
+     unfetched rows are returned as part of the result set for you
+     next query." Ewww. */
+  while (mysql_fetch_row(qres)) {}
   mysql_free_result(qres);
+  /* A single query can return multiple result sets; read and discard
+     any that are remaining. */
   while (mysql_more_results(mysql_connp)) {
-    int affected_rows = mysql_affected_rows(mysql_connp);
-    /*
-       We are assuming the first result is the only result we wanted. After all,
-       we do not support multi-query or multiple results.
-       As such, we're cleaning the rest up with empty strings - just so we can
-       free
-       the remaining results from the structure.
-    */
-    qres = sql_query("", &affected_rows);
-    mysql_free_result(qres);
-    mysql_next_result(mysql_connp);
+    if (mysql_next_result(mysql_connp) == 0) {
+      qres = mysql_use_result(mysql_connp);
+      if (qres) {
+	while (mysql_fetch_row(qres)) {}
+	mysql_free_result(qres);
+      }
+    }
   }
 }
 
@@ -1414,6 +1418,18 @@ penn_pg_free_sql_query(PGresult *qres)
 
 void sql_regexp_fun(sqlite3_context *, int, sqlite3_value **);
 
+#ifdef HAVE_PTHREAD_ATFORK
+/* Close before a fork. Next query will reopen the database */
+static void
+penn_sqlite3_prefork(void)
+{
+  if (sqlite3_connp) {
+    sqlite3_close_v2(sqlite3_connp);
+    sqlite3_connp = NULL;
+  }
+}
+#endif
+
 static int
 penn_sqlite3_sql_init(void)
 {
@@ -1443,6 +1459,13 @@ penn_sqlite3_sql_init(void)
     }
 
     queue_event(SYSEVENT, "SQL`CONNECT", "%s", "sqlite3");
+#ifdef HAVE_PTHREAD_ATFORK
+    static bool atfork = 0;
+    if (!atfork) {
+      pthread_atfork(penn_sqlite3_prefork, NULL, NULL);
+      atfork = 1;
+    }
+#endif
     return 1;
   }
 }

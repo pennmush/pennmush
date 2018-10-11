@@ -157,8 +157,7 @@ FUNCTION(fun_isword)
 FUNCTION(fun_capstr)
 {
   char *p = args[0];
-  WALK_ANSI_STRING(p)
-  {
+  WALK_ANSI_STRING (p) {
     *p = UPCASE(*p);
     break;
   }
@@ -786,8 +785,7 @@ FUNCTION(fun_lcstr)
 {
   char *p;
   p = args[0];
-  WALK_ANSI_STRING(p)
-  {
+  WALK_ANSI_STRING (p) {
     *p = DOWNCASE(*p);
     p++;
   }
@@ -800,8 +798,7 @@ FUNCTION(fun_ucstr)
 {
   char *p;
   p = args[0];
-  WALK_ANSI_STRING(p)
-  {
+  WALK_ANSI_STRING (p) {
     *p = UPCASE(*p);
     p++;
   }

@@ -38,21 +38,21 @@
  * 0x800B      fish)
  * 0x2E        .
  *
- * In the above example, the uncompressed text is 55 bytes, and the compressed 
+ * In the above example, the uncompressed text is 55 bytes, and the compressed
  * text is 26 bytes.
  *
  * For simplicity, the above example assumes that the words hash to consecutive
  * table positions.
  *
- * Note that the trailing punctuation character (space, period or whatever) is 
- * considered _part_ of the word. This is to save having to store multiple 
+ * Note that the trailing punctuation character (space, period or whatever) is
+ * considered _part_ of the word. This is to save having to store multiple
  * spaces between each word, and is relying on the fact that a certain word is
  * usually followed by the same punctuation. For example, the word "and" would
  * normally be followed by a space.
  *
  * In the above example, the space following "mat" is stored in the table, and
  * thus the "(" character had to be output separately. The ")" following the
- * word "fish" is considered part of the word and is stored in the table, 
+ * word "fish" is considered part of the word and is stored in the table,
  * however the last period was output as a separate character.
  *
  * Note how the high-order bit is turned on for words in the table, this is so
@@ -70,7 +70,7 @@
  * scans forwards for COLLISION_LIMIT entries, looking for a match or a spare
  * table entry. If none is found, the word is output "as is" (i.e.
  * uncompressed). You might speed up compression slightly by lowering
- * COLLISION_LIMIT, at the cost of slightly lower compression ratios. 
+ * COLLISION_LIMIT, at the cost of slightly lower compression ratios.
  *
  * The collision limit does not affect _decompression_ as that merely involves
  * a direct table lookup.
@@ -94,7 +94,7 @@
  *
  * The slower compression time is considered acceptable on the grounds that
  * text is much more often _decompressed_ in a MUSH than compressed. Compression
- * mainly takes part at database load time (say, once a week) whereas 
+ * mainly takes part at database load time (say, once a week) whereas
  * decompression take part every hour, as the database is dumped to disk, and
  * whenever an object description is displayed, or an attribute searched for,
  *
@@ -106,26 +106,28 @@
  * in them. However, as the database size increases, the ratio improves because
  * the table overhead becomes progressively less significant.
  *
- * The break-even points is with about 1.5 Mb of text, where both the table 
+ * The break-even points is with about 1.5 Mb of text, where both the table
  * compression and Huffman compress to about 63% of the size of the original.
  *
  * After that, the compression ratio gradually improves until reaching somewhere
  * between 40% and 50% of the size of the original, as the amount of text to
  * compress reaches 10 Mb.
  *
- * The nature of Huffman compression however is such that it will always be 
+ * The nature of Huffman compression however is such that it will always be
  * fixed at about 63% regardless of the amount of data compressed.
  */
 
-#define MAXTABLE 32768          /**< Maximum words in the table */
-#define MAXWORDS 100            /**< Maximum length of a word */
-#define COLLISION_LIMIT 20      /**< Maximum allowed collisions */
+#define MAXTABLE 32768     /**< Maximum words in the table */
+#define MAXWORDS 100       /**< Maximum length of a word */
+#define COLLISION_LIMIT 20 /**< Maximum allowed collisions */
 
-#define COMPRESS_HASH_MASK 0x7FFF       /**< 32767 in hex */
+#define COMPRESS_HASH_MASK 0x7FFF /**< 32767 in hex */
 
-#define MARKER_CHAR 0x06        /**< Separates words. This char is the only one that can't be represented */
-#define TABLE_FLAG 0x80         /**< Distinguishes a table */
-#define TABLE_MASK 0x7F         /**< Mask out words within a table */
+#define MARKER_CHAR                                                            \
+  0x06 /**< Separates words. This char is the only one that can't be           \
+          represented */
+#define TABLE_FLAG 0x80 /**< Distinguishes a table */
+#define TABLE_MASK 0x7F /**< Mask out words within a table */
 
 /* Table of words */
 
@@ -151,8 +153,8 @@ static char *b;
 
 static void output_previous_word(void);
 #ifdef COMP_STATS
-void compress_stats(long *entries, long *mem_used,
-                    long *total_uncompressed, long *total_compressed);
+void compress_stats(long *entries, long *mem_used, long *total_uncompressed,
+                    long *total_compressed);
 #endif
 static unsigned int hash_fn(const char *s, int hashtab_mask);
 
@@ -162,9 +164,9 @@ output_previous_word(void)
   char *p;
   int i, j;
 
-  word[wordpos++] = 0;          /* word's trailing null */
+  word[wordpos++] = 0; /* word's trailing null */
 
-/* Don't bother putting few-letter words in the table */
+  /* Don't bother putting few-letter words in the table */
 
   if (wordpos <= 4) {
     p = word;
@@ -172,11 +174,11 @@ output_previous_word(void)
       *b++ = *p++;
     return;
   }
-/* search table to see if word is already in it; */
+  /* search table to see if word is already in it; */
 
   for (i = hash_fn(word, COMPRESS_HASH_MASK), j = 0;
-       i < MAXTABLE &&
-       (words[i] || (i & 0xFF) == 0) && j < COLLISION_LIMIT; i++, j++)
+       i < MAXTABLE && (words[i] || (i & 0xFF) == 0) && j < COLLISION_LIMIT;
+       i++, j++)
     if (words[i])
       if (strcmp(word, words[i]) == 0) {
         *b++ = MARKER_CHAR;
@@ -184,13 +186,13 @@ output_previous_word(void)
         *b++ = i & 0xFF;
         return;
       }
-/* not in table, add to it */
+  /* not in table, add to it */
 
   if ((i & 0xFF) == 0) {
-    i++;                        /* make sure we don't have a null in the message */
+    i++; /* make sure we don't have a null in the message */
     j++;
   }
-/* Can't add to table if full */
+  /* Can't add to table if full */
 
   if (i >= MAXTABLE || j >= COLLISION_LIMIT) {
     p = word;
@@ -215,7 +217,7 @@ output_previous_word(void)
   *b++ = (i >> 8) | TABLE_FLAG;
   *b++ = i & 0xFF;
 
-}                               /* end of output_previous_word */
+} /* end of output_previous_word */
 
 /** Word-compress a string.
  *
@@ -239,11 +241,11 @@ word_text_compress(char const *s)
 
   wordpos = 0;
 
-/* break up input into words */
+  /* break up input into words */
   while (*p) {
     if (!isalnum(*p) || wordpos >= MAXWORDS) {
       if (wordpos) {
-        word[wordpos++] = *p;   /* add trailing punctuation */
+        word[wordpos++] = *p; /* add trailing punctuation */
         output_previous_word();
         wordpos = 0;
       } else
@@ -256,16 +258,15 @@ word_text_compress(char const *s)
   if (wordpos)
     output_previous_word();
 
-  *b = 0;                       /* trailing null */
+  *b = 0; /* trailing null */
 
 #ifdef COMP_STATS
-  total_comp += strlen(buf);    /* calculate size of compressed   text */
-  total_uncomp += strlen(s);    /* calculate size of uncompressed text */
+  total_comp += strlen(buf); /* calculate size of compressed   text */
+  total_uncomp += strlen(s); /* calculate size of uncompressed text */
 #endif
 
   return strdup(buf);
-}                               /* end of compress; */
-
+} /* end of compress; */
 
 /** Word-uncompress a string.
  * To avoid generating memory problems, this function should be
@@ -276,7 +277,7 @@ word_text_compress(char const *s)
  * \endverbatim
  * if you are using something of type char *buff, use the
  * safe_uncompress function instead.
- * 
+ *
  * \param s a compressed string.
  * \return a pointer to a static buffer containing the uncompressed string.
  */
@@ -304,12 +305,13 @@ word_text_uncompress(char const *s)
       if (i >= MAXTABLE || words[i] == NULL) {
         static int panicking = 0;
         if (panicking) {
-          fprintf(stderr,
-                  "Error in string decompression occurred during panic dump.\n");
+          do_rawlog(
+            LT_ERR,
+            "Error in string decompression occurred during panic dump.");
           exit(1);
         } else {
-          panicking = 1;        /* don't panic from within panic */
-          fprintf(stderr, "Error in string decompression, i = %i\n", i);
+          panicking = 1; /* don't panic from within panic */
+          do_rawlog(LT_ERR, "Error in string decompression, i = %i", i);
           mush_panic("Fatal error in decompression");
         }
       }
@@ -320,18 +322,18 @@ word_text_uncompress(char const *s)
     p++;
   }
 
-  *b++ = 0;                     /* trailing null */
+  *b++ = 0; /* trailing null */
 
   return buf;
 
-}                               /* end of uncompress; */
+} /* end of uncompress; */
 
 /** Initialize the word compression.
  * This function clears the words table the first time through.
  * \param f (unused).
  */
 static bool
-word_init_compress(PENNFILE *f __attribute__ ((__unused__)))
+word_init_compress(PENNFILE *f __attribute__((__unused__)))
 {
   memset(words, 0, sizeof words);
   memset(words_len, 0, sizeof words_len);
@@ -350,7 +352,6 @@ compress_stats(long *entries, long *mem_used, long *total_uncompressed,
   *mem_used = total_mallocs;
   *total_uncompressed = total_uncomp;
   *total_compressed = total_comp;
-
 }
 #endif
 
@@ -367,8 +368,5 @@ hash_fn(const char *s, int hashtab_mask)
   return (hashval & hashtab_mask);
 }
 
-struct compression_ops word_ops = {
-  word_init_compress,
-  word_text_compress,
-  word_text_uncompress
-};
+struct compression_ops word_ops = {word_init_compress, word_text_compress,
+                                   word_text_uncompress};

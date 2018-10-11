@@ -2107,8 +2107,7 @@ do_chan_title(dbref player, const char *name, const char *title)
     return;
   }
   scan = title;
-  WALK_ANSI_STRING(scan)
-  {
+  WALK_ANSI_STRING (scan) {
     /* Stomp newlines and other weird whitespace */
     if ((isspace(*scan) && (*scan != ' ')) || (*scan == BEEP_CHAR)) {
       notify(player, T("Invalid character in title."));
@@ -2859,23 +2858,23 @@ do_chan_what(dbref player, const char *partname)
       if (Chan_Can_Decomp(c, player)) {
         if (ChanModLock(c) != TRUE_BOOLEXP)
           safe_format(locks, &lp, "\n    mod: %s",
-              unparse_boolexp(player, ChanModLock(c), UB_MEREF));
+                      unparse_boolexp(player, ChanModLock(c), UB_MEREF));
         if (ChanHideLock(c) != TRUE_BOOLEXP)
           safe_format(locks, &lp, "\n   hide: %s",
-              unparse_boolexp(player, ChanHideLock(c), UB_MEREF));
+                      unparse_boolexp(player, ChanHideLock(c), UB_MEREF));
         if (ChanJoinLock(c) != TRUE_BOOLEXP)
           safe_format(locks, &lp, "\n   join: %s",
-              unparse_boolexp(player, ChanJoinLock(c), UB_MEREF));
+                      unparse_boolexp(player, ChanJoinLock(c), UB_MEREF));
         if (ChanSpeakLock(c) != TRUE_BOOLEXP)
           safe_format(locks, &lp, "\n  speak: %s",
-              unparse_boolexp(player, ChanSpeakLock(c), UB_MEREF));
+                      unparse_boolexp(player, ChanSpeakLock(c), UB_MEREF));
         if (ChanSeeLock(c) != TRUE_BOOLEXP)
           safe_format(locks, &lp, "\n    see: %s",
-              unparse_boolexp(player, ChanSeeLock(c), UB_MEREF));
+                      unparse_boolexp(player, ChanSeeLock(c), UB_MEREF));
         *lp = '\0';
         if (strlen(locks) > 1)
           notify_format(player, T("Locks:%s"), locks);
-        } // if(Chan_Can_Decomp())
+      } // if(Chan_Can_Decomp())
       found++;
     }
   }
@@ -3884,7 +3883,8 @@ channel_send(CHAN *channel, dbref player, int flags, const char *origmessage)
 
   if (flags & CB_PRESENCE) {
     /* This is a 'connect/disconnected' message. For mogrify purposes, thanks to
-     * backwards compat, there is no title, and message is "playername has connected."
+     * backwards compat, there is no title, and message is "playername has
+     * connected."
      *
      * So this is ugly. 'title' is used a temp buffer for redoing message.
      */
@@ -4208,7 +4208,7 @@ parse_chat_alias(dbref player, char *command)
     message++;
 
   ignoreme = snprintf(abuff, sizeof abuff, "CHANALIAS`%s",
-             strupper_r(alias, channame, sizeof channame));
+                      strupper_r(alias, channame, sizeof channame));
   a = atr_get(player, abuff);
   if (!a || !(av = safe_atr_value(a, "chanalias"))) {
     /* Not an alias */

@@ -1830,7 +1830,21 @@ req_write_callback(void *contents, size_t size, size_t nmemb, void *userp)
   struct urlreq *req = userp;
   size_t realsize = size * nmemb;
   sqlite3_str_append(req->body, contents, realsize);
-  return realsize;
+  if (sqlite3_str_length(req->body) >= BUFFER_LEN) {
+    /* Raise an error and abort request. */
+    req->too_big = 1;
+    return 0;
+  } else {
+    return realsize;
+  }
+}
+
+static int
+req_set_cloexec(void *clientp __attribute__((__unused__)), curl_socket_t fd,
+                curlsocktype purpose __attribute__((__unused__)))
+{
+  set_close_exec(fd);
+  return CURL_SOCKOPT_OK;
 }
 
 #endif
@@ -1906,6 +1920,7 @@ COMMAND(cmd_fetch)
   req->queue_type = queue_type;
   req->attrname = mush_strdup(s, "urlreq.attrname");
   req->body = sqlite3_str_new(NULL);
+  req->too_big = 0;
   req->pe_regs = pe_regs_create(PE_REGS_ARG | PE_REGS_Q, "cmd_fetch");
   pe_regs_qcopy(req->pe_regs, queue_entry->pe_info->regvals);
 
@@ -1916,8 +1931,10 @@ COMMAND(cmd_fetch)
   curl_easy_setopt(handle, CURLOPT_VERBOSE, 0);
   curl_easy_setopt(handle, CURLOPT_NOPROGRESS, 1);
   curl_easy_setopt(handle, CURLOPT_NOSIGNAL, 1);
-  curl_easy_setopt(handle, CURLOPT_LOW_SPEED_TIME, 60);
-  curl_easy_setopt(handle, CURLOPT_LOW_SPEED_LIMIT, 30);
+  curl_easy_setopt(handle, CURLOPT_SOCKOPTFUNCTION, req_set_cloexec);
+  /* 1 minute timeouts should be more than ample for our needs */
+  curl_easy_setopt(handle, CURLOPT_CONNECTTIMEOUT, 60);
+  curl_easy_setopt(handle, CURLOPT_TIMEOUT, 60);
   curl_easy_setopt(handle, CURLOPT_USERAGENT, "PennMUSH/1.8");
   curl_easy_setopt(handle, CURLOPT_WRITEFUNCTION, req_write_callback);
   curl_easy_setopt(handle, CURLOPT_WRITEDATA, req);
@@ -2010,19 +2027,20 @@ COMMAND(cmd_respond)
   }
 
   if (SW_ISSET(sw, SWITCH_TYPE) && SW_ISSET(sw, SWITCH_HEADER)) {
-    notify(executor, T("Invalid @respond - You can't use more than one switch!"));
+    notify(executor,
+           T("Invalid @respond - You can't use more than one switch!"));
     return;
   }
- 
+
   /* @respond/type */
   if (SW_ISSET(sw, SWITCH_TYPE)) {
     if (*arg_right) {
-      notify(executor, T("Invalid @respond/type - cannot have arg_right, use {}s"));
+      notify(executor,
+             T("Invalid @respond/type - cannot have arg_right, use {}s"));
       return;
     }
     if (req) {
-      snprintf(req->ctype, MAX_COMMAND_LEN,
-               "Content-Type: %s", arg_left);
+      snprintf(req->ctype, MAX_COMMAND_LEN, "Content-Type: %s", arg_left);
     } else {
       notify_format(enactor, "(HTTP): Content-Type: %s", arg_left);
     }
@@ -2033,7 +2051,8 @@ COMMAND(cmd_respond)
   if (SW_ISSET(sw, SWITCH_HEADER)) {
     /* Sanity checking on header name. */
     if (!arg_left || !*arg_left || !arg_right || !*arg_right) {
-      notify(executor, T("Invalid format, use @respond/header HeaderName=Value."));
+      notify(executor,
+             T("Invalid format, use @respond/header HeaderName=Value."));
       return;
     }
     if (!strcasecmp(arg_left, "content-length")) {
@@ -2063,17 +2082,15 @@ COMMAND(cmd_respond)
    *
    * This format must follow \d\d\d <text>
    */
-  if (!isdigit(arg_left[0]) ||
-      !isdigit(arg_left[1]) ||
-      !isdigit(arg_left[2]) ||
-      arg_left[3] != ' ' ||
-      !isalnum(arg_left[4])) {
+  if (!isdigit(arg_left[0]) || !isdigit(arg_left[1]) || !isdigit(arg_left[2]) ||
+      arg_left[3] != ' ' || !isalnum(arg_left[4])) {
     notify(executor, T("@respond must be 3 digits, space, then text ."));
     return;
   }
 
   if (*arg_right) {
-    notify(executor, T("Invalid @respond/type - cannot have arg_right, use {}s"));
+    notify(executor,
+           T("Invalid @respond/type - cannot have arg_right, use {}s"));
     return;
   }
 
@@ -2085,8 +2102,8 @@ COMMAND(cmd_respond)
   }
 
   if (strlen(arg_left) >= 40) {
-      notify(executor, T("@respond status code too long."));
-      return;
+    notify(executor, T("@respond status code too long."));
+    return;
   }
 
   if (req) {

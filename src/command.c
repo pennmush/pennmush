@@ -38,6 +38,7 @@
 #include "strtree.h"
 #include "strutil.h"
 #include "version.h"
+#include "tests.h"
 
 PTAB ptab_command;       /**< Prefix table for command names. */
 PTAB ptab_command_perms; /**< Prefix table for command permissions */
@@ -178,8 +179,9 @@ COMLIST commands[] = {
    "LIST AFTER BEFORE EXTEND IGSWITCH IGNORE OVERRIDE INPLACE INLINE "
    "LOCALIZE CLEARREGS NOBREAK",
    cmd_hook, CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_RS_ARGS, "WIZARD", "hook"},
-  {"@HTTP", "DELETE POST PUT", cmd_fetch, CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_RS_ARGS
-   | CMD_T_NOGAGGED | CMD_T_NOGUEST, 0, 0},
+  {"@HTTP", "DELETE POST PUT", cmd_fetch,
+   CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_RS_ARGS | CMD_T_NOGAGGED | CMD_T_NOGUEST,
+   0, 0},
   {"@INCLUDE", "LOCALIZE CLEARREGS NOBREAK", cmd_include,
    CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_RS_ARGS | CMD_T_NOGAGGED, 0, 0},
   {"@KICK", NULL, cmd_kick, CMD_T_ANY, "WIZARD", 0},
@@ -273,7 +275,7 @@ COMLIST commands[] = {
    CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_NOGAGGED, 0, 0},
   {"@REJECTMOTD", "CLEAR", cmd_motd, CMD_T_ANY, "WIZARD", 0},
   {"@RESPOND", "HEADER TYPE", cmd_respond,
-    CMD_T_ANY | CMD_T_NOGAGGED | CMD_T_EQSPLIT, 0, 0},
+   CMD_T_ANY | CMD_T_NOGAGGED | CMD_T_EQSPLIT, 0, 0},
   {"@RESTART", "ALL", cmd_restart, CMD_T_ANY | CMD_T_NOGAGGED, 0, 0},
   {"@RETRY", NULL, cmd_retry,
    CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_RS_ARGS | CMD_T_RS_NOPARSE |
@@ -309,8 +311,9 @@ COMLIST commands[] = {
 
   {"@TELEPORT", "SILENT INSIDE LIST", cmd_teleport,
    CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_NOGAGGED, 0, 0},
-  {"@TRIGGER", "CLEARREGS SPOOF INLINE NOBREAK LOCALIZE INPLACE MATCH", cmd_trigger,
-   CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_RS_ARGS | CMD_T_NOGAGGED, 0, 0},
+  {"@TRIGGER", "CLEARREGS SPOOF INLINE NOBREAK LOCALIZE INPLACE MATCH",
+   cmd_trigger, CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_RS_ARGS | CMD_T_NOGAGGED, 0,
+   0},
   {"@ULOCK", NULL, cmd_ulock,
    CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_NOGAGGED | CMD_T_DEPRECATED, 0, 0},
   {"@UNDESTROY", NULL, cmd_undestroy, CMD_T_ANY | CMD_T_NOGAGGED, 0, 0},
@@ -447,6 +450,18 @@ strccat(char *buff, char **bp, const char *from)
   safe_str(from, buff, bp);
 }
 
+TEST_GROUP(strccat) {
+  char buff[BUFFER_LEN];
+  char *bp = buff;
+  *bp = '\0';
+  strccat(buff, &bp, "foo");
+  *bp = '\0';
+  TEST("strccat.1", strcmp(buff, "foo") == 0);
+  strccat(buff, &bp, "bar");
+  *bp = '\0';
+  TEST("strccat.2", strcmp(buff, "foo, bar") == 0);
+}
+
 /* Comparison function for bsearch() */
 static int
 switch_cmp(const void *a, const void *b)
@@ -487,6 +502,11 @@ switch_find(COMMAND_INFO *cmd, const char *sw)
   return 0;
 }
 
+TEST_GROUP(switch_find) {
+  TEST("switch_find.1", switch_find(NULL, "LIST") > 0);
+  TEST("switch_find.2", switch_find(NULL, "NOTASWITCHEVERTHISMEEANSYOU") == 0);
+}
+
 /** Test if a particular switch was given, using name
  * \param sw the switch mask to test
  * \param name the name of the switch to test for.
@@ -499,6 +519,13 @@ SW_BY_NAME(switch_mask sw, const char *name)
     return SW_ISSET(sw, idx);
   else
     return false;
+}
+
+TEST_GROUP(SW_BY_NAME) {
+  // TEST SW_BY_NAME REQUIRES switch_find switchmask
+  switch_mask mask = switchmask("NOEVAL LIST");
+  TEST("SW_BY_NAME.1", SW_BY_NAME(mask, "LIST"));
+  TEST("SW_BY_NAME.2", SW_BY_NAME(mask, "NOTASWITCHEVERTHISMEANSYOU") == false);
 }
 
 /** Allocate and populate a COMMAND_INFO structure.
@@ -728,6 +755,14 @@ switchmask(const char *switches)
     }
   }
   return sw;
+}
+
+TEST_GROUP(switchmask) {
+  // TEST switchmask REQUIRES switch_find split_token
+  switch_mask mask = switchmask("NOEVAL LIST");
+  TEST("switchmask.1", mask != NULL);
+  TEST("switchmask.2", mask && SW_ISSET(mask, SWITCH_LIST));
+  TEST("switchmask.3", mask && SW_ISSET(mask, SWITCH_SPOOF) == 0);
 }
 
 /** Add an alias to the table of reserved aliases.

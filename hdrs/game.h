@@ -131,7 +131,7 @@ extern void do_buy(dbref player, char *item, char *from, int price,
 /* From set.c */
 extern void do_name(dbref player, const char *name, char *newname);
 extern int do_chown(dbref player, const char *name, const char *newobj,
-                     int preserve, NEW_PE_INFO *pe_info);
+                    int preserve, NEW_PE_INFO *pe_info);
 extern int do_chzone(dbref player, const char *name, const char *newobj,
                      bool noisy, bool preserve, NEW_PE_INFO *pe_info);
 extern int do_set(dbref player, const char *name, char *flag);
@@ -148,13 +148,13 @@ extern void do_cpattr(dbref player, char *oldpair, char **newpair, int move,
 extern void do_edit(dbref player, char *it, char **argv, int flags);
 extern void do_edit_regexp(dbref player, char *it, char **argv, int flags,
                            NEW_PE_INFO *pe_info);
-#define TRIGGER_DEFAULT    0x00
-#define TRIGGER_SPOOF      0x01
-#define TRIGGER_CLEARREGS  0x02
-#define TRIGGER_INLINE     0x04
-#define TRIGGER_NOBREAK    0x08
-#define TRIGGER_LOCALIZE   0x10
-#define TRIGGER_MATCH      0x20
+#define TRIGGER_DEFAULT 0x00
+#define TRIGGER_SPOOF 0x01
+#define TRIGGER_CLEARREGS 0x02
+#define TRIGGER_INLINE 0x04
+#define TRIGGER_NOBREAK 0x08
+#define TRIGGER_LOCALIZE 0x10
+#define TRIGGER_MATCH 0x20
 extern void do_trigger(dbref executor, dbref enactor, char *object, char **argv,
                        MQUE *queue_entry, int flags);
 extern void do_use(dbref player, const char *what, NEW_PE_INFO *pe_info);
@@ -250,16 +250,18 @@ extern void do_destroy(dbref player, char *name, int confirm,
 /* From timer.c */
 void init_timer(void);
 void signal_cpu_limit(int signo);
-struct squeue *sq_register_in_msec(uint64_t n, sq_func f, void *d, const char *ev);
+struct squeue *sq_register_in_msec(uint64_t n, sq_func f, void *d,
+                                   const char *ev);
 void sq_register_loop_msec(uint64_t n, sq_func f, void *d, const char *ev);
 void sq_cancel(struct squeue *sq);
 bool sq_run_one(void);
 bool sq_run_all(void);
 uint64_t sq_msecs_till_next(void);
 void init_sys_events(void);
-#define sq_register_in(n, f, d, ev)   sq_register_in_msec(SECS_TO_MSECS(n), f, d, ev)
-#define sq_register_loop(n, f, d, ev)   sq_register_loop_msec(SECS_TO_MSECS(n), f, d, ev)
-
+#define sq_register_in(n, f, d, ev)                                            \
+  sq_register_in_msec(SECS_TO_MSECS(n), f, d, ev)
+#define sq_register_loop(n, f, d, ev)                                          \
+  sq_register_loop_msec(SECS_TO_MSECS(n), f, d, ev)
 
 /* From version.c */
 extern void do_version(dbref player);

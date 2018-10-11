@@ -792,7 +792,8 @@ queue_attribute_base_priv(dbref executor, const char *atrname, dbref enactor,
     return 0;
   if (RealGoodObject(priv) && !Can_Read_Attr(priv, executor, a))
     return 0;
-  queue_attribute_useatr(executor, a, enactor, pe_regs, flags, parent_queue, input);
+  queue_attribute_useatr(executor, a, enactor, pe_regs, flags, parent_queue,
+                         input);
   return 1;
 }
 
@@ -833,9 +834,8 @@ queue_attribute_useatr(dbref executor, ATTR *a, dbref enactor, PE_REGS *pe_regs,
 
   if (input) {
     /* Attempt to match input against the attribute, accept either. */
-    if (atr_single_match_r(a, AF_COMMAND | AF_LISTEN, ':', input,
-                           args, match_space, match_space_len,
-                           cmd_buff, pe_regs)) {
+    if (atr_single_match_r(a, AF_COMMAND | AF_LISTEN, ':', input, args,
+                           match_space, match_space_len, cmd_buff, pe_regs)) {
       command = cmd_buff;
     } else {
       return 1;
@@ -846,7 +846,7 @@ queue_attribute_useatr(dbref executor, ATTR *a, dbref enactor, PE_REGS *pe_regs,
     /* Trim off $-command or ^-command prefix */
     if (*command == '$' || *command == '^') {
       while (*command && *command != ':') {
-        if (*command == '\\' && *(command+1))
+        if (*command == '\\' && *(command + 1))
           command++;
         command++;
       }

@@ -1881,14 +1881,21 @@ show_compile_options(dbref player)
   notify(player, T(" IANA symbolic timezones can be used."));
 #endif
 
-#ifdef PCRE_CONFIG_JIT
   {
-    int jit = 0;
-    pcre_config(PCRE_CONFIG_JIT, &jit);
-    if (jit)
-      notify(player, T(" Internal regular expressions are JIT-compiled."));
+    PCRE2_UCHAR target[50];
+    uint32_t jit = 0;
+
+    pcre2_config(PCRE2_CONFIG_VERSION, target);
+    notify_format(player, T(" Using PCRE %s"), (const char *) target);
+
+    pcre2_config(PCRE2_CONFIG_JIT, &jit);
+    if (jit) {
+      pcre2_config(PCRE2_CONFIG_JITTARGET, target);
+      notify_format(player,
+                    T(" Internal regular expressions are JIT-compiled for %s."),
+                    (const char *) target);
+    }
   }
-#endif
 
 #ifdef HAVE_ICU
   notify(player, T(" (Very limited) Unicode support is enabled."));

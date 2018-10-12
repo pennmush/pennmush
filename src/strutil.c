@@ -1977,28 +1977,6 @@ show_tm(struct tm *when)
   return buffer;
 }
 
-/** Return a default pcre_extra pointer pointing to a static region
-    set up to use a fairly low match-limit setting.
-*/
-pcre_extra *
-default_match_limit(void)
-{
-  static pcre_extra ex;
-  memset(&ex, 0, sizeof ex);
-  set_match_limit(&ex);
-  return &ex;
-}
-
-/** Set a low match-limit setting in an existing pcre_extra struct. */
-void
-set_match_limit(pcre_extra *ex)
-{
-  if (!ex)
-    return;
-  ex->flags |= PCRE_EXTRA_MATCH_LIMIT;
-  ex->match_limit = PENN_MATCH_LIMIT;
-}
-
 /** Destructively gets rid of trailing whitespace in a string.
  * \param buff the string to transform.
  * \param len the length of the string.
@@ -2093,10 +2071,10 @@ const char *
 keystr_find_full(const char *restrict map, const char *restrict key,
                  const char *restrict deflt, char delim)
 {
-  pcre *re;
-  int erroffset;
-  const char *errptr;
-  int offsets[33];
+  pcre2_code *re;
+  PCRE2_SIZE erroffset;
+  int errcode;
+  pcre2_match_data *md;
   int matches;
   static char tbuf[BUFFER_LEN];
   char pattern[BUFFER_LEN], *pp;
@@ -2108,19 +2086,28 @@ keystr_find_full(const char *restrict map, const char *restrict key,
   safe_format(pattern, &pp, "\\b\\Q%s%c\\E(\\w+)\\b", key, delim);
   *pp = '\0';
 
-  if (!(re = pcre_compile(pattern, PCRE_CASELESS, &errptr, &erroffset, tables)))
+  if (!(re = pcre2_compile((const PCRE2_UCHAR *) pattern, PCRE2_ZERO_TERMINATED,
+                           re_compile_flags | PCRE2_CASELESS, &errcode,
+                           &erroffset, re_compile_ctx))) {
     return deflt;
-
-  matches = pcre_exec(re, NULL, map, strlen(map), 0, 0, offsets, 33);
-  pcre_free(re);
+  }
+  md = pcre2_match_data_create_from_pattern(re, NULL);
+  matches = pcre2_match(re, (const PCRE2_UCHAR *) map, strlen(map), 0,
+                        re_match_flags, md, re_match_ctx);
+  pcre2_code_free(re);
 
   if (matches == 2) {
-    pcre_copy_substring(map, offsets, matches, 1, tbuf, BUFFER_LEN);
+    PCRE2_SIZE blen = BUFFER_LEN;
+    pcre2_substring_copy_bynumber(md, 1, (PCRE2_UCHAR *) tbuf, &blen);
+    pcre2_match_data_free(md);
     return tbuf;
-  } else if (strcmp(key, "default") == 0)
+  } else if (strcmp(key, "default") == 0) {
+    pcre2_match_data_free(md);
     return deflt;
-  else
+  } else {
+    pcre2_match_data_free(md);
     return keystr_find_full(map, "default", deflt, delim);
+  }
 }
 
 /** Convert a MUSH-style wildcard pattern using * to a SQL wildcard pattern

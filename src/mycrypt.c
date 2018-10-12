@@ -356,39 +356,46 @@ extern const unsigned char *tables;
 bool
 password_comp(const char *saved, const char *pass)
 {
-  static pcre *passwd_re = NULL;
-  static pcre_extra *extra = NULL;
+  static pcre2_code *passwd_re = NULL;
+  static pcre2_match_data *passwd_md = NULL;
   char buff[BUFFER_LEN], *bp;
-  const char *version = NULL, *algo = NULL, *shash = NULL;
+  char *version = NULL, *algo = NULL, *shash = NULL;
+  PCRE2_SIZE versionlen, algolen, shashlen;
   int len, slen;
-  int ovec[30];
   int c, r;
   int retval = 0;
 
   if (!passwd_re) {
-    static const char re[] = "^(\\d+):(\\w+):([0-9a-zA-Z]+):\\d+";
-    const char *errptr;
-    int erroffset = 0;
-    passwd_re = pcre_compile(re, 0, &errptr, &erroffset, tables);
+    static const PCRE2_UCHAR re[] = "^(\\d+):(\\w+):([0-9a-zA-Z]+):\\d+";
+    int errcode;
+    PCRE2_SIZE erroffset;
+    passwd_re = pcre2_compile(re, PCRE2_ZERO_TERMINATED, re_compile_flags,
+                              &errcode, &erroffset, re_compile_ctx);
     if (!passwd_re) {
+      char errstr[120];
+      pcre2_get_error_message(errcode, (PCRE2_UCHAR *) errstr, sizeof errstr);
       do_rawlog(LT_ERR, "Unable to compile password regexp: %s, at '%c'",
-                errptr, re[erroffset]);
+                errstr, re[erroffset]);
       return 0;
     }
-    extra = pcre_study(passwd_re, pcre_study_flags, &errptr);
+    pcre2_jit_compile(passwd_re, PCRE2_JIT_COMPLETE);
+    passwd_md = pcre2_match_data_create_from_pattern(passwd_re, NULL);
   }
 
   len = strlen(pass);
   slen = strlen(saved);
 
-  if ((c = pcre_exec(passwd_re, extra, saved, slen, 0, 0, ovec, 30)) <= 0) {
+  if ((c = pcre2_match(passwd_re, (const PCRE2_UCHAR *) saved, slen, 0,
+                       re_match_flags, passwd_md, re_match_ctx)) < 0) {
     /* Not a well-formed password string. */
     return 0;
   }
 
-  pcre_get_substring(saved, ovec, c, 1, &version);
-  pcre_get_substring(saved, ovec, c, 2, &algo);
-  pcre_get_substring(saved, ovec, c, 3, &shash);
+  pcre2_substring_get_bynumber(passwd_md, 1, (PCRE2_UCHAR **) &version,
+                               &versionlen);
+  pcre2_substring_get_bynumber(passwd_md, 2, (PCRE2_UCHAR **) &algo, &algolen);
+  pcre2_substring_get_bynumber(passwd_md, 3, (PCRE2_UCHAR **) &shash,
+                               &shashlen);
 
   /* Hash the plaintext password using the right digest */
   bp = buff;
@@ -417,8 +424,8 @@ password_comp(const char *saved, const char *pass)
   retval = strcmp(shash, buff) == 0;
 
 cleanup:
-  pcre_free_substring(version);
-  pcre_free_substring(algo);
-  pcre_free_substring(shash);
+  pcre2_substring_free((PCRE2_UCHAR *) version);
+  pcre2_substring_free((PCRE2_UCHAR *) algo);
+  pcre2_substring_free((PCRE2_UCHAR *) shash);
   return retval;
 }

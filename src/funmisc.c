@@ -996,36 +996,39 @@ FUNCTION(fun_reswitch)
   char mstr[BUFFER_LEN], pstr[BUFFER_LEN], *dp;
   char const *sp;
   char *tbuf1;
-  int first = 1, found = 0, flags = 0;
-  int search, subpatterns, offsets[99];
-  pcre *re;
+  int first = 1, found = 0, flags = re_compile_flags;
+  int search, subpatterns;
+  pcre2_code *re;
+  pcre2_match_data *md;
   PE_REGS *pe_regs;
   ansi_string *mas = NULL;
-  const char *haystack;
+  const PCRE2_UCHAR *haystack;
   int haystacklen;
-  const char *errptr;
-  int erroffset;
-  pcre_extra *extra;
+  int errcode;
+  PCRE2_SIZE erroffset;
 
-  if (strstr(called_as, "ALL"))
+  if (strstr(called_as, "ALL")) {
     first = 0;
+  }
 
   if (strcmp(called_as, "RESWITCHI") == 0 ||
-      strcmp(called_as, "RESWITCHALLI") == 0)
-    flags = PCRE_CASELESS;
+      strcmp(called_as, "RESWITCHALLI") == 0) {
+    flags |= PCRE2_CASELESS;
+  }
 
   dp = mstr;
   sp = args[0];
   if (process_expression(mstr, &dp, &sp, executor, caller, enactor, eflags,
-                         PT_DEFAULT, pe_info))
+                         PT_DEFAULT, pe_info)) {
     return;
+  }
   *dp = '\0';
   if (has_markup(mstr)) {
     mas = parse_ansi_string(mstr);
-    haystack = mas->text;
+    haystack = (const PCRE2_UCHAR *) mas->text;
     haystacklen = mas->len;
   } else {
-    haystack = mstr;
+    haystack = (const PCRE2_UCHAR *) mstr;
     haystacklen = dp - mstr;
   }
 
@@ -1039,20 +1042,22 @@ FUNCTION(fun_reswitch)
     dp = pstr;
     sp = args[j];
     if (process_expression(pstr, &dp, &sp, executor, caller, enactor, eflags,
-                           PT_DEFAULT, pe_info))
+                           PT_DEFAULT, pe_info)) {
       goto exit_sequence;
+    }
     *dp = '\0';
 
-    if ((re = pcre_compile(remove_markup(pstr, NULL), flags, &errptr,
-                           &erroffset, tables)) == NULL) {
+    if ((re = pcre2_compile((const PCRE2_UCHAR *) remove_markup(pstr, NULL),
+                            PCRE2_ZERO_TERMINATED, flags, &errcode, &erroffset,
+                            re_compile_ctx)) == NULL) {
       /* Matching error. Ignore this one, move on. */
       continue;
     }
     ADD_CHECK("pcre");
-    extra = default_match_limit();
+    md = pcre2_match_data_create_from_pattern(re, NULL);
     search = 0;
-    subpatterns =
-      pcre_exec(re, extra, haystack, haystacklen, search, 0, offsets, 99);
+    subpatterns = pcre2_match(re, haystack, haystacklen, search, re_match_flags,
+                              md, re_match_ctx);
     if (subpatterns >= 0) {
       /* If there's a #$ in a switch's action-part, replace it with
        * the value of the conditional (mstr) before evaluating it.
@@ -1063,16 +1068,17 @@ FUNCTION(fun_reswitch)
       /* set regexp context here */
       pe_regs_clear(pe_regs);
       if (mas) {
-        pe_regs_set_rx_context_ansi(pe_regs, 0, re, offsets, subpatterns, mas);
+        pe_regs_set_rx_context_ansi(pe_regs, 0, re, md, subpatterns, mas);
       } else {
-        pe_regs_set_rx_context(pe_regs, 0, re, offsets, subpatterns, mstr);
+        pe_regs_set_rx_context(pe_regs, 0, re, md, subpatterns);
       }
       per = process_expression(buff, bp, &sp, executor, caller, enactor,
                                eflags | PE_DOLLAR, PT_DEFAULT, pe_info);
       mush_free(tbuf1, "replace_string.buff");
       found = 1;
     }
-    pcre_free(re);
+    pcre2_code_free(re);
+    pcre2_match_data_free(md);
     DEL_CHECK("pcre");
     if ((first && found) || per) {
       goto exit_sequence;
@@ -1092,7 +1098,6 @@ exit_sequence:
   }
   pe_regs_restore(pe_info, pe_regs);
   pe_regs_free(pe_regs);
-  return;
 }
 
 /* ARGSUSED */

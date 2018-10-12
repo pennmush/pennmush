@@ -2577,28 +2577,17 @@ FUNCTION(fun_table)
   free_ansi_string(as);
 }
 
-/* In the following regexp functions, we use pcre_study to potentially
- * make pcre_exec faster. If pcre_study() can't help, it returns right
- * away, and if it can, the savings in the actual matching are usually
- * worth it.  Ideally, all compiled regexps and their study patterns
- * should be cached somewhere. Especially nice for patterns in the
- * master room. Just need to come up with a good caching algorithm to
- * use. Easiest would be a hashtable that's just cleared every
- * dbck_interval seconds. Except some benchmarking showed that compiling
- * patterns is faster than I thought it'd be, so this is low priority.
- */
-
 /* string, regexp, replacement string. Acts like sed or perl's s///g,
  * with an ig version */
 FUNCTION(fun_regreplace)
 {
-  pcre *re;
-  pcre_extra *extra, *study = NULL;
-  const char *errptr;
+  pcre2_code *re;
+  pcre2_match_data *md;
+  int errcode;
   int subpatterns;
-  int offsets[99];
-  int erroffset;
-  int flags = 0, all = 0, match_offset = 0;
+  PCRE2_SIZE erroffset;
+  int flags = re_compile_flags, all = 0;
+  PCRE2_SIZE match_offset = 0;
   PE_REGS *pe_regs = NULL;
   int i;
   const char *r, *obp;
@@ -2608,23 +2597,26 @@ FUNCTION(fun_regreplace)
   char postbuf[BUFFER_LEN], *postp;
   ansi_string *orig = NULL;
   ansi_string *repl = NULL;
-  int search;
-  int prelen;
+  PCRE2_SIZE search, prelen;
   size_t searchlen;
   int funccount;
+  PCRE2_SIZE *offsets;
 
-  if (called_as[strlen(called_as) - 1] == 'I')
-    flags = PCRE_CASELESS;
+  if (called_as[strlen(called_as) - 1] == 'I') {
+    flags |= PCRE2_CASELESS;
+  }
 
-  if (string_prefix(called_as, "REGEDITALL"))
+  if (string_prefix(called_as, "REGEDITALL")) {
     all = 1;
+  }
 
   /* Build orig */
   postp = postbuf;
   r = args[0];
   if (process_expression(postbuf, &postp, &r, executor, caller, enactor, eflags,
-                         PT_DEFAULT, pe_info))
+                         PT_DEFAULT, pe_info)) {
     return;
+  }
   *postp = '\0';
 
   pe_regs = pe_regs_localize(pe_info, PE_REGS_REGEXP, "fun_regreplace");
@@ -2632,8 +2624,9 @@ FUNCTION(fun_regreplace)
   /* Ansi-less regedits */
   for (i = 1; i < nargs - 1 && !cpu_time_limit_hit; i += 2) {
     /* If this string has ANSI, switch to using ansi only */
-    if (has_markup(postbuf))
+    if (has_markup(postbuf)) {
       break;
+    }
 
     memcpy(prebuf, postbuf, BUFFER_LEN);
     prelen = strlen(prebuf);
@@ -2644,61 +2637,46 @@ FUNCTION(fun_regreplace)
     tbp = tbuf;
     r = args[i];
     if (process_expression(tbuf, &tbp, &r, executor, caller, enactor, eflags,
-                           PT_DEFAULT, pe_info))
+                           PT_DEFAULT, pe_info)) {
       goto exit_sequence;
+    }
     *tbp = '\0';
 
-    if ((re = pcre_compile(remove_markup(tbuf, &searchlen), flags, &errptr,
-                           &erroffset, tables)) == NULL) {
+    if ((re =
+           pcre2_compile((const PCRE2_UCHAR *) remove_markup(tbuf, &searchlen),
+                         PCRE2_ZERO_TERMINATED, flags, &errcode, &erroffset,
+                         re_compile_ctx)) == NULL) {
       /* Matching error. */
+      char errstr[120];
+      pcre2_get_error_message(errcode, (PCRE2_UCHAR *) errstr, sizeof errstr);
       safe_str(T("#-1 REGEXP ERROR: "), buff, bp);
-      safe_str(errptr, buff, bp);
+      safe_str(errstr, buff, bp);
       goto exit_sequence;
     }
     ADD_CHECK("pcre"); /* re */
-    if (searchlen)
+    if (searchlen) {
       searchlen--;
+    }
 
-    /* If we're doing a lot, study the regexp to make sure it's good */
+    /* If we're doing a lot, jit the regexp to make it faster */
     if (all) {
-      study = pcre_study(re, pcre_public_study_flags, &errptr);
-      if (errptr != NULL) {
-        pcre_free(re);
-        DEL_CHECK("pcre");
-        safe_str(T("#-1 REGEXP ERROR: "), buff, bp);
-        safe_str(errptr, buff, bp);
-        goto exit_sequence;
-      }
-      if (study != NULL)
-        /* study */
-        ADD_CHECK("pcre.extra");
+      pcre2_jit_compile(re, PCRE2_JIT_COMPLETE);
     }
 
-    if (study) {
-      extra = study;
-      set_match_limit(extra);
-    } else {
-      extra = default_match_limit();
-    }
+    md = pcre2_match_data_create_from_pattern(re, NULL);
 
     /* Do all the searches and replaces we can */
 
     start = prebuf;
-    subpatterns = pcre_exec(re, extra, prebuf, prelen, 0, 0, offsets, 99);
+    subpatterns = pcre2_match(re, (const PCRE2_UCHAR *) prebuf, prelen, 0,
+                              re_match_flags, md, re_match_ctx);
 
     /* Match wasn't found... we're done */
     if (subpatterns < 0) {
       safe_str(prebuf, postbuf, &postp);
-      pcre_free(re);
+      pcre2_code_free(re);
+      pcre2_match_data_free(md);
       DEL_CHECK("pcre");
-      if (study) {
-#ifdef PCRE_CONFIG_JIT
-        pcre_free_study(study);
-#else
-        pcre_free(study);
-#endif
-        DEL_CHECK("pcre.extra");
-      }
       continue;
     }
 
@@ -2706,7 +2684,9 @@ FUNCTION(fun_regreplace)
 
     do {
       /* Copy up to the start of the matched area */
-      char tmp = prebuf[offsets[0]];
+      char tmp;
+      offsets = pcre2_get_ovector_pointer(md);
+      tmp = prebuf[offsets[0]];
       prebuf[offsets[0]] = '\0';
       safe_str(start, postbuf, &postp);
       prebuf[offsets[0]] = tmp;
@@ -2715,50 +2695,39 @@ FUNCTION(fun_regreplace)
       obp = args[i + 1];
 
       pe_regs_clear(pe_regs);
-      pe_regs_set_rx_context(pe_regs, 0, re, offsets, subpatterns, prebuf);
+      pe_regs_set_rx_context(pe_regs, 0, re, md, subpatterns);
 
       if (process_expression(postbuf, &postp, &obp, executor, caller, enactor,
                              eflags | PE_DOLLAR, PT_DEFAULT, pe_info)) {
-        pcre_free(re);
+        pcre2_code_free(re);
+        pcre2_match_data_free(md);
         DEL_CHECK("pcre");
-        if (study) {
-#ifdef PCRE_CONFIG_JIT
-          pcre_free_study(study);
-#else
-          pcre_free(study);
-#endif
-          DEL_CHECK("pcre.extra");
-        }
         goto exit_sequence;
       }
       if ((*bp == (buff + BUFFER_LEN - 1)) &&
-          (pe_info->fun_invocations == funccount))
+          (pe_info->fun_invocations == funccount)) {
         break;
+      }
 
       funccount = pe_info->fun_invocations;
 
       start = prebuf + offsets[1];
       match_offset = offsets[1];
       /* Make sure we advance at least 1 char */
-      if (offsets[0] == match_offset)
+      if (offsets[0] == match_offset) {
         match_offset++;
+      }
     } while (all && match_offset < prelen && !cpu_time_limit_hit &&
-             (subpatterns = pcre_exec(re, extra, prebuf, prelen, match_offset,
-                                      0, offsets, 99)) >= 0);
+             (subpatterns = pcre2_match(re, (const PCRE2_UCHAR *) prebuf,
+                                        prelen, match_offset, re_match_flags,
+                                        md, re_match_ctx)) >= 0);
 
     safe_str(start, postbuf, &postp);
     *postp = '\0';
 
-    pcre_free(re);
+    pcre2_code_free(re);
+    pcre2_match_data_free(md);
     DEL_CHECK("pcre");
-    if (study != NULL) {
-#ifdef PCRE_CONFIG_JIT
-      pcre_free_study(study);
-#else
-      pcre_free(study);
-#endif
-      DEL_CHECK("pcre.extra");
-    }
   }
 
   /* We get to this point if there is ansi in an 'orig' string */
@@ -2773,70 +2742,55 @@ FUNCTION(fun_regreplace)
       tbp = tbuf;
       r = args[i];
       if (process_expression(tbuf, &tbp, &r, executor, caller, enactor, eflags,
-                             PT_DEFAULT, pe_info))
+                             PT_DEFAULT, pe_info)) {
         goto exit_sequence;
+      }
 
       *tbp = '\0';
 
-      if ((re = pcre_compile(remove_markup(tbuf, &searchlen), flags, &errptr,
-                             &erroffset, tables)) == NULL) {
+      if ((re = pcre2_compile(
+             (const PCRE2_UCHAR *) remove_markup(tbuf, &searchlen),
+             PCRE2_ZERO_TERMINATED, flags, &errcode, &erroffset,
+             re_compile_ctx)) == NULL) {
         /* Matching error. */
+        char errstr[120];
+        pcre2_get_error_message(errcode, (PCRE2_UCHAR *) errstr, sizeof errstr);
         safe_str(T("#-1 REGEXP ERROR: "), buff, bp);
-        safe_str(errptr, buff, bp);
+        safe_str(errstr, buff, bp);
         goto exit_sequence;
       }
       ADD_CHECK("pcre"); /* re */
-      if (searchlen)
+      if (searchlen) {
         searchlen--;
-
-      /* If we're doing a lot, study the regexp to make sure it's good */
-      if (all) {
-        study = pcre_study(re, pcre_public_study_flags, &errptr);
-        if (errptr != NULL) {
-          pcre_free(re);
-          DEL_CHECK("pcre");
-          safe_str(T("#-1 REGEXP ERROR: "), buff, bp);
-          safe_str(errptr, buff, bp);
-          goto exit_sequence;
-        }
-        if (study != NULL)
-          /* study */
-          ADD_CHECK("pcre.extra");
       }
-      if (study) {
-        extra = study;
-        set_match_limit(extra);
-      } else
-        extra = default_match_limit();
+
+      if (all) {
+        pcre2_jit_compile(re, PCRE2_JIT_COMPLETE);
+      }
+      md = pcre2_match_data_create_from_pattern(re, NULL);
 
       search = 0;
       /* Do all the searches and replaces we can */
       do {
         subpatterns =
-          pcre_exec(re, extra, orig->text, orig->len, search, 0, offsets, 99);
+          pcre2_match(re, (const PCRE2_UCHAR *) orig->text, orig->len, search,
+                      re_match_flags, md, re_match_ctx);
         if (subpatterns >= 0) {
           /* We have a match */
           /* Process the replacement */
           r = args[i + 1];
           pe_regs_clear(pe_regs);
-          pe_regs_set_rx_context_ansi(pe_regs, 0, re, offsets, subpatterns,
-                                      orig);
+          pe_regs_set_rx_context_ansi(pe_regs, 0, re, md, subpatterns, orig);
           tbp = tbuf;
           if (process_expression(tbuf, &tbp, &r, executor, caller, enactor,
                                  eflags | PE_DOLLAR, PT_DEFAULT, pe_info)) {
-            pcre_free(re);
+            pcre2_code_free(re);
+            pcre2_match_data_free(md);
             DEL_CHECK("pcre");
-            if (study) {
-#ifdef PCRE_CONFIG_JIT
-              pcre_free_study(study);
-#else
-              pcre_free(study);
-#endif
-              DEL_CHECK("pcre.extra");
-            }
             goto exit_sequence;
           }
           *tbp = '\0';
+          offsets = pcre2_get_ovector_pointer(md);
           if (offsets[0] >= search) {
             repl = parse_ansi_string(tbuf);
 
@@ -2854,23 +2808,17 @@ FUNCTION(fun_regreplace)
             /* if (offsets[0] < 1) search++; */
 
             free_ansi_string(repl);
-            if (search >= orig->len)
+            if (search >= (PCRE2_SIZE) orig->len) {
               break;
+            }
           } else {
             break;
           }
         }
       } while (subpatterns >= 0 && !cpu_time_limit_hit && all);
-      pcre_free(re);
+      pcre2_code_free(re);
+      pcre2_match_data_free(md);
       DEL_CHECK("pcre");
-      if (study != NULL) {
-#ifdef PCRE_CONFIG_JIT
-        pcre_free_study(study);
-#else
-        pcre_free(study);
-#endif
-        DEL_CHECK("pcre.extra");
-      }
     }
     safe_ansi_string(orig, 0, orig->len, buff, bp);
     free_ansi_string(orig);
@@ -2900,28 +2848,29 @@ FUNCTION(fun_regmatch)
    */
   int i, nqregs;
   char *qregs[NUMQ], *holder[NUMQ];
-  pcre *re;
-  pcre_extra *extra;
+  pcre2_code *re;
+  pcre2_match_data *md;
+  int errcode;
+  PCRE2_SIZE erroffset;
   const char *errptr = NULL;
-  int erroffset;
-  int offsets[99];
   int subpatterns;
   char lbuff[BUFFER_LEN], *lbp;
-  int flags = 0;
+  int flags = re_compile_flags;
   ansi_string *as;
-  char *txt;
-  char *needle;
+  PCRE2_UCHAR *needle, *txt;
   size_t len;
 
-  if (strcmp(called_as, "REGMATCHI") == 0)
-    flags = PCRE_CASELESS;
+  if (strcmp(called_as, "REGMATCHI") == 0) {
+    flags |= PCRE2_CASELESS;
+  }
 
-  needle = remove_markup(args[1], &len);
+  needle = (PCRE2_UCHAR *) remove_markup(args[1], &len);
 
   as = parse_ansi_string(args[0]);
-  txt = as->text;
+  txt = (PCRE2_UCHAR *) as->text;
   if (nargs == 2) { /* Don't care about saving sub expressions */
-    bool match = quick_regexp_match(needle, txt, flags ? 0 : 1, &errptr);
+    bool match = quick_regexp_match((const char *) needle, (const char *) txt,
+                                    (flags & PCRE2_CASELESS) ? 0 : 1, &errptr);
     if (errptr == NULL) {
       safe_boolean(match, buff, bp);
     } else {
@@ -2932,17 +2881,21 @@ FUNCTION(fun_regmatch)
     return;
   }
 
-  if ((re = pcre_compile(needle, flags, &errptr, &erroffset, tables)) == NULL) {
+  if ((re = pcre2_compile(needle, PCRE2_ZERO_TERMINATED, flags, &errcode,
+                          &erroffset, re_compile_ctx)) == NULL) {
+    char errstr[120];
     /* Matching error. */
+    pcre2_get_error_message(errcode, (PCRE2_UCHAR *) errstr, sizeof errstr);
     safe_str(T("#-1 REGEXP ERROR: "), buff, bp);
-    safe_str(errptr, buff, bp);
+    safe_str(errstr, buff, bp);
     free_ansi_string(as);
     return;
   }
   ADD_CHECK("pcre");
-  extra = default_match_limit();
+  md = pcre2_match_data_create_from_pattern(re, NULL);
 
-  subpatterns = pcre_exec(re, extra, txt, arglens[0], 0, 0, offsets, 99);
+  subpatterns =
+    pcre2_match(re, txt, as->len, 0, re_match_flags, md, re_match_ctx);
   safe_integer(subpatterns >= 0, buff, bp);
 
   /* We need to parse the list of registers.  Anything that we don't parse
@@ -2950,8 +2903,6 @@ FUNCTION(fun_regmatch)
    * then set the register to empty.  Otherwise, fill the register with
    * the subexpression.
    */
-  if (subpatterns == 0)
-    subpatterns = 33;
   nqregs = list2arr(qregs, NUMQ, args[2], ' ', 1);
 
   /* Initialize every q-register used to '' */
@@ -2999,13 +2950,12 @@ FUNCTION(fun_regmatch)
       lbuff[0] = '\0';
     } else if (named_subpattern) {
       lbp = lbuff;
-      ansi_pcre_copy_named_substring(re, as, offsets, subpatterns,
-                                     named_subpattern, 1, lbuff, &lbp);
+      ansi_pcre_copy_named_substring(re, as, md, subpatterns, named_subpattern,
+                                     1, lbuff, &lbp);
       *(lbp) = '\0';
     } else {
       lbp = lbuff;
-      ansi_pcre_copy_substring(as, offsets, subpatterns, subpattern, 1, lbuff,
-                               &lbp);
+      ansi_pcre_copy_substring(as, md, subpatterns, subpattern, 1, lbuff, &lbp);
       *(lbp) = '\0';
     }
     PE_Setq(pe_info, regname, lbuff);
@@ -3013,7 +2963,8 @@ FUNCTION(fun_regmatch)
   for (i = 0; i < nqregs; i++) {
     mush_free(holder[i], "regmatch");
   }
-  pcre_free(re);
+  pcre2_code_free(re);
+  pcre2_match_data_free(md);
   DEL_CHECK("pcre");
   free_ansi_string(as);
 }
@@ -3025,23 +2976,23 @@ FUNCTION(fun_regrab)
 {
   char *r, *s, *b, sep;
   size_t rlen;
-  pcre *re;
-  pcre_extra *study, *extra;
-  const char *errptr;
-  int erroffset;
-  int offsets[99];
-  int flags = 0;
+  pcre2_code *re;
+  pcre2_match_data *md;
+  int errcode;
+  PCRE2_SIZE erroffset;
+  int flags = re_compile_flags;
   char *osep, osepd[2] = {'\0', '\0'};
   char **ptrs;
   int nptrs, i;
   bool all = 0, pos = 0;
 
-  if (!delim_check(buff, bp, nargs, args, 3, &sep))
+  if (!delim_check(buff, bp, nargs, args, 3, &sep)) {
     return;
+  }
 
-  if (nargs == 4)
+  if (nargs == 4) {
     osep = args[3];
-  else {
+  } else {
     osepd[0] = sep;
     osep = osepd;
   }
@@ -3049,79 +3000,71 @@ FUNCTION(fun_regrab)
   s = trim_space_sep(args[0], sep);
   b = *bp;
 
-  if (strrchr(called_as, 'I'))
-    flags = PCRE_CASELESS;
+  if (strrchr(called_as, 'I')) {
+    flags |= PCRE2_CASELESS;
+  }
 
-  if (strstr(called_as, "ALL"))
+  if (strstr(called_as, "ALL")) {
     all = 1;
+  }
 
-  if (strstr(called_as, "MATCH"))
+  if (strstr(called_as, "MATCH")) {
     pos = 1;
+  }
 
-  if ((re = pcre_compile(remove_markup(args[1], NULL), flags, &errptr,
-                         &erroffset, tables)) == NULL) {
+  if ((re = pcre2_compile((const PCRE2_UCHAR *) remove_markup(args[1], NULL),
+                          PCRE2_ZERO_TERMINATED, flags, &errcode, &erroffset,
+                          re_compile_ctx)) == NULL) {
     /* Matching error. */
+    char errstr[120];
+    pcre2_get_error_message(errcode, (PCRE2_UCHAR *) errstr, sizeof errstr);
     safe_str(T("#-1 REGEXP ERROR: "), buff, bp);
-    safe_str(errptr, buff, bp);
+    safe_str(errstr, buff, bp);
     return;
   }
   ADD_CHECK("pcre");
+  md = pcre2_match_data_create_from_pattern(re, NULL);
 
-  study = pcre_study(re, pcre_public_study_flags, &errptr);
-  if (errptr != NULL) {
-    safe_str(T("#-1 REGEXP ERROR: "), buff, bp);
-    safe_str(errptr, buff, bp);
-    pcre_free(re);
-    DEL_CHECK("pcre");
-    return;
-  }
-  if (study) {
-    ADD_CHECK("pcre.extra");
-    extra = study;
-    set_match_limit(extra);
-  } else
-    extra = default_match_limit();
   ptrs = mush_calloc(MAX_SORTSIZE, sizeof(char *), "ptrarray");
-  if (!ptrs)
+  if (!ptrs) {
     mush_panic("Unable to allocate memory in fun_regrab");
+  }
   nptrs = list2arr_ansi(ptrs, MAX_SORTSIZE, s, sep, 1);
   for (i = 0; i < nptrs && !cpu_time_limit_hit; i++) {
     r = remove_markup(ptrs[i], &rlen);
-    if (pcre_exec(re, extra, r, rlen - 1, 0, 0, offsets, 99) >= 0) {
-      if (all && *bp != b)
+    if (pcre2_match(re, (const PCRE2_UCHAR *) r, rlen - 1, 0, re_match_flags,
+                    md, re_match_ctx) >= 0) {
+      if (all && *bp != b) {
         safe_str(osep, buff, bp);
-      if (pos)
+      }
+      if (pos) {
         safe_integer(i + 1, buff, bp);
-      else
+      } else {
         safe_str(ptrs[i], buff, bp);
-      if (!all)
+      }
+      if (!all) {
         break;
+      }
     }
   }
   freearr(ptrs, nptrs);
   mush_free(ptrs, "ptrarray");
 
-  pcre_free(re);
+  pcre2_code_free(re);
+  pcre2_match_data_free(md);
   DEL_CHECK("pcre");
-  if (study) {
-#ifdef PCRE_CONFIG_JIT
-    pcre_free_study(study);
-#else
-    pcre_free(study);
-#endif
-    DEL_CHECK("pcre.extra");
-  }
 }
 
 FUNCTION(fun_isregexp)
 {
-  pcre *re;
-  int flags = 0;
-  const char *errptr;
-  int erroffset;
+  pcre2_code *re;
+  int errcode;
+  PCRE2_SIZE erroffset;
 
-  if (!!(re = pcre_compile(args[0], flags, &errptr, &erroffset, tables))) {
-    pcre_free(re);
+  if (!!(re = pcre2_compile((const PCRE2_UCHAR *) args[0], arglens[0],
+                            re_compile_flags, &errcode, &erroffset,
+                            re_compile_ctx))) {
+    pcre2_code_free(re);
     safe_chr('1', buff, bp);
     return;
   }

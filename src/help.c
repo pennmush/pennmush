@@ -14,7 +14,6 @@
 #include <stdio.h>
 #include <errno.h>
 #include <fcntl.h>
-#include <pcre.h>
 #ifdef HAVE_SYS_TYPES_H
 #include <sys/types.h>
 #endif
@@ -46,6 +45,7 @@
 #include "mushsql.h"
 #include "charconv.h"
 #include "game.h"
+#include "mypcre.h"
 
 #define HELPDB_APP_ID 0x42010FF1
 #define HELPDB_VERSION 6
@@ -96,8 +96,6 @@ typedef struct TLIST {
 } tlist;
 
 tlist *top = NULL; /**< Pointer to top of linked list of topic names */
-
-extern bool help_wild(const char *restrict tstr, const char *restrict dstr);
 
 static char *
 help_search(dbref executor, help_file *h, char *_term, char *delim,
@@ -1543,9 +1541,8 @@ extern const unsigned char *tables;
 static bool
 is_index_entry(const char *topic, int *offset)
 {
-  static pcre *entry_re = NULL;
-  static pcre_extra *extra = NULL;
-  int ovec[33], ovecsize = 33;
+  static pcre2_code *entry_re = NULL;
+  static pcre2_match_data *entry_md = NULL;
   int r;
 
   if (strcasecmp(topic, "entries") == 0 || strcasecmp(topic, "&entries") == 0) {
@@ -1554,23 +1551,29 @@ is_index_entry(const char *topic, int *offset)
   }
 
   if (!entry_re) {
-    const char *errptr = NULL;
-    int erroffset = 0;
-    entry_re = pcre_compile("^&?entries-([0-9]+)$", PCRE_CASELESS, &errptr,
-                            &erroffset, tables);
-    extra = pcre_study(entry_re, pcre_study_flags, &errptr);
+    int errcode;
+    PCRE2_SIZE erroffset;
+    entry_re = pcre2_compile(
+      (const PCRE2_UCHAR *) "^&?entries-([0-9]+)$", PCRE2_ZERO_TERMINATED,
+      re_compile_flags | PCRE2_CASELESS | PCRE2_NO_UTF_CHECK, &errcode,
+      &erroffset, re_compile_ctx);
+    pcre2_jit_compile(entry_re, PCRE2_JIT_COMPLETE);
+    entry_md = pcre2_match_data_create_from_pattern(entry_re, NULL);
   }
 
-  if ((r = pcre_exec(entry_re, extra, topic, strlen(topic), 0, 0, ovec,
-                     ovecsize)) == 2) {
+  if ((r = pcre2_match(entry_re, (const PCRE2_UCHAR *) topic, strlen(topic), 0,
+                       re_match_flags, entry_md, re_match_ctx)) == 2) {
     char buff[BUFFER_LEN];
-    pcre_copy_substring(topic, ovec, r, 1, buff, BUFFER_LEN);
+    PCRE2_SIZE bufflen = BUFFER_LEN;
+    pcre2_substring_copy_bynumber(entry_md, 1, (PCRE2_UCHAR *) buff, &bufflen);
     *offset = parse_integer(buff);
-    if (*offset <= 0)
+    if (*offset <= 0) {
       *offset = 1;
+    }
     return 1;
-  } else
+  } else {
     return 0;
+  }
 }
 
 #define MAX_SUGGESTIONS 500000

@@ -533,7 +533,7 @@ main(int argc, char **argv)
 #endif /* !WIN32 */
 
 #ifdef HAVE_PLEDGE
-  if (pledge("stdio rpath wpath cpath inet flock unix dns proc exec id ",
+  if (pledge("stdio rpath wpath cpath inet flock unix dns proc exec id prot_exec",
              NULL) < 0) {
     perror("pledge"); /* Happens before logfiles are opened; no penn_perror() */
   }
@@ -566,7 +566,7 @@ main(int argc, char **argv)
             n++;
           }
         } else if (strcmp(argv[n], "--no-pcre-jit") == 0) {
-          pcre_study_flags = 0;
+          re_match_flags = PCRE2_NO_JIT;
         } else if (strcmp(argv[n], "--tests") == 0) {
           enable_tests = 1;
         } else if (strcmp(argv[n], "--only-tests") == 0) {
@@ -684,8 +684,15 @@ main(int argc, char **argv)
 #endif
 #endif
 
-  /* Build the locale-dependant tables used by PCRE */
-  tables = pcre_maketables();
+  /* Build the contexts used by PCRE2 */
+  re_compile_ctx = pcre2_compile_context_create(NULL);
+  re_match_ctx = pcre2_match_context_create(NULL);
+  glob_convert_ctx = pcre2_convert_context_create(NULL);
+  pcre2_set_character_tables(re_compile_ctx, pcre2_maketables(NULL));
+  pcre2_set_match_limit(re_match_ctx, PENN_MATCH_LIMIT);
+  pcre2_set_heap_limit(re_match_ctx, 10 * 1024); // 10MB max heap memory
+  pcre2_set_glob_escape(glob_convert_ctx, '\\');
+  pcre2_set_glob_separator(glob_convert_ctx, '`');
 
   /* save a file descriptor */
   reserve_fd();
@@ -1595,7 +1602,7 @@ gameloop()
   struct timeval current_time;
 
   while (!shutdown_flag) {
-/** let's find out how long we should wait */
+    /** let's find out how long we should wait */
 #define min_timeout(store, func)                                               \
   timeout_check = func;                                                        \
   if (timeout_check < store)                                                   \

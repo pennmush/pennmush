@@ -259,18 +259,20 @@ attr_read(PENNFILE *f)
   } else if (AL_FLAGS(a) & AF_RLIMIT) {
     /* Need to validate regexp */
     char *t;
-    pcre *re;
-    const char *errptr;
-    int erroffset;
+    pcre2_code *re;
+    int errcode;
+    PCRE2_SIZE erroffset;
 
-    re = pcre_compile(tmp, PCRE_CASELESS, &errptr, &erroffset, tables);
+    re = pcre2_compile((const PCRE2_UCHAR *) tmp, PCRE2_ZERO_TERMINATED,
+                       re_compile_flags | PCRE2_CASELESS, &errcode, &erroffset,
+                       re_compile_ctx);
     if (!re) {
       do_rawlog(LT_ERR, "Invalid regexp in limit for attribute '%s' in db.",
                 AL_NAME(a));
       free_standard_attr(a, 0);
       return NULL;
     }
-    pcre_free(re); /* don't need it, just needed to check it */
+    pcre2_code_free(re); /* don't need it, just needed to check it */
 
     t = compress(tmp);
     a->data = chunk_create(t, strlen(t), 0);
@@ -504,10 +506,11 @@ check_attr_value(dbref player, const char *name, const char *value)
   /* Check for attribute limits and enums. */
   ATTR *ap;
   char *attrval;
-  pcre *re;
+  pcre2_code *re;
+  pcre2_match_data *md;
   int subpatterns;
-  const char *errptr;
-  int erroffset;
+  int errcode;
+  PCRE2_SIZE erroffset;
   char *ptr, *ptr2;
   char delim;
   int len;
@@ -534,15 +537,18 @@ check_attr_value(dbref player, const char *name, const char *value)
   }
 
   if (ap->flags & AF_RLIMIT) {
-    re = pcre_compile(remove_markup(attrval, NULL), PCRE_CASELESS, &errptr,
-                      &erroffset, tables);
+    re = pcre2_compile((const PCRE2_UCHAR *) remove_markup(attrval, NULL),
+                       PCRE2_ZERO_TERMINATED, re_compile_flags | PCRE2_CASELESS,
+                       &errcode, &erroffset, re_compile_ctx);
     if (!re) {
       return value;
     }
 
-    subpatterns =
-      pcre_exec(re, default_match_limit(), value, strlen(value), 0, 0, NULL, 0);
-    pcre_free(re);
+    md = pcre2_match_data_create_from_pattern(re, NULL);
+    subpatterns = pcre2_match(re, (const PCRE2_UCHAR *) value, strlen(value), 0,
+                              re_match_flags, md, re_match_ctx);
+    pcre2_code_free(re);
+    pcre2_match_data_free(md);
 
     if (subpatterns >= 0) {
       return value;
@@ -627,23 +633,25 @@ do_attribute_limit(dbref player, const char *name, int type,
   char buff[BUFFER_LEN];
   char *bp;
   char delim = ' ';
-  pcre *re;
-  const char *errptr;
-  int erroffset;
+  pcre2_code *re;
+  int errcode;
+  PCRE2_SIZE erroffset;
   int unset = 0;
   char ucname[BUFFER_LEN];
 
   if (pattern && *pattern) {
     if (type == AF_RLIMIT) {
       /* Compile to regexp. */
-      re = pcre_compile(remove_markup(pattern, NULL), PCRE_CASELESS, &errptr,
-                        &erroffset, tables);
+      re =
+        pcre2_compile((const PCRE2_UCHAR *) remove_markup(pattern, NULL),
+                      PCRE2_ZERO_TERMINATED, re_compile_flags | PCRE2_CASELESS,
+                      &errcode, &erroffset, re_compile_ctx);
       if (!re) {
         notify(player, T("Invalid Regular Expression."));
         return;
       }
       /* We only care if it's valid, we're not using it. */
-      pcre_free(re);
+      pcre2_code_free(re);
 
       /* Copy it to buff to be placed into ap->data. */
       mush_strncpy(buff, pattern, sizeof buff);

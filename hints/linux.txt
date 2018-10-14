@@ -20,6 +20,10 @@ names are. Some common ones have dependencies described below.
    and highly recommended icu, libevent and libcurl. Some or all of
    these might already be present as part of a base install.
 
+* RedHat, CentOS and related distributions need the perl-core package
+  installed, as their perl package does not actually provide all of a
+  base perl environment.
+
 
 
 

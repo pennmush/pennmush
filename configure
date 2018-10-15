@@ -4059,7 +4059,7 @@ fi
 
 
 
-# Detects FreeBSD
+# Detects OS
 case "${build_os}" in
   *freebsd*)
     USING_FREEBSD=yes
@@ -4069,6 +4069,13 @@ case "${build_os}" in
     ;;
   *openbsd*)
     USING_OPENBSD=yes
+    ;;
+  *mingw*)
+    USING_WINDOWS=yes
+    ;;
+  *cygwin*)
+    USING_CYGWIN=yes
+    ;;
 esac
 
 # Adds additional paths potentially needed or BSD compilation
@@ -4324,7 +4331,7 @@ done
 
 
 
-for flag in -funsigned-char -fstack-protector -Wa,--noexecstack; do
+for flag in -funsigned-char -Wa,--noexecstack; do
   as_CACHEVAR=`$as_echo "ax_cv_check_cflags_$CLANGFLAGS_$flag" | $as_tr_sh`
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether C compiler accepts $flag" >&5
 $as_echo_n "checking whether C compiler accepts $flag... " >&6; }
@@ -4395,6 +4402,84 @@ fi
 
 done
 
+if test -z "$USING_WINDOWS"; then
+ # -fstack-protector always segfaults on MSYS2/Mingw-w64 builds.
+
+
+
+
+for flag in -fstack-protector; do
+  as_CACHEVAR=`$as_echo "ax_cv_check_cflags_$CLANGFLAGS_$flag" | $as_tr_sh`
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking whether C compiler accepts $flag" >&5
+$as_echo_n "checking whether C compiler accepts $flag... " >&6; }
+if eval \${$as_CACHEVAR+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+
+  ax_check_save_flags=$CFLAGS
+  CFLAGS="$CFLAGS $CLANGFLAGS $flag"
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+int
+main ()
+{
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"; then :
+  eval "$as_CACHEVAR=yes"
+else
+  eval "$as_CACHEVAR=no"
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+  CFLAGS=$ax_check_save_flags
+fi
+eval ac_res=\$$as_CACHEVAR
+	       { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_res" >&5
+$as_echo "$ac_res" >&6; }
+if eval test \"x\$"$as_CACHEVAR"\" = x"yes"; then :
+
+if ${CFLAGS+:} false; then :
+
+  case " $CFLAGS " in #(
+  *" $flag "*) :
+    { { $as_echo "$as_me:${as_lineno-$LINENO}: : CFLAGS already contains \$flag"; } >&5
+  (: CFLAGS already contains $flag) 2>&5
+  ac_status=$?
+  $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+  test $ac_status = 0; } ;; #(
+  *) :
+
+     as_fn_append CFLAGS " $flag"
+     { { $as_echo "$as_me:${as_lineno-$LINENO}: : CFLAGS=\"\$CFLAGS\""; } >&5
+  (: CFLAGS="$CFLAGS") 2>&5
+  ac_status=$?
+  $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+  test $ac_status = 0; }
+     ;;
+esac
+
+else
+
+  CFLAGS=$flag
+  { { $as_echo "$as_me:${as_lineno-$LINENO}: : CFLAGS=\"\$CFLAGS\""; } >&5
+  (: CFLAGS="$CFLAGS") 2>&5
+  ac_status=$?
+  $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+  test $ac_status = 0; }
+
+fi
+
+else
+  :
+fi
+
+done
+
+fi
 
 
 
@@ -11075,7 +11160,14 @@ _ACEOF
 
 
 ### PCRE2 config
-PCRE2_OPTIONS="--prefix=$(pwd)/pcre2/ --disable-shared --enable-never-backslash-C --enable-jit=auto"
+PCRE2_OPTIONS="--prefix=$(pwd)/pcre2/ --disable-shared --enable-never-backslash-C"
+if test "x${USING_CYGWIN}" = "xyes"; then
+ # pcre jit crashes Cygwin builds; don't use it there.
+ PCRE2_OPTIONS="${PCRE2_OPTIONS} --disable-jit"
+else
+ # Otherwise use it if supported on this platform
+ PCRE2_OPTIONS="${PCRE2_OPTIONS} --enable-jit=auto"
+fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: Configuring PCRE2" >&5
 $as_echo "$as_me: Configuring PCRE2" >&6;}
 PCRE2_VERSION="pcre2-10.32"

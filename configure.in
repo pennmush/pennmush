@@ -52,7 +52,7 @@ fi
 
 AC_PATH_PROG(GPERF, gperf)
 
-# Detects FreeBSD
+# Detects OS
 case "${build_os}" in 
   *freebsd*)
     USING_FREEBSD=yes
@@ -62,6 +62,13 @@ case "${build_os}" in
     ;;
   *openbsd*)
     USING_OPENBSD=yes
+    ;;
+  *mingw*)
+    USING_WINDOWS=yes
+    ;;
+  *cygwin*)
+    USING_CYGWIN=yes
+    ;;
 esac
 
 # Adds additional paths potentially needed or BSD compilation
@@ -86,7 +93,11 @@ AX_IS_RELEASE([always])
 AX_APPEND_COMPILE_FLAGS([-Werror=unknown-warning-option], [CLANGFLAGS])
 AX_APPEND_COMPILE_FLAGS([-pipe -Og -march=native], [CFLAGS], [$CLANGFLAGS])
 AX_APPEND_COMPILE_FLAGS([-Wall -Wextra -Wpedantic -Wno-comment -Wno-char-subscripts], [CFLAGS], [$CLANGFLAGS])
-AX_APPEND_COMPILE_FLAGS([-funsigned-char -fstack-protector -Wa,--noexecstack], [CFLAGS], [$CLANGFLAGS])
+AX_APPEND_COMPILE_FLAGS([-funsigned-char -Wa,--noexecstack], [CFLAGS], [$CLANGFLAGS])
+if test -z "$USING_WINDOWS"; then
+ # -fstack-protector always segfaults on MSYS2/Mingw-w64 builds.
+ AX_APPEND_COMPILE_FLAGS([-fstack-protector], [CFLAGS], [$CLANGFLAGS])
+fi
 m4_define(AM_LDFLAGS)
 AX_COMPILER_FLAGS_LDFLAGS()
 LDFLAGS="$LDFLAGS $WARN_LDFLAGS"
@@ -383,7 +394,14 @@ AC_CHECK_FILE(/dev/urandom, [AC_DEFINE(HAVE_DEV_URANDOM)])
 AX_ZONEINFO()
 
 ### PCRE2 config
-PCRE2_OPTIONS="--prefix=$(pwd)/pcre2/ --disable-shared --enable-never-backslash-C --enable-jit=auto"
+PCRE2_OPTIONS="--prefix=$(pwd)/pcre2/ --disable-shared --enable-never-backslash-C"
+if test "x${USING_CYGWIN}" = "xyes"; then
+ # pcre jit crashes Cygwin builds; don't use it there.
+ PCRE2_OPTIONS="${PCRE2_OPTIONS} --disable-jit"
+else
+ # Otherwise use it if supported on this platform
+ PCRE2_OPTIONS="${PCRE2_OPTIONS} --enable-jit=auto"
+fi
 AC_MSG_NOTICE([Configuring PCRE2])
 PCRE2_VERSION="pcre2-10.32"
 PCRE2_TARBALL="${PCRE2_VERSION}.tar.gz"

@@ -7214,7 +7214,7 @@ dump_reboot_db(void)
     flag_broadcast(0, 0, T("GAME: Error writing reboot database!"));
     exit(0);
   } else {
-
+    release_fd();
     f = penn_fopen(REBOOTFILE, "w");
     /* This shouldn't happen */
     if (!f) {

@@ -86,7 +86,7 @@ GLOBALTAB globals = {0, "", 0, 0, 0, 0, 0, 0, 0, 0};
 
 static int epoch = 0;
 #ifndef WIN32
-static int reserved; /**< Reserved file descriptor */
+static int reserved = -1; /**< Reserved file descriptor */
 #endif
 static dbref *errdblist = NULL; /**< List of dbrefs to return errors from */
 static dbref *errdbtail = NULL; /**< Pointer to end of errdblist */
@@ -144,7 +144,7 @@ void
 reserve_fd(void)
 {
 #ifndef WIN32
-  reserved = open("/dev/null", O_RDWR);
+  reserved = open("/dev/null", O_RDWR | O_CLOEXEC);
 #endif
 }
 
@@ -153,7 +153,10 @@ void
 release_fd(void)
 {
 #ifndef WIN32
-  close(reserved);
+  if (reserved >= 0) {
+    close(reserved);
+    reserved = -1;
+  }
 #endif
 }
 

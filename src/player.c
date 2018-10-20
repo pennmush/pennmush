@@ -239,6 +239,8 @@ connect_player(DESC *d, const char *name, const char *password,
          T("Either that player does not exist, or has a different password."));
 
   if (!name || !*name) {
+    /* Missing player names are failures, too. */
+    count = mark_failed(ip);
     queue_event(SYSEVENT, "SOCKET`LOGINFAIL", "%d,%s,%d,%s,#%d,",
                 d->descriptor, ip, count, "missing player name", -1);
     return NOTHING;

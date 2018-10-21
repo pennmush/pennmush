@@ -300,6 +300,8 @@ typedef bool _Bool;
 
 #undef HAVE_EVP_MD_DO_ALL
 
+#undef HAVE_RAND_KEEP_RANDOM_DEVICES_OPEN
+
 #undef HAVE_PRCTL
 
 #undef HAVE_HYPOT

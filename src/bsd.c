@@ -73,6 +73,7 @@
 #ifdef HAVE_LIBCURL
 #include <curl/curl.h>
 #endif
+#include <openssl/rand.h>
 
 #include "access.h"
 #include "ansi.h"
@@ -533,8 +534,9 @@ main(int argc, char **argv)
 #endif /* !WIN32 */
 
 #ifdef HAVE_PLEDGE
-  if (pledge("stdio rpath wpath cpath inet flock unix dns proc exec id prot_exec",
-             NULL) < 0) {
+  if (pledge(
+        "stdio rpath wpath cpath inet flock unix dns proc exec id prot_exec",
+        NULL) < 0) {
     perror("pledge"); /* Happens before logfiles are opened; no penn_perror() */
   }
 #endif
@@ -648,6 +650,11 @@ main(int argc, char **argv)
   options.mem_check = 1;
 
   init_game_config(confname);
+
+#ifdef HAVE_RAND_KEEP_RANDOM_DEVICES_OPEN
+  /* OpenSSL leaks a couple of file descriptors on every reboot without this. */
+  RAND_keep_random_devices_open(0);
+#endif
 
   /* If we have setlocale, call it to set locale info
    * from environment variables
@@ -7214,7 +7221,7 @@ dump_reboot_db(void)
     flag_broadcast(0, 0, T("GAME: Error writing reboot database!"));
     exit(0);
   } else {
-
+    release_fd();
     f = penn_fopen(REBOOTFILE, "w");
     /* This shouldn't happen */
     if (!f) {

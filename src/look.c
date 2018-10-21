@@ -299,7 +299,6 @@ look_contents(dbref player, dbref loc, const char *contents_name,
       PEND;
       notify_nopenter_by(loc, player, pbuff);
       DOLIST (thing, Contents(loc)) {
-        char tmp[50];
         if (can_see(player, thing, can_see_loc)) {
           PUSE;
           tag_wrap("LI", NULL, unparse_object_myopic(player, thing, AN_LOOK));

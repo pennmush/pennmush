@@ -302,10 +302,7 @@ look_contents(dbref player, dbref loc, const char *contents_name,
         char tmp[50];
         if (can_see(player, thing, can_see_loc)) {
           PUSE;
-          tag("LI");
-          snprintf(tmp, sizeof tmp, "XCH_CMD=\"look #%d\"", thing);
-          tag_wrap("A", tmp, unparse_object_myopic(player, thing, AN_LOOK));
-          tag_cancel("LI");
+          tag_wrap("LI", NULL, unparse_object_myopic(player, thing, AN_LOOK));
           PEND;
           notify_nopenter_by(loc, player, pbuff);
         }

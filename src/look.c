@@ -287,7 +287,7 @@ look_contents(dbref player, dbref loc, const char *contents_name,
       DOLIST (thing, Contents(loc)) {
         if (can_see(player, thing, can_see_loc)) {
           PUSE;
-          safe_str(unparse_object_myopic(player, thing, AN_LOOK), pbuff, &pp));
+          safe_str(unparse_object_myopic(player, thing, AN_LOOK), pbuff, &pp);
           PEND;
           notify_nopenter_by(loc, player, pbuff);
         }

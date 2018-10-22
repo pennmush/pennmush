@@ -742,6 +742,7 @@ with_openssl
 enable_sql
 with_mysql
 with_postgresql
+enable_jit
 enable_ipv6
 enable_nls
 enable_info_slave
@@ -1386,6 +1387,7 @@ Optional Features:
   --disable-FEATURE       do not include FEATURE (same as --enable-FEATURE=no)
   --enable-FEATURE[=ARG]  include FEATURE [ARG=yes]
   --disable-sql           Don't use SQL support
+  --disable-jit           Don't use JIT optimizations
   --disable-ipv6          Don't use IPv6 networking
   --disable-nls           Don't use message-translation
   --disable-info_slave    Don't use a separate process for hostname lookups
@@ -11160,13 +11162,25 @@ _ACEOF
 
 
 ### PCRE2 config
+
+# Check whether --enable-jit was given.
+if test "${enable_jit+set}" = set; then :
+  enableval=$enable_jit; enable_jit=$enableval
+else
+  enable_jit=yes
+fi
+
+
 PCRE2_OPTIONS="--prefix=$(pwd)/pcre2/ --disable-shared --enable-never-backslash-C"
 if test "x${USING_CYGWIN}" = "xyes"; then
  # pcre jit crashes Cygwin builds; don't use it there.
  PCRE2_OPTIONS="${PCRE2_OPTIONS} --disable-jit"
 else
- # Otherwise use it if supported on this platform
- PCRE2_OPTIONS="${PCRE2_OPTIONS} --enable-jit=auto"
+ # Otherwise use it if supported on this platform unless explicitly requested
+ # not to.
+ if test "x${enable_jit}" = "xyes"; then
+   PCRE2_OPTIONS="${PCRE2_OPTIONS} --enable-jit=auto"
+ fi
 fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: Configuring PCRE2" >&5
 $as_echo "$as_me: Configuring PCRE2" >&6;}

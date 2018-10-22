@@ -394,13 +394,20 @@ AC_CHECK_FILE(/dev/urandom, [AC_DEFINE(HAVE_DEV_URANDOM)])
 AX_ZONEINFO()
 
 ### PCRE2 config
+
+AC_ARG_ENABLE(jit,  AS_HELP_STRING([--disable-jit],
+      [Don't use JIT optimizations]), enable_jit=$enableval, enable_jit=yes)
+
 PCRE2_OPTIONS="--prefix=$(pwd)/pcre2/ --disable-shared --enable-never-backslash-C"
 if test "x${USING_CYGWIN}" = "xyes"; then
  # pcre jit crashes Cygwin builds; don't use it there.
  PCRE2_OPTIONS="${PCRE2_OPTIONS} --disable-jit"
 else
- # Otherwise use it if supported on this platform
- PCRE2_OPTIONS="${PCRE2_OPTIONS} --enable-jit=auto"
+ # Otherwise use it if supported on this platform unless explicitly requested
+ # not to.
+ if test "x${enable_jit}" = "xyes"; then
+   PCRE2_OPTIONS="${PCRE2_OPTIONS} --enable-jit=auto"
+ fi
 fi
 AC_MSG_NOTICE([Configuring PCRE2])
 PCRE2_VERSION="pcre2-10.32"

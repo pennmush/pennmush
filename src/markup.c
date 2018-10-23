@@ -7,8 +7,9 @@
  */
 
 #include "copyrite.h"
-#include "markup.h"
-
+#ifdef WIN32
+#include <Windows.h>
+#endif
 #include <stdio.h>
 #include <ctype.h>
 #include <string.h>
@@ -28,6 +29,7 @@
 #include "mushsql.h"
 #include "charconv.h"
 #include "map_file.h"
+#include "markup.h"
 
 #define ANSI_BEGIN "\x1B["
 #define ANSI_FINISH "m"

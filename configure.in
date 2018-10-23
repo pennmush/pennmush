@@ -71,6 +71,9 @@ case "${build_os}" in
   *cygwin*)
     USING_CYGWIN=yes
     ;;
+  *aix*)
+    USING_AIX=yes
+    ;;
 esac
 
 # Adds additional paths potentially needed or BSD compilation
@@ -96,8 +99,8 @@ AX_APPEND_COMPILE_FLAGS([-Werror=unknown-warning-option], [CLANGFLAGS])
 AX_APPEND_COMPILE_FLAGS([-pipe -Og -march=native], [CFLAGS], [$CLANGFLAGS])
 AX_APPEND_COMPILE_FLAGS([-Wall -Wextra -Wpedantic -Wno-comment -Wno-char-subscripts], [CFLAGS], [$CLANGFLAGS])
 AX_APPEND_COMPILE_FLAGS([-funsigned-char -Wa,--noexecstack], [CFLAGS], [$CLANGFLAGS])
-if test -z "$USING_WINDOWS"; then
- # -fstack-protector always segfaults on MSYS2/Mingw-w64 builds.
+if test -z "${USING_WINDOWS}${USING_AIX}"; then
+ # -fstack-protector always segfaults on MSYS2/Mingw-w64 builds and isn't supported on AIX
  AX_APPEND_COMPILE_FLAGS([-fstack-protector], [CFLAGS], [$CLANGFLAGS])
 fi
 m4_define(AM_LDFLAGS)

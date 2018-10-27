@@ -49,8 +49,6 @@ json_escape_string(char *input)
       // Nothing
     } else if (*p == '\t') {
       safe_str("\\t", buff, &bp);
-    } else if (*p == 0x1B) {
-      safe_str("\\u001b", buff, &bp);
     } else if (*p > 127 || *p <= 0x1F) {
       safe_format(buff, &bp, "\\u%04X", (unsigned) *p);
     } else {

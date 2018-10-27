@@ -25,6 +25,7 @@
 #include "charconv.h"
 #include "charclass.h"
 #include "cJSON.h"
+#include "ansi.h"
 
 char *json_vals[3] = {"false", "true", "null"};
 int json_val_lens[3] = {5, 4, 4};
@@ -48,6 +49,8 @@ json_escape_string(char *input)
       // Nothing
     } else if (*p == '\t') {
       safe_str("\\t", buff, &bp);
+    } else if (*p == 0x1B) {
+      safe_str("\\u001b", buff, &bp);
     } else if (*p > 127 || *p <= 0x1F) {
       safe_format(buff, &bp, "\\u%04X", (unsigned) *p);
     } else {
@@ -546,7 +549,11 @@ FUNCTION(fun_json)
 {
   enum json_type type;
   int i;
+  char tmp[BUFFER_LEN];
 
+  /* strip ansi markup from the type argument */
+  strcpy(args[0], remove_markup(args[0], NULL));
+  
   if (!*args[0]) {
     type = JSON_STR;
   } else if (strcasecmp("string", args[0]) == 0) {
@@ -572,6 +579,13 @@ FUNCTION(fun_json)
       (type == JSON_OBJECT && (nargs % 2) != 1)) {
     safe_str(T("#-1 WRONG NUMBER OF ARGUMENTS"), buff, bp);
     return;
+  }
+
+  /* strip ansi markup from non-string types */
+  if (type != JSON_STR) {
+    for (i = 1; i < nargs; i++) {
+      strcpy(args[i], remove_markup(args[i], NULL));
+    }
   }
 
   switch (type) {
@@ -600,7 +614,8 @@ FUNCTION(fun_json)
     safe_str(args[1], buff, bp);
     return;
   case JSON_STR:
-    safe_format(buff, bp, "\"%s\"", json_escape_string(args[1]));
+    strcpy(tmp, render_string(args[1], MSG_XTERM256));
+    safe_format(buff, bp, "\"%s\"", json_escape_string(tmp));
     return;
   case JSON_ARRAY: {
     char *jstr, *latin1, *c;

@@ -521,7 +521,7 @@ FUNTAB flist[] = {
   {"ITEMS", fun_items, 2, 2, FN_REG | FN_STRIPANSI},
   {"ITEMIZE", fun_itemize, 1, 4, FN_REG},
   {"ITEXT", fun_itext, 1, 1, FN_REG | FN_STRIPANSI},
-  {"JSON", fun_json, 1, INT_MAX, FN_REG | FN_STRIPANSI},
+  {"JSON", fun_json, 1, INT_MAX, FN_REG},
   {"JSON_MAP", fun_json_map, 2, MAX_STACK_ARGS + 1, FN_REG | FN_STRIPANSI},
   {"JSON_MOD", fun_json_mod, 3, 4, FN_REG | FN_STRIPANSI},
   {"JSON_QUERY", fun_json_query, 1, INT_MAX, FN_REG | FN_STRIPANSI},

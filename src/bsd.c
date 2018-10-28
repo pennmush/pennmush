@@ -3073,17 +3073,9 @@ FUNCTION(fun_oob)
   DESC *d;
   cJSON *json;
   int i = 0;
-
-  who = lookup_player(args[0]);
-  if (who == NOTHING) {
-    safe_str(e_match, buff, bp);
-    return;
-  }
-
-  if (Owner(who) != Owner(executor) && !Can_Send_OOB(executor)) {
-    safe_str("#-1", buff, bp);
-    return;
-  }
+  const char *l = NULL;
+  char *p;
+  int failed = 0;
 
   json = cJSON_Parse(args[2]);
   if (!json) {
@@ -3091,19 +3083,41 @@ FUNCTION(fun_oob)
     return;
   }
 
-  DESC_ITER_CONN (d) {
-    if (d->player != who)
+  l = trim_space_sep(args[0], ' ');
+  p = next_in_list(&l);
+
+  do {
+    who = lookup_player(p);
+    if (who == NOTHING) {
+      failed++;
       continue;
-    if (d->conn_flags & CONN_WEBSOCKETS) {
-      send_websocket_object(d, args[1], json);
-      i++;
     }
-    if (d->conn_flags & CONN_GMCP) {
-      send_oob(d, args[1], json);
-      i++;
+
+    if (Owner(who) != Owner(executor) && !Can_Send_OOB(executor)) {
+      failed++;
+      continue;
     }
+
+    DESC_ITER_CONN (d) {
+      if (d->player != who)
+        continue;
+      if (d->conn_flags & CONN_WEBSOCKETS) {
+        send_websocket_object(d, args[1], json);
+        i++;
+      }
+      if (d->conn_flags & CONN_GMCP) {
+        send_oob(d, args[1], json);
+        i++;
+      }
+    }
+  } while (l && *l && (p = next_in_list(&l)));
+  
+  if (failed && i < 1) {
+    safe_str("#-1 NO VALID PLAYERS", buff, bp);
+  } else {
+    safe_integer(i, buff, bp);
   }
-  safe_integer(i, buff, bp);
+  
   cJSON_Delete(json);
 }
 

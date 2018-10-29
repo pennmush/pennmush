@@ -25,21 +25,22 @@ See also: MUSHCODE, FUNCTION LIST
   Several major variants of functions are available. The help topics are listed below, together with a quick summary of the function type and some examples of that type of function.
 
   Attribute functions: attribute-related manipulations (GET, UFUN)
-  Bitwise functions: Manipulation of individual bits of numbers (SHL, BOR)
+  Bitwise functions: manipulation of individual bits of numbers (SHL, BOR)
   Boolean functions: produce 0 or 1 (false or true) answers (OR, AND)
-  Channel functions: Get information about channels (CTITLE, CWHO)
-  Communication functions: Send messages to objects (PEMIT, OEMIT)
-  Connection functions: Get information about a player's connection (CONN)
+  Channel functions: get information about channels (CTITLE, CWHO)
+  Communication functions: send messages to objects (PEMIT, OEMIT)
+  Connection functions: get information about a player's connection (CONN)
   Dbref functions: return dbref info related to objects (LOC, LEXITS)
-  Html functions: output html tags for Pueblo-compatible clients
+  HTML functions: output HTML tags for Pueblo and WebSocket clients
   Information functions: find out something about objects (FLAGS, MONEY)
+  JSON functions: create and manipulate JSON objects (JSON, JSON_MAP)
   List functions: manipulate lists (REVWORDS, FIRST)
   Mail functions: manipulate @mail (MAIL, FOLDERSTATS)
   Math functions: number manipulation, generic or integers only (ADD, DIV)
   Regular expression functions: Regular expressions (REGMATCH, REGEDIT)
-  SQL functions: Access SQL databases (SQL, SQLESCAPE)
+  SQL functions: access SQL databases (SQL, SQLESCAPE)
   String functions: string manipulation (ESCAPE, FLIP)
-  Time functions: Formatting and display of time (TIME, CONVSECS)
+  Time functions: formatting and display of time (TIME, CONVSECS)
   Utility functions: general utilities (ISINT, COMP)
 
   The command "@list/functions" lists all functions on the game.
@@ -4513,11 +4514,21 @@ See also: @teleport
   You must have see_all, or use terminfo() on yourself, to see all information or use a <descriptor>. Mortals using terminfo() on another player will always receive "unknown" for the client name, and will not get telnet/gmcp/ssl/prompt_newlines in the output list.
 
 See also: pueblo(), width(), height(), ssl(), @sockset, oob()
+& JSON FUNCTIONS
+  JSON functions are used to create and modify JSON objects.
+  
+  isjson()    json()     json_map()     json_query()     json_mod()
+  
+  These functions are used to output JSON objects to GMCP and WebSocket connections.
+  
+  wsjson()     oob()
+  
+See also: JSON PATHS
 & OOB()
 & GMCP
   oob(<player>, <package>[, <message>])
 
-  This function sends an out-of-band message to <player> using the General MUD Communication Protocol (GMCP - http://www.gammon.com.au/gmcp). <package> is the name of the package/message type.
+  This function sends an out-of-band message to <player> using the General MUD Communication Protocol (GMCP - http://www.gammon.com.au/gmcp) or a WebSocket. <package> is the name of the package/message type. 
 
   You must be a wizard or have the Send_OOB power to send messages to anyone but yourself.
 

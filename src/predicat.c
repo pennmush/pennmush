@@ -1382,10 +1382,10 @@ do_verb(dbref executor, dbref enactor, const char *arg1, char **argv,
 
 /** Helper data for regexp \@greps */
 struct regrep_data {
-  pcre *re;          /**< Pointer to compiled regular expression */
-  pcre_extra *study; /**< Pointer to studied data about re */
-  pennstr *ps;       /**< Output buffer */
-  int count;         /**< Number of matches found */
+  pcre2_code *re; /**< Pointer to compiled regular expression */
+  pcre2_match_data *md;
+  pennstr *ps; /**< Output buffer */
+  int count;   /**< Number of matches found */
 };
 
 /** Helper data for non-regexp \@greps */
@@ -1487,20 +1487,22 @@ regrep_helper(dbref player, dbref thing __attribute__((__unused__)),
 {
   struct regrep_data *rgd = args;
   char *s;
-  int offsets[99];
-  int subpatterns, search = 0;
+  int subpatterns;
+  PCRE2_SIZE search = 0;
   ansi_string *orig, *repl;
   pennstr *rbuff = ps_new();
 
   s = atr_value(attrib);
   orig = parse_ansi_string(s);
-  if ((subpatterns = pcre_exec(rgd->re, rgd->study, orig->text, orig->len,
-                               search, 0, offsets, 99)) < 0) {
+  if ((subpatterns =
+         pcre2_match(rgd->re, (const PCRE2_UCHAR *) orig->text, orig->len,
+                     search, re_match_flags, rgd->md, re_match_ctx)) < 0) {
     free_ansi_string(orig);
     ps_free(rbuff);
     return 0;
   }
   while (subpatterns >= 0 && !cpu_time_limit_hit) {
+    PCRE2_SIZE *offsets = pcre2_get_ovector_pointer(rgd->md);
     ps_safe_str(rbuff, ANSI_HILITE);
     ps_ansi_pcre_copy_substring(orig, offsets, subpatterns, 0, 0, rbuff);
     ps_safe_str(rbuff, ANSI_END);
@@ -1520,11 +1522,12 @@ regrep_helper(dbref player, dbref thing __attribute__((__unused__)),
 
       free_ansi_string(repl);
       ps_reset(rbuff);
-      if (search >= orig->len) {
+      if (search >= (uint32_t) orig->len) {
         break;
       }
-      subpatterns = pcre_exec(rgd->re, rgd->study, orig->text, orig->len,
-                              search, 0, offsets, 99);
+      subpatterns =
+        pcre2_match(rgd->re, (const PCRE2_UCHAR *) orig->text, orig->len,
+                    search, re_match_flags, rgd->md, re_match_ctx);
     }
   }
   ps_safe_ansi_string(orig, 0, orig->len, rbuff);
@@ -1559,48 +1562,32 @@ grep_util(dbref player, dbref thing, char *attrs, char *findstr, pennstr *ps,
   if (flags & GREP_REGEXP) {
     /* regexp grep */
     struct regrep_data rgd;
-    const char *errptr;
-    int erroffset;
-    int reflags = 0;
-    bool free_study = false;
+    int errcode;
+    PCRE2_SIZE erroffset;
+    int reflags = re_compile_flags;
 
     if (flags & GREP_NOCASE) {
-      reflags |= PCRE_CASELESS;
+      reflags |= PCRE2_CASELESS;
     }
 
-    if ((rgd.re = pcre_compile(cleanfind, reflags, &errptr, &erroffset,
-                               tables)) == NULL) {
+    if ((rgd.re = pcre2_compile((const PCRE2_UCHAR *) cleanfind,
+                                PCRE2_ZERO_TERMINATED, reflags, &errcode,
+                                &erroffset, re_compile_ctx)) == NULL) {
+      char errstr[120];
+      pcre2_get_error_message(errcode, (PCRE2_UCHAR *) errstr, sizeof errstr);
       /* Matching error. */
       if (ps) {
         ps_safe_str(ps, T("#-1 REGEXP ERROR: "));
-        ps_safe_str(ps, errptr);
+        ps_safe_str(ps, errstr);
       } else {
-        notify_format(player, T("Invalid regexp: %s"), errptr);
+        notify_format(player, T("Invalid regexp: %s"), errstr);
       }
       mush_free(cleanfind, "grep.string");
       return 0;
     }
     ADD_CHECK("pcre");
-    rgd.study = pcre_study(rgd.re, pcre_public_study_flags, &errptr);
-    if (errptr != NULL) {
-      if (ps) {
-        ps_safe_str(ps, T("#-1 REGEXP ERROR: "));
-        ps_safe_str(ps, errptr);
-      } else {
-        notify_format(player, T("Invalid regexp: %s"), errptr);
-      }
-      pcre_free(rgd.re);
-      DEL_CHECK("pcre");
-      mush_free(cleanfind, "grep.string");
-      return 0;
-    }
-    if (rgd.study) {
-      ADD_CHECK("pcre.extra");
-      free_study = true;
-      set_match_limit(rgd.study);
-    } else {
-      rgd.study = default_match_limit();
-    }
+    pcre2_jit_compile(rgd.re, PCRE2_JIT_COMPLETE);
+    rgd.md = pcre2_match_data_create_from_pattern(rgd.re, NULL);
     rgd.ps = ps;
     rgd.count = 0;
 
@@ -1611,15 +1598,8 @@ grep_util(dbref player, dbref thing, char *attrs, char *findstr, pennstr *ps,
       atr_iter_get(player, thing, attrs, AIG_NONE, regrep_helper,
                    (void *) &rgd);
     }
-    if (free_study) {
-#ifdef PCRE_CONFIG_JIT
-      pcre_free_study(rgd.study);
-#else
-      pcre_free(rgd.study);
-#endif
-      DEL_CHECK("pcre.extra");
-    }
-    pcre_free(rgd.re);
+    pcre2_code_free(rgd.re);
+    pcre2_match_data_free(rgd.md);
     DEL_CHECK("pcre");
     mush_free(cleanfind, "grep.string");
 

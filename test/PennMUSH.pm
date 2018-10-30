@@ -74,7 +74,7 @@ sub start {
     foreach $j (1..10) {
       next unless open my $LOG, "<", "testgame/log/netmush.log";
       while ($line = <$LOG>) {
-        return $port if $line =~ /^Listening on port $port /;
+        return $port if $line =~ /Listening on port $port /;
       }
       close $LOG;
     } continue {

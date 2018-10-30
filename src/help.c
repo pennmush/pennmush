@@ -14,7 +14,6 @@
 #include <stdio.h>
 #include <errno.h>
 #include <fcntl.h>
-#include <pcre.h>
 #ifdef HAVE_SYS_TYPES_H
 #include <sys/types.h>
 #endif
@@ -23,6 +22,9 @@
 #endif
 #ifdef HAVE_UNISTD_H
 #include <unistd.h>
+#endif
+#ifdef HAVE_PTHREAD_H
+#include <pthread.h>
 #endif
 
 #include "help.h"
@@ -43,10 +45,11 @@
 #include "mushsql.h"
 #include "charconv.h"
 #include "game.h"
+#include "mypcre.h"
 
 #define HELPDB_APP_ID 0x42010FF1
-#define HELPDB_VERSION 5
-#define HELPDB_VERSIONS "5"
+#define HELPDB_VERSION 6
+#define HELPDB_VERSIONS "6"
 
 #define LINE_SIZE 8192
 #define TOPIC_NAME_LEN 30
@@ -94,8 +97,6 @@ typedef struct TLIST {
 } tlist;
 
 tlist *top = NULL; /**< Pointer to top of linked list of topic names */
-
-extern bool help_wild(const char *restrict tstr, const char *restrict dstr);
 
 static char *
 help_search(dbref executor, help_file *h, char *_term, char *delim,
@@ -390,6 +391,40 @@ COMMAND(cmd_helpcmd)
   }
 }
 
+#ifdef HAVE_PTHREAD_ATFORK
+static bool relaunch = 0;
+static void
+helpdb_prefork(void)
+{
+  if (help_db) {
+    close_sql_db(help_db);
+    help_db = NULL;
+    relaunch = 1;
+  } else {
+    relaunch = 0;
+  }
+}
+
+static void
+helpdb_postfork_parent(void)
+{
+  if (relaunch) {
+    help_db = open_sql_db(options.help_db, 1);
+  }
+}
+
+#endif
+
+static bool
+help_optimize(void *vptr __attribute__((__unused__)))
+{
+  if (help_db) {
+    return optimize_db(help_db);
+  } else {
+    return false;
+  }
+}
+
 /** Initialize the helpfile hashtable, which contains the names of thes
  * help files.
  */
@@ -446,7 +481,6 @@ init_help_files(void)
       "NULL, topic TEXT NOT NULL COLLATE NOCASE, PRIMARY KEY(catid, pageno), "
       "FOREIGN KEY(catid, topic) REFERENCES topics(catid, name) ON DELETE "
       "CASCADE) WITHOUT ROWID;"
-      "CREATE INDEX index_starts_idx_catid_topic ON index_starts(catid, topic);"
       "CREATE VIRTUAL TABLE helpfts USING fts5(body, content='entries', "
       "content_rowid='id', tokenize=\"porter unicode61 tokenchars '@+'\");"
       "CREATE TRIGGER entries_ai AFTER INSERT ON entries BEGIN INSERT INTO "
@@ -465,9 +499,12 @@ init_help_files(void)
       return;
     }
   }
-  sq_register_loop(26 * 60 * 60 + 300, optimize_db, help_db, NULL);
+  sq_register_loop(26 * 60 * 60 + 300, help_optimize, NULL, NULL);
   init_private_vocab();
   hashinit(&help_files, 8);
+#ifdef HAVE_PTHREAD_ATFORK
+  pthread_atfork(helpdb_prefork, helpdb_postfork_parent, NULL);
+#endif
   help_init = 1;
 }
 
@@ -1394,11 +1431,9 @@ entries_from_offset(help_file *h, int off)
 
   sqlite3_stmt *indexer;
   pennstr *res;
-  char *entries[3] = {NULL, NULL, NULL};
-  int lens[3] = {0, 0, 0};
-  int col = 0, status;
-  bool need_col0 = 1;
-  int pages = 0;
+  int fmtwidths[3];
+  int col = 0, pages = 0, status;
+  int ncols = 3;
 
   indexer = prepare_statement(help_db,
                               "SELECT count(*) FROM index_starts WHERE catid = "
@@ -1420,10 +1455,21 @@ entries_from_offset(help_file *h, int off)
   indexer = prepare_statement(
     help_db,
     "WITH cat(id) AS (SELECT id FROM categories WHERE name = ?1) "
-    "SELECT name FROM topics,cat WHERE catid = cat.id AND name >= (SELECT "
-    "topic FROM index_starts WHERE catid = cat.id AND pageno = ?2) ORDER BY "
-    "name LIMIT ?3",
+    "SELECT t.name"
+    "     , lead(length(t.name), 1, 0) OVER (ORDER BY t.name)"
+    "     , lead(length(t.name), 2, 0) OVER (ORDER BY t.name)"
+    "FROM topics AS t "
+    "JOIN cat ON t.catid = cat.id "
+    "JOIN index_starts AS i ON cat.id = i.catid "
+    "WHERE t.name >= i.topic AND i.pageno = ?2 "
+    "ORDER BY t.name "
+    "LIMIT ?3",
     "help.entries.page");
+
+  if (!indexer) {
+    return NULL;
+  }
+
   sqlite3_bind_text(indexer, 1, h->command, -1, SQLITE_STATIC);
   sqlite3_bind_int(indexer, 2, off);
   sqlite3_bind_int(indexer, 3, ENTRIES_PER_PAGE);
@@ -1431,93 +1477,50 @@ entries_from_offset(help_file *h, int off)
   res = ps_new();
 
   while (1) {
-    if (need_col0) {
-      status = sqlite3_step(indexer);
-      if (status != SQLITE_ROW) {
-        break;
-      }
-      entries[0] =
-        mush_strdup((const char *) sqlite3_column_text(indexer, 0), "string");
-      if (entries[0][0] == '&') {
-        entries[0] += 1;
-        lens[0] -= 1;
-      }
-    }
+    const char *entry;
 
     status = sqlite3_step(indexer);
     if (status != SQLITE_ROW) {
-      if (col == 0) {
-        ps_safe_format(res, " %-76.76s\n", entries[0]);
-      } else if (col == 1) {
-        ps_safe_format(res, " %-51.51s\n", entries[0]);
-      }
       break;
     }
-    entries[1] =
-      mush_strdup((const char *) sqlite3_column_text(indexer, 0), "string");
-    lens[1] = sqlite3_column_bytes(indexer, 0);
-    if (entries[1][0] == '&') {
-      entries[1] += 1;
-      lens[1] -= 1;
-    }
 
-    if (lens[0] > LONG_TOPIC) {
-      if (lens[1] > LONG_TOPIC) {
-        ps_safe_format(res, " %-76.76s\n", entries[0]);
-        mush_free(entries[0], "string");
-        entries[0] = entries[1];
-        lens[0] = lens[1];
-        entries[1] = NULL;
-        col = 1;
-        need_col0 = 0;
+    entry = (const char *) sqlite3_column_text(indexer, 0);
+
+    if (col == 0) {
+      int len0, len1, len2;
+      len0 = sqlite3_column_bytes(indexer, 0);
+      len1 = sqlite3_column_int(indexer, 1);
+      len2 = sqlite3_column_int(indexer, 2);
+      if (len0 > LONG_TOPIC) {
+        if (len1 > LONG_TOPIC) {
+          fmtwidths[0] = 75;
+          ncols = 1;
+        } else {
+          fmtwidths[0] = 50;
+          fmtwidths[1] = 25;
+          ncols = 2;
+        }
+      } else if (len1 > LONG_TOPIC) {
+        fmtwidths[0] = 25;
+        fmtwidths[1] = 50;
+        ncols = 2;
+      } else if (len2 > LONG_TOPIC) {
+        fmtwidths[0] = 25;
+        fmtwidths[1] = 25;
+        ncols = 2;
       } else {
-        ps_safe_format(res, " %-51.51s %-25.25s\n", entries[0], entries[1]);
-        mush_free(entries[0], "string");
-        mush_free(entries[1], "string");
-        entries[0] = entries[1] = NULL;
-        col = 0;
-        need_col0 = 1;
+        fmtwidths[0] = 25;
+        fmtwidths[1] = 25;
+        fmtwidths[2] = 25;
+        ncols = 3;
       }
-    } else if (lens[1] > LONG_TOPIC) {
-      ps_safe_format(res, " %-25.25s %-51.51s\n", entries[0], entries[1]);
-      mush_free(entries[0], "string");
-      mush_free(entries[1], "string");
-      entries[0] = entries[1] = NULL;
+    }
+    ps_safe_format(res, " %-*.*s", fmtwidths[col], fmtwidths[col], entry);
+    ps_safe_chr(res, ' ');
+    col += 1;
+    if (col == ncols) {
+      ps_safe_chr(res, '\n');
       col = 0;
-      need_col0 = 1;
-    } else {
-      status = sqlite3_step(indexer);
-      if (status != SQLITE_ROW) {
-        ps_safe_format(res, " %-25.25s %-25.25s\n", entries[0], entries[1]);
-        mush_free(entries[0], "string");
-        mush_free(entries[1], "string");
-        entries[0] = entries[1] = NULL;
-        break;
-      }
-      entries[2] =
-        mush_strdup((const char *) sqlite3_column_text(indexer, 0), "string");
-      lens[2] = sqlite3_column_bytes(indexer, 0);
-      if (entries[2][0] == '&') {
-        entries[2] += 1;
-        lens[2] -= 1;
-      }
-      if (lens[2] > LONG_TOPIC) {
-        ps_safe_format(res, " %-25.25s %-25.25s\n", entries[0], entries[1]);
-        mush_free(entries[0], "string");
-        mush_free(entries[1], "string");
-        entries[0] = entries[2];
-        lens[0] = lens[2];
-        col = 1;
-        need_col0 = 0;
-      } else {
-        ps_safe_format(res, " %-25.25s %-25.25s %-25.25s\n", entries[0],
-                       entries[1], entries[2]);
-        mush_free(entries[0], "string");
-        mush_free(entries[1], "string");
-        mush_free(entries[2], "string");
-        col = 0;
-        need_col0 = 1;
-      }
     }
   }
   sqlite3_reset(indexer);
@@ -1540,9 +1543,8 @@ extern const unsigned char *tables;
 static bool
 is_index_entry(const char *topic, int *offset)
 {
-  static pcre *entry_re = NULL;
-  static pcre_extra *extra = NULL;
-  int ovec[33], ovecsize = 33;
+  static pcre2_code *entry_re = NULL;
+  static pcre2_match_data *entry_md = NULL;
   int r;
 
   if (sqlite3_stricmp(topic, "entries") == 0 ||
@@ -1552,23 +1554,29 @@ is_index_entry(const char *topic, int *offset)
   }
 
   if (!entry_re) {
-    const char *errptr = NULL;
-    int erroffset = 0;
-    entry_re = pcre_compile("^&?entries-([0-9]+)$", PCRE_CASELESS, &errptr,
-                            &erroffset, tables);
-    extra = pcre_study(entry_re, pcre_study_flags, &errptr);
+    int errcode;
+    PCRE2_SIZE erroffset;
+    entry_re = pcre2_compile(
+      (const PCRE2_UCHAR *) "^&?entries-([0-9]+)$", PCRE2_ZERO_TERMINATED,
+      re_compile_flags | PCRE2_CASELESS | PCRE2_NO_UTF_CHECK, &errcode,
+      &erroffset, re_compile_ctx);
+    pcre2_jit_compile(entry_re, PCRE2_JIT_COMPLETE);
+    entry_md = pcre2_match_data_create_from_pattern(entry_re, NULL);
   }
 
-  if ((r = pcre_exec(entry_re, extra, topic, strlen(topic), 0, 0, ovec,
-                     ovecsize)) == 2) {
+  if ((r = pcre2_match(entry_re, (const PCRE2_UCHAR *) topic, strlen(topic), 0,
+                       re_match_flags, entry_md, re_match_ctx)) == 2) {
     char buff[BUFFER_LEN];
-    pcre_copy_substring(topic, ovec, r, 1, buff, BUFFER_LEN);
+    PCRE2_SIZE bufflen = BUFFER_LEN;
+    pcre2_substring_copy_bynumber(entry_md, 1, (PCRE2_UCHAR *) buff, &bufflen);
     *offset = parse_integer(buff);
-    if (*offset <= 0)
+    if (*offset <= 0) {
       *offset = 1;
+    }
     return 1;
-  } else
+  } else {
     return 0;
+  }
 }
 
 #define MAX_SUGGESTIONS 500000

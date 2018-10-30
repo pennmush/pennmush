@@ -1010,9 +1010,9 @@ extern const unsigned char *tables; /* for do_edit_regexp */
 
 /** Argument struct for edit_helper */
 struct regedit_args {
-  int flags; /**< The type of edit */
-  pcre *re;  /**< Regexp to match string against */
-  pcre_extra *extra;
+  int flags;      /**< The type of edit */
+  pcre2_code *re; /**< Regexp to match string against */
+  pcre2_match_data *md;
   char *to;             /**< Replacement string. */
   int edited;           /**< Number of attributes edited */
   int skipped;          /**< Number of attributes skipped */
@@ -1036,9 +1036,8 @@ regedit_helper(dbref player, dbref thing,
   ansi_string *hilite, *repl;
   const char *r;
   PE_REGS *pe_regs;
-  int search;
+  PCRE2_SIZE search;
   int subpatterns;
-  int offsets[99];
   int ansi_long_flag = 0;
 
   gargs = args;
@@ -1066,16 +1065,17 @@ regedit_helper(dbref player, dbref thing,
   search = 0;
   /* Do all the searches and replaces we can */
   do {
-    subpatterns = pcre_exec(gargs->re, gargs->extra, haystack->text,
-                            haystack->len, search, 0, offsets, 99);
+    subpatterns = pcre2_match(gargs->re, (const PCRE2_UCHAR *) haystack->text,
+                              haystack->len, search, re_match_flags, gargs->md,
+                              re_match_ctx);
     if (subpatterns >= 0) {
       edited = 1;
       /* We have a match */
       /* Process the replacement */
       r = gargs->to;
       pe_regs_clear(pe_regs);
-      pe_regs_set_rx_context_ansi(pe_regs, 0, gargs->re, offsets, subpatterns,
-                                  haystack);
+      pe_regs_set_rx_context_ansi(pe_regs, 0, gargs->re, gargs->md,
+                                  subpatterns, haystack);
       tbp = tbuf;
       if (process_expression(tbuf, &tbp, &r, player, player, player,
                              PE_DEFAULT | PE_DOLLAR, PT_DEFAULT,
@@ -1084,7 +1084,8 @@ regedit_helper(dbref player, dbref thing,
         break;
       }
       *tbp = '\0';
-      if (offsets[0] >= search) {
+      if (pcre2_get_startchar(gargs->md) >= search) {
+        PCRE2_SIZE *offsets = pcre2_get_ovector_pointer(gargs->md);
         repl = parse_ansi_string(tbuf);
 
         /* Do the replacement */
@@ -1120,8 +1121,9 @@ regedit_helper(dbref player, dbref thing,
         }
 
         free_ansi_string(repl);
-        if (search >= haystack->len)
+        if (search >= (PCRE2_SIZE) haystack->len) {
           break;
+        }
       } else {
         break;
       }
@@ -1200,10 +1202,9 @@ do_edit_regexp(dbref player, char *it, char **argv, int flags,
   char tbuf1[BUFFER_LEN];
   char *q;
   struct regedit_args args;
-  pcre *re = NULL;
-  pcre_extra *extra, *study = NULL;
-  const char *errptr;
-  int erroffset;
+  pcre2_code *re = NULL;
+  int errcode;
+  PCRE2_SIZE erroffset;
 
   if (!(it && *it)) {
     notify(player, T("I need to know what you want to edit."));
@@ -1227,27 +1228,19 @@ do_edit_regexp(dbref player, char *it, char **argv, int flags,
     return;
   }
 
-  if ((re = pcre_compile(remove_markup(argv[1], NULL),
-                         (flags & EDIT_CASE ? 0 : PCRE_CASELESS), &errptr,
-                         &erroffset, tables)) == NULL) {
-    notify_format(player, T("Invalid regexp: %s"), errptr);
+  if ((re = pcre2_compile((const PCRE2_UCHAR *)remove_markup(argv[1], NULL), PCRE2_ZERO_TERMINATED,
+                          (flags & EDIT_CASE ? 0 : PCRE2_CASELESS) |
+                            re_compile_flags,
+                          &errcode, &erroffset, re_compile_ctx)) == NULL) {
+    char errmsg[120];
+    pcre2_get_error_message(errcode, (PCRE2_UCHAR *) errmsg, sizeof errmsg);
+    notify_format(player, T("Invalid regexp: %s"), errmsg);
     return;
   }
   ADD_CHECK("pcre");
-  study = pcre_study(re, pcre_public_study_flags, &errptr);
-  if (errptr != NULL) {
-    pcre_free(re);
-    DEL_CHECK("pcre");
-    notify_format(player, T("Invalid regexp: %s"), errptr);
-    return;
-  }
-  ADD_CHECK("pcre.extra");
-
-  extra = study;
-  set_match_limit(extra);
-
+  pcre2_jit_compile(re, PCRE2_JIT_COMPLETE);
   args.re = re;
-  args.extra = extra;
+  args.md = pcre2_match_data_create_from_pattern(re, NULL);
   args.to = argv[2];
   args.flags = flags;
   args.skipped = 0;
@@ -1255,20 +1248,16 @@ do_edit_regexp(dbref player, char *it, char **argv, int flags,
   args.pe_info = pe_info;
   args.call_limit_hit = 0;
 
-  if (!atr_iter_get(player, thing, q, AIG_NONE, regedit_helper, &args))
+  if (!atr_iter_get(player, thing, q, AIG_NONE, regedit_helper, &args)) {
     notify(player, T("No matching attributes."));
-  else if (flags & EDIT_QUIET)
+  } else if (flags & EDIT_QUIET) {
     notify_format(player, T("%d attributes edited, %d skipped."), args.edited,
                   args.skipped);
+  }
 
-  pcre_free(re);
+  pcre2_code_free(re);
+  pcre2_match_data_free(args.md);
   DEL_CHECK("pcre");
-#ifdef PCRE_CONFIG_JIT
-  pcre_free_study(study);
-#else
-  pcre_free(study);
-#endif
-  DEL_CHECK("pcre.extra");
 }
 
 /** Trigger an attribute.

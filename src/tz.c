@@ -22,7 +22,6 @@
 #ifdef HAVE_UNISTD_H
 #include <unistd.h>
 #endif
-#include <pcre.h>
 
 #if defined(HAVE_ENDIAN_H)
 #include <endian.h>
@@ -46,6 +45,7 @@
 #include "mymalloc.h"
 #include "parse.h"
 #include "strutil.h"
+#include "mypcre.h"
 
 #ifndef be32toh
 #define be32toh(i) ntohl(i)
@@ -95,29 +95,34 @@ extern const unsigned char *tables;
 bool
 is_valid_tzname(const char *name)
 {
-  static pcre *re = NULL;
-  static pcre_extra *extra = NULL;
+  static pcre2_code *re = NULL;
+  static pcre2_match_data *md = NULL;
   int len;
-  int ovec[15];
 
   if (!re) {
-    int erroffset;
-    const char *errptr;
+    PCRE2_SIZE erroffset;
+    int errcode;
 
-    re = pcre_compile("^[A-Z][\\w+-]+(?:/[A-Z][\\w+-]+)?$", 0, &errptr,
-                      &erroffset, tables);
+    re = pcre2_compile(
+      (const PCRE2_UCHAR *) "^[A-Z][\\w+-]+(?:/[A-Z][\\w+-]+)?$",
+      PCRE2_ZERO_TERMINATED, re_compile_flags | PCRE2_NO_UTF_CHECK, &errcode,
+      &erroffset, re_compile_ctx);
 
     if (!re) {
+      char errstr[120];
+      pcre2_get_error_message(errcode, (PCRE2_UCHAR *) errstr, sizeof errstr);
       do_rawlog(LT_ERR, "tz: Unable to compile timezone name validation RE: %s",
-                errptr);
+                errstr);
       return 0;
     }
-    extra = pcre_study(re, pcre_study_flags, &errptr);
+    pcre2_jit_compile(re, PCRE2_JIT_COMPLETE);
+    md = pcre2_match_data_create_from_pattern(re, NULL);
   }
 
   len = strlen(name);
 
-  return pcre_exec(re, extra, name, len, 0, 0, ovec, 15) > 0;
+  return pcre2_match(re, (const PCRE2_UCHAR *) name, len, 0, re_match_flags, md,
+                     re_match_ctx) >= 0;
 }
 
 /** Tests to see if a timezone actually exists in the database.

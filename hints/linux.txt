@@ -6,7 +6,7 @@ names are. Some common ones have dependencies described below.
    the other files needed to compile code using them. You'll need to
    install at a minimum the following packages:
 
-  | build-essentials libpcre3-dev libssl-dev 
+  | build-essentials libssl-dev 
 
   Installing libevent-openssl-2.0 is highly recommended as well, but not
   required.  If you want to use SQL, you'll also need the appropriate
@@ -15,10 +15,14 @@ names are. Some common ones have dependencies described below.
    libcurl4-openssl-dev is another useful one, as is libicu-dev.
 
 * For arch, the mandatory packages are:
-   | pcre openssl
+   | openssl
 
    and highly recommended icu, libevent and libcurl. Some or all of
    these might already be present as part of a base install.
+
+* RedHat, CentOS and related distributions need the perl-core package
+  installed, as their perl package does not actually provide all of a
+  base perl environment.
 
 
 

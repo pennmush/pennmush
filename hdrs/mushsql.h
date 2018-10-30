@@ -33,4 +33,4 @@ char *escape_like(const char *orig, UChar32 esc, int *len) __attribute_malloc__;
 bool is_busy_status(int);
 void free_string(void *);
 
-bool optimize_db(void *);
+bool optimize_db(sqlite3 *);

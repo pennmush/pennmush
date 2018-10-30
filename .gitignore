@@ -4,6 +4,8 @@
 *.lib
 *.exe
 *.s
+*.lo
+*.la
 *~
 *.bak
 *.log
@@ -60,3 +62,5 @@ dbtools/db_config.h
 dbtools/dbupgrade
 dbtools/grepdb
 dbtools/pwutil
+pcre2
+pcre2-10.*

@@ -1564,7 +1564,8 @@ next_token(char *str, char sep)
   return str;
 }
 
-TEST_GROUP(next_token) {
+TEST_GROUP(next_token)
+{
   char *c;
   c = next_token("  a b", ' ');
   TEST("next_token.1", c && *c == 'a');
@@ -1668,7 +1669,8 @@ split_token(char **sp, char sep)
   return save;
 }
 
-TEST_GROUP(split_token) {
+TEST_GROUP(split_token)
+{
   char *c, *t;
   char buff[BUFFER_LEN];
   t = NULL;
@@ -1839,7 +1841,8 @@ remove_word(char *list, char *word, char sep)
   return buff;
 }
 
-TEST_GROUP(remove_word) {
+TEST_GROUP(remove_word)
+{
   // TEST remove_word REQUIRES split_token
   char buff[BUFFER_LEN];
   char *c;
@@ -1928,14 +1931,16 @@ next_in_list(const char **head)
   return buf;
 }
 
-TEST_GROUP(next_in_list) {
+TEST_GROUP(next_in_list)
+{
   char buff[BUFFER_LEN];
   char *c;
   const char *t;
   strcpy(buff, "adam boy charles");
   t = buff;
   c = next_in_list(&t);
-  TEST("next_in_list.1", strcmp(c, "adam") == 0 && strcmp(t, " boy charles") == 0);
+  TEST("next_in_list.1",
+       strcmp(c, "adam") == 0 && strcmp(t, " boy charles") == 0);
   strcpy(buff, "\"mr. t\" ba");
   t = buff;
   c = next_in_list(&t);
@@ -2221,28 +2226,6 @@ show_tm(struct tm *when)
   return buffer;
 }
 
-/** Return a default pcre_extra pointer pointing to a static region
-    set up to use a fairly low match-limit setting.
-*/
-pcre_extra *
-default_match_limit(void)
-{
-  static pcre_extra ex;
-  memset(&ex, 0, sizeof ex);
-  set_match_limit(&ex);
-  return &ex;
-}
-
-/** Set a low match-limit setting in an existing pcre_extra struct. */
-void
-set_match_limit(pcre_extra *ex)
-{
-  if (!ex)
-    return;
-  ex->flags |= PCRE_EXTRA_MATCH_LIMIT;
-  ex->match_limit = PENN_MATCH_LIMIT;
-}
-
 /** Destructively gets rid of trailing whitespace in a string.
  * \param buff the string to transform.
  * \param len the length of the string.
@@ -2365,10 +2348,10 @@ const char *
 keystr_find_full(const char *restrict map, const char *restrict key,
                  const char *restrict deflt, char delim)
 {
-  pcre *re;
-  int erroffset;
-  const char *errptr;
-  int offsets[33];
+  pcre2_code *re;
+  PCRE2_SIZE erroffset;
+  int errcode;
+  pcre2_match_data *md;
   int matches;
   static char tbuf[BUFFER_LEN];
   char pattern[BUFFER_LEN], *pp;
@@ -2380,19 +2363,28 @@ keystr_find_full(const char *restrict map, const char *restrict key,
   safe_format(pattern, &pp, "\\b\\Q%s%c\\E(\\w+)\\b", key, delim);
   *pp = '\0';
 
-  if (!(re = pcre_compile(pattern, PCRE_CASELESS, &errptr, &erroffset, tables)))
+  if (!(re = pcre2_compile((const PCRE2_UCHAR *) pattern, PCRE2_ZERO_TERMINATED,
+                           re_compile_flags | PCRE2_CASELESS, &errcode,
+                           &erroffset, re_compile_ctx))) {
     return deflt;
-
-  matches = pcre_exec(re, NULL, map, strlen(map), 0, 0, offsets, 33);
-  pcre_free(re);
+  }
+  md = pcre2_match_data_create_from_pattern(re, NULL);
+  matches = pcre2_match(re, (const PCRE2_UCHAR *) map, strlen(map), 0,
+                        re_match_flags, md, re_match_ctx);
+  pcre2_code_free(re);
 
   if (matches == 2) {
-    pcre_copy_substring(map, offsets, matches, 1, tbuf, BUFFER_LEN);
+    PCRE2_SIZE blen = BUFFER_LEN;
+    pcre2_substring_copy_bynumber(md, 1, (PCRE2_UCHAR *) tbuf, &blen);
+    pcre2_match_data_free(md);
     return tbuf;
-  } else if (strcmp(key, "default") == 0)
+  } else if (strcmp(key, "default") == 0) {
+    pcre2_match_data_free(md);
     return deflt;
-  else
+  } else {
+    pcre2_match_data_free(md);
     return keystr_find_full(map, "default", deflt, delim);
+  }
 }
 
 /** Convert a MUSH-style wildcard pattern using * to a SQL wildcard pattern
@@ -2406,39 +2398,36 @@ keystr_find_full(const char *restrict map, const char *restrict key,
 char *
 glob_to_like(const char *orig, UChar32 esc, int *len)
 {
-  char escbuf[5] = {'\0'};
-  char esclen = 0;
   UChar32 c;
   int offset = 0;
-  sqlite3_str *out = sqlite3_str_new(NULL);
+  pennstr *out = ps_new();
 
-  U8_APPEND_UNSAFE(escbuf, esclen, esc);
   U8_NEXT(orig, offset, -1, c);
   while (c) {
     if (c == '%' || c == '_' || c == esc) {
-      sqlite3_str_append(out, escbuf, esclen);
-      sqlite3_str_appenduchar(out, c);
+      ps_safe_uchar(out, esc);
+      ps_safe_uchar(out, c);
     } else if (c == '\\') {
       U8_NEXT(orig, offset, -1, c);
       if (out) {
-        sqlite3_str_append(out, escbuf, esclen);
-        sqlite3_str_appenduchar(out, c);
+        ps_safe_uchar(out, esc);
+        ps_safe_uchar(out, c);
       } else {
         break;
       }
     } else if (c == '*') {
-      sqlite3_str_appendchar(out, 1, '%');
+      ps_safe_chr(out, '%');
     } else if (c == '?') {
-      sqlite3_str_appendchar(out, 1, '_');
+      ps_safe_chr(out, '_');
     } else {
-      sqlite3_str_appenduchar(out, c);
+      ps_safe_uchar(out, c);
     }
     U8_NEXT(orig, offset, -1, c);
   }
   if (len) {
-    *len = sqlite3_str_length(out);
+    *len = ps_len(out);
   }
-  return sqlite3_str_finish(out);
+  return ps_finish(out);
 }
 
 TEST_GROUP(glob_to_like)
@@ -2447,16 +2436,16 @@ TEST_GROUP(glob_to_like)
   int len;
   g = glob_to_like("foo*", '$', &len);
   TEST("glob_to_like.1", strcmp(g, "foo%") == 0 && len == 4);
-  mush_free(g, "string");
+  ps_free_str(g);
   g = glob_to_like("f?o", '$', &len);
   TEST("glob_to_like.2", strcmp(g, "f_o") == 0 && len == 3);
-  mush_free(g, "string");
+  ps_free_str(g);
   g = glob_to_like("*foo%bar*", '$', &len);
   TEST("glob_to_like.3", strcmp(g, "%foo$%bar%") == 0 && len == 10);
-  mush_free(g, "string");
+  ps_free_str(g);
   g = glob_to_like("", '$', &len);
   TEST("glob_to_like.4", g && *g == '\0' && len == 0);
-  mush_free(g, "string");
+  ps_free_str(g);
 }
 
 /** Escape SQL like wildcards from a string.
@@ -2469,36 +2458,34 @@ TEST_GROUP(glob_to_like)
 char *
 escape_like(const char *orig, UChar32 esc, int *len)
 {
-  char escbuf[5] = {'\0'};
-  int esclen = 0, offset = 0;
-  sqlite3_str *out = sqlite3_str_new(NULL);
+  int offset = 0;
   UChar32 c;
+  pennstr *out = ps_new();
 
-  U8_APPEND_UNSAFE(escbuf, esclen, esc);
   U8_NEXT(orig, offset, -1, c);
   while (c) {
     if (c == '%' || c == '_' || c == esc) {
-      sqlite3_str_append(out, escbuf, esclen);
-      sqlite3_str_appenduchar(out, c);
+      ps_safe_uchar(out, esc);
+      ps_safe_uchar(out, c);
     } else if (c == '\\') {
       U8_NEXT(orig, offset, -1, c);
       if (out) {
-        sqlite3_str_append(out, escbuf, esclen);
-        sqlite3_str_appenduchar(out, c);
+        ps_safe_uchar(out, esc);
+        ps_safe_uchar(out, c);
       } else {
         break;
       }
     } else {
-      sqlite3_str_appenduchar(out, c);
+      ps_safe_uchar(out, c);
     }
     U8_NEXT(orig, offset, -1, c);
   }
 
   if (len) {
-    *len = sqlite3_str_length(out);
+    *len = ps_len(out);
   }
 
-  return sqlite3_str_finish(out);
+  return ps_finish(out);
 }
 
 TEST_GROUP(escape_like)
@@ -2507,16 +2494,16 @@ TEST_GROUP(escape_like)
   int len;
   g = escape_like("foo%", '$', &len);
   TEST("escape_like.1", strcmp(g, "foo$%") == 0 && len == 5);
-  mush_free(g, "string");
+  ps_free_str(g);
   g = escape_like("f_o", '$', &len);
   TEST("escape_like.2", strcmp(g, "f$_o") == 0 && len == 4);
-  mush_free(g, "string");
+  ps_free_str(g);
   g = escape_like("foobar", '$', &len);
   TEST("escape_like.3", strcmp(g, "foobar") == 0 && len == 6);
-  mush_free(g, "string");
+  ps_free_str(g);
   g = escape_like("", '$', &len);
   TEST("escape_like.4", g && *g == '\0' && len == 0);
-  mush_free(g, "string");
+  ps_free_str(g);
 }
 
 /** Escape SQL like wildcards from a string.
@@ -2697,9 +2684,11 @@ char *
 ps_finish(pennstr *ps)
 {
   char *s = sqlite3_str_finish(ps);
-  if (s) {
-    ADD_CHECK("pennstring");
+  if (!s) {
+    s = sqlite3_malloc(1);
+    *s = '\0';
   }
+  ADD_CHECK("pennstring");
   return s;
 }
 
@@ -2950,4 +2939,3 @@ gc_breaks(const char *s, int *arrlen)
   *arrlen = ngcs;
   return gcs;
 }
-

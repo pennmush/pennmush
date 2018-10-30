@@ -421,7 +421,7 @@ do_rawlog(enum log_type logtype, const char *fmt, ...)
 {
   struct log_stream *log;
   struct tm *ttm;
-  char timebuf[18];
+  char timebuf[64];
   char *tbuf1, *utf8;
   va_list args;
 
@@ -433,7 +433,7 @@ do_rawlog(enum log_type logtype, const char *fmt, ...)
   time(&mudtime);
   ttm = localtime(&mudtime);
 
-  strftime(timebuf, sizeof timebuf, "[%m/%d %H:%M:%S]", ttm);
+  strftime(timebuf, sizeof timebuf, "[%Y-%m-%d %H:%M:%S]", ttm);
 
   log = lookup_log(logtype);
 

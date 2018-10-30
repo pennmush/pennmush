@@ -86,7 +86,7 @@ GLOBALTAB globals = {0, "", 0, 0, 0, 0, 0, 0, 0, 0};
 
 static int epoch = 0;
 #ifndef WIN32
-static int reserved; /**< Reserved file descriptor */
+static int reserved = -1; /**< Reserved file descriptor */
 #endif
 static dbref *errdblist = NULL; /**< List of dbrefs to return errors from */
 static dbref *errdbtail = NULL; /**< Pointer to end of errdblist */
@@ -144,7 +144,7 @@ void
 reserve_fd(void)
 {
 #ifndef WIN32
-  reserved = open("/dev/null", O_RDWR);
+  reserved = open("/dev/null", O_RDWR | O_CLOEXEC);
 #endif
 }
 
@@ -153,7 +153,10 @@ void
 release_fd(void)
 {
 #ifndef WIN32
-  close(reserved);
+  if (reserved >= 0) {
+    close(reserved);
+    reserved = -1;
+  }
 #endif
 }
 
@@ -807,7 +810,7 @@ init_game_postdb(const char *conf)
 #ifndef SSL_SLAVE
   if (!ssl_init(options.ssl_private_key_file, options.ssl_ca_file,
                 options.ssl_ca_dir, options.ssl_require_client_cert)) {
-    fprintf(stderr, "SSL initialization failure\n");
+    do_rawlog(LT_ERR, "SSL initialization failure");
     options.ssl_port = 0; /* Disable ssl */
   }
 #endif
@@ -1050,47 +1053,67 @@ static char *
 passwd_filter(const char *cmd)
 {
   static bool initialized = 0;
-  static pcre *pass_ptn, *newpass_ptn;
-  static pcre_extra *pass_extra, *newpass_extra;
+  static pcre2_code *pass_ptn = NULL, *newpass_ptn = NULL;
+  static pcre2_match_data *pass_md = NULL, *newpass_md = NULL;
   static char buff[BUFFER_LEN];
   char *bp = buff;
-  int ovec[20];
   size_t cmdlen;
   int matched;
 
   if (!initialized) {
-    const char *errptr;
-    int eo;
+    int errcode;
+    PCRE2_SIZE eo;
 
-    pass_ptn = pcre_compile("^(@pass.*?)\\s([^=]*)=(.*)", PCRE_CASELESS,
-                            &errptr, &eo, tables);
-    if (!pass_ptn)
-      do_log(LT_ERR, GOD, GOD, "pcre_compile: %s", errptr);
-    pass_extra = pcre_study(pass_ptn, pcre_study_flags, &errptr);
-    newpass_ptn = pcre_compile("^(@(?:newp|pcreate)[^=]*)=(.*)", PCRE_CASELESS,
-                               &errptr, &eo, tables);
-    if (!newpass_ptn)
-      do_log(LT_ERR, GOD, GOD, "pcre_compile: %s", errptr);
-    newpass_extra = pcre_study(newpass_ptn, pcre_study_flags, &errptr);
+    pass_ptn = pcre2_compile(
+      (const PCRE2_UCHAR *) "^(@pass.*?)\\s([^=]*)=(.*)", PCRE2_ZERO_TERMINATED,
+      re_compile_flags | PCRE2_CASELESS | PCRE2_NO_UTF_CHECK, &errcode, &eo,
+      re_compile_ctx);
+    if (!pass_ptn) {
+      char errstr[120];
+      pcre2_get_error_message(errcode, (PCRE2_UCHAR *) errstr, sizeof errstr);
+      do_log(LT_ERR, GOD, GOD, "pcre_compile: %s", errstr);
+      return "";
+    }
+    pcre2_jit_compile(pass_ptn, PCRE2_JIT_COMPLETE);
+    pass_md = pcre2_match_data_create_from_pattern(pass_ptn, NULL);
+    newpass_ptn =
+      pcre2_compile((const PCRE2_UCHAR *) "^(@(?:newp|pcreate)[^=]*)=(.*)",
+                    PCRE2_ZERO_TERMINATED,
+                    re_compile_flags | PCRE2_CASELESS | PCRE2_NO_UTF_CHECK,
+                    &errcode, &eo, re_compile_ctx);
+    if (!newpass_ptn) {
+      char errstr[120];
+      pcre2_get_error_message(errcode, (PCRE2_UCHAR *) errstr, sizeof errstr);
+      do_log(LT_ERR, GOD, GOD, "pcre_compile: %s", errstr);
+      return "";
+    }
+    pcre2_jit_compile(newpass_ptn, PCRE2_JIT_COMPLETE);
+    newpass_md = pcre2_match_data_create_from_pattern(newpass_ptn, NULL);
     initialized = 1;
   }
 
   cmdlen = strlen(cmd);
   buff[0] = '\0';
 
-  if ((matched = pcre_exec(pass_ptn, pass_extra, cmd, cmdlen, 0, 0, ovec, 20)) >
-      0) {
+  if ((matched = pcre2_match(pass_ptn, (const PCRE2_UCHAR *) cmd, cmdlen, 0,
+                             re_match_flags, pass_md, re_match_ctx)) > 0) {
     /* It's a password */
-    pcre_copy_substring(cmd, ovec, matched, 1, buff, BUFFER_LEN);
-    bp = buff + strlen(buff);
+    PCRE2_SIZE bufflen = BUFFER_LEN;
+    PCRE2_SIZE *ovec = pcre2_get_ovector_pointer(pass_md);
+    pcre2_substring_copy_bynumber(pass_md, 1, (PCRE2_UCHAR *) buff, &bufflen);
+    bp = buff + bufflen;
     safe_chr(' ', buff, &bp);
     safe_fill('*', ovec[5] - ovec[4], buff, &bp);
     safe_chr('=', buff, &bp);
     safe_fill('*', ovec[7] - ovec[6], buff, &bp);
-  } else if ((matched = pcre_exec(newpass_ptn, newpass_extra, cmd, cmdlen, 0, 0,
-                                  ovec, 20)) > 0) {
-    pcre_copy_substring(cmd, ovec, matched, 1, buff, BUFFER_LEN);
-    bp = buff + strlen(buff);
+  } else if ((matched =
+                pcre2_match(newpass_ptn, (const PCRE2_UCHAR *) cmd, cmdlen, 0,
+                            re_match_flags, newpass_md, re_match_ctx)) > 0) {
+    PCRE2_SIZE bufflen = BUFFER_LEN;
+    PCRE2_SIZE *ovec = pcre2_get_ovector_pointer(newpass_md);
+    pcre2_substring_copy_bynumber(newpass_md, 1, (PCRE2_UCHAR *) buff,
+                                  &bufflen);
+    bp = buff + bufflen;
     safe_chr('=', buff, &bp);
     safe_fill('*', ovec[5] - ovec[4], buff, &bp);
   } else {
@@ -2512,8 +2535,8 @@ db_open_write(const char *fname)
   if (getcwd(workdir, BUFFER_LEN)) {
     if (chdir(workdir) < 0)
 #endif
-      fprintf(stderr, "chdir to %s failed in db_open_write, errno %d (%s)\n",
-              workdir, errno, strerror(errno));
+      do_rawlog(LT_ERR, "chdir to %s failed in db_open_write, errno %d (%s)",
+                workdir, errno, strerror(errno));
   } else {
     /* If this fails, we probably can't write to a log, either, though */
     fprintf(stderr, "getcwd failed during db_open_write, errno %d (%s)\n",

@@ -1356,6 +1356,46 @@ atr_iter_get(dbref player, dbref thing, const char *name, unsigned flags,
                                      : Can_Read_Attr(player, thing, ptr)))
       result = func(player, thing, NOTHING, name, ptr, args);
   } else if (AttrCount(thing)) {
+    pcre2_code *re = NULL;
+    pcre2_match_data *md = NULL;
+    int errcode;
+    PCRE2_SIZE erroffset;
+
+    if (flags & AIG_REGEX) {
+      re = pcre2_compile((const PCRE2_UCHAR *) name, len,
+                         re_compile_flags | PCRE2_CASELESS, &errcode,
+                         &erroffset, re_compile_ctx);
+      if (!re) {
+        return 0;
+      }
+    } else {
+      /* Compile wildcard to regexp */
+      PCRE2_UCHAR *as_re = NULL;
+      PCRE2_SIZE rlen;
+      char *glob;
+
+      if (name[len - 1] == '`') {
+        glob = sqlite3_mprintf("%s*", name);
+        len += 1;
+      } else {
+        glob = sqlite3_mprintf("%s", name);
+      }
+
+      if (pcre2_pattern_convert((const PCRE2_UCHAR *) glob, len,
+                                PCRE2_CONVERT_GLOB, &as_re, &rlen,
+                                glob_convert_ctx) == 0) {
+        re = pcre2_compile(as_re, rlen, re_compile_flags | PCRE2_CASELESS,
+                           &errcode, &erroffset, re_compile_ctx);
+        pcre2_converted_pattern_free(as_re);
+      }
+      sqlite3_free(glob);
+    }
+    if (re) {
+      flags |= AIG_REGEX;
+      pcre2_jit_compile(re, PCRE2_JIT_COMPLETE);
+      md = pcre2_match_data_create_from_pattern(re, NULL);
+    }
+
     ATTR_FOR_EACH (thing, ptr) {
       if (cpu_time_limit_hit)
         break;
@@ -1364,8 +1404,9 @@ atr_iter_get(dbref player, dbref thing, const char *name, unsigned flags,
       }
       if (((flags & AIG_MORTAL) ? Is_Visible_Attr(thing, ptr)
                                 : Can_Read_Attr(player, thing, ptr)) &&
-          ((flags & AIG_REGEX) ? quick_regexp_match(name, AL_NAME(ptr), 0, NULL)
-                               : atr_wild(name, AL_NAME(ptr)))) {
+          ((flags & AIG_REGEX)
+             ? qcomp_regexp_match(re, md, AL_NAME(ptr), PCRE2_ZERO_TERMINATED)
+             : atr_wild(name, AL_NAME(ptr)))) {
         int r = func(player, thing, NOTHING, name, ptr, args);
         result += r;
         if (r && in_wipe) {
@@ -1380,9 +1421,9 @@ atr_iter_get(dbref player, dbref thing, const char *name, unsigned flags,
              ptr++) {
           if (((flags & AIG_MORTAL) ? Is_Visible_Attr(thing, ptr)
                                     : Can_Read_Attr(player, thing, ptr)) &&
-              ((flags & AIG_REGEX)
-                 ? quick_regexp_match(name, AL_NAME(ptr), 0, NULL)
-                 : atr_wild(name, AL_NAME(ptr)))) {
+              ((flags & AIG_REGEX) ? qcomp_regexp_match(re, md, AL_NAME(ptr),
+                                                        PCRE2_ZERO_TERMINATED)
+                                   : atr_wild(name, AL_NAME(ptr)))) {
             int r = func(player, thing, NOTHING, name, ptr, args);
             result += r;
             if (r && in_wipe) {
@@ -1392,6 +1433,12 @@ atr_iter_get(dbref player, dbref thing, const char *name, unsigned flags,
         }
         ptr = prev;
       }
+    }
+    if (re) {
+      pcre2_code_free(re);
+    }
+    if (md) {
+      pcre2_match_data_free(md);
     }
   }
 
@@ -1483,6 +1530,46 @@ atr_iter_get_parent(dbref player, dbref thing, const char *name, unsigned flags,
   } else {
     StrTree seen;
     int parent_depth;
+    pcre2_code *re = NULL;
+    pcre2_match_data *md = NULL;
+    int errcode;
+    PCRE2_SIZE erroffset;
+
+    if (flags & AIG_REGEX) {
+      re = pcre2_compile((const PCRE2_UCHAR *) name, len,
+                         re_compile_flags | PCRE2_CASELESS, &errcode,
+                         &erroffset, re_compile_ctx);
+      if (!re) {
+        return 0;
+      }
+    } else {
+      /* Compile wildcard to regexp */
+      PCRE2_UCHAR *as_re = NULL;
+      PCRE2_SIZE rlen;
+      char *glob;
+
+      if (name[len - 1] == '`') {
+        glob = sqlite3_mprintf("%s*", name);
+        len += 1;
+      } else {
+        glob = sqlite3_mprintf("%s", name);
+      }
+
+      if (pcre2_pattern_convert((const PCRE2_UCHAR *) glob, len,
+                                PCRE2_CONVERT_GLOB, &as_re, &rlen,
+                                glob_convert_ctx) == 0) {
+        re = pcre2_compile(as_re, rlen, re_compile_flags | PCRE2_CASELESS,
+                           &errcode, &erroffset, re_compile_ctx);
+        pcre2_converted_pattern_free(as_re);
+      }
+      sqlite3_free(glob);
+    }
+    if (re) {
+      flags |= AIG_REGEX;
+      pcre2_jit_compile(re, PCRE2_JIT_COMPLETE);
+      md = pcre2_match_data_create_from_pattern(re, NULL);
+    }
+
     st_init(&seen, "AttrsSeenTree");
     for (parent_depth = MAX_PARENTS + 1, parent = thing;
          parent_depth-- && parent != NOTHING && !cpu_time_limit_hit;
@@ -1496,14 +1583,12 @@ atr_iter_get_parent(dbref player, dbref thing, const char *name, unsigned flags,
             if (AF_Private(ptr))
               continue;
           }
-          if (strchr(AL_NAME(ptr), '`')) {
-            continue;
-          }
+
           if (((flags & AIG_MORTAL) ? Is_Visible_Attr(parent, ptr)
                                     : Can_Read_Attr(player, parent, ptr)) &&
-              ((flags & AIG_REGEX)
-                 ? quick_regexp_match(name, AL_NAME(ptr), 0, NULL)
-                 : atr_wild(name, AL_NAME(ptr)))) {
+              ((flags & AIG_REGEX) ? qcomp_regexp_match(re, md, AL_NAME(ptr),
+                                                        PCRE2_ZERO_TERMINATED)
+                                   : atr_wild(name, AL_NAME(ptr)))) {
             result += func(player, thing, parent, name, ptr, args);
           }
           if (AL_FLAGS(ptr) & AF_ROOT) {
@@ -1514,6 +1599,7 @@ atr_iter_get_parent(dbref player, dbref thing, const char *name, unsigned flags,
               if (AF_Private(ptr) && thing != parent) {
                 continue;
               }
+
               if (strchr(AL_NAME(ptr), '`')) {
                 /* We need to check all the branches of the tree for no_inherit
                  */
@@ -1536,11 +1622,14 @@ atr_iter_get_parent(dbref player, dbref thing, const char *name, unsigned flags,
                   continue;
               }
 
-              if (((flags & AIG_MORTAL) ? Is_Visible_Attr(thing, ptr)
+              if (!st_find(AL_NAME(ptr), &seen) &&
+                  ((flags & AIG_MORTAL) ? Is_Visible_Attr(thing, ptr)
                                         : Can_Read_Attr(player, thing, ptr)) &&
                   ((flags & AIG_REGEX)
-                     ? quick_regexp_match(name, AL_NAME(ptr), 0, NULL)
+                     ? qcomp_regexp_match(re, md, AL_NAME(ptr),
+                                          PCRE2_ZERO_TERMINATED)
                      : atr_wild(name, AL_NAME(ptr)))) {
+                st_insert(AL_NAME(ptr), &seen);
                 result += func(player, thing, parent, name, ptr, args);
               }
             }
@@ -1548,6 +1637,12 @@ atr_iter_get_parent(dbref player, dbref thing, const char *name, unsigned flags,
           }
         }
       }
+    }
+    if (re) {
+      pcre2_code_free(re);
+    }
+    if (md) {
+      pcre2_match_data_free(md);
     }
     st_flush(&seen);
   }

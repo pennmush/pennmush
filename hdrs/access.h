@@ -24,8 +24,8 @@ struct access {
   dbref who;           /**< Who created this rule if sitelock used */
   uint32_t can;        /**< Bitflags of what the host can do */
   uint32_t cant;       /**< Bitflags of what the host can't do */
-  pcre *re;            /**< Compiled regexp */
-  pcre_extra *study;   /**< Optimization information for regexp */
+  pcre2_code *re;      /**< Compiled regexp */
+  pcre2_match_data *md;
   struct access *next; /**< Pointer to next rule in the list */
 };
 

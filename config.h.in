@@ -63,6 +63,8 @@
 
 #undef HAVE_SYS_EVENTFD_H
 
+#undef HAVE_PTHREAD_H
+
 /* C99ish headers. The first two are really really nice to have. */
 
 #undef HAVE_STDINT_H
@@ -80,8 +82,6 @@
 #undef HAVE_POSTGRESQL
 
 #undef HAVE_SSL
-
-#undef HAVE_PCRE_H
 
 #undef HAVE_PCRE
 
@@ -292,6 +292,8 @@ typedef bool _Bool;
 
 #undef HAVE_EVP_MD_DO_ALL
 
+#undef HAVE_RAND_KEEP_RANDOM_DEVICES_OPEN
+
 #undef HAVE_PRCTL
 
 #undef HAVE_HYPOT
@@ -319,6 +321,8 @@ typedef bool _Bool;
 #undef HAVE_GETENTROPY
 
 #undef HAVE_ARC4RANDOM_BUF
+
+#undef HAVE_PTHREAD_ATFORK
 
 /* Bunch of sqlite3 stuff */
 
@@ -364,6 +368,8 @@ typedef bool _Bool;
 #define SQLITE_OMIT_DECLTYPE 1
 #define SQLITE_OMIT_LOAD_EXTENSION 1
 #define SQLITE_SOUNDEX 1
+#define SQLITE_DEFAULT_WAL_SYNCHRONOUS 1
+#define SQLITE_ENABLE_UPDATE_DELETE_LIMIT 1
 #ifdef HAVE_LIBZ
 #define SQLITE_HAVE_ZLIB 1
 #endif

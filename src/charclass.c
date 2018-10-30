@@ -3,116 +3,139 @@
  * \brief Character classification functions
  */
 
-#include <pcre.h>
-
 #include "conf.h"
 #include "charclass.h"
 #include "externs.h"
 #include "log.h"
+#include "mypcre.h"
 
-static pcre *
+static pcre2_code *
 build_re(const char *sre)
 {
-  const char *err;
-  int erroffset;
-  pcre *re = pcre_compile(sre, PCRE_NO_UTF8_CHECK | PCRE_UTF8 | PCRE_UCP, &err,
-                          &erroffset, NULL);
+  int errcode;
+  PCRE2_SIZE erroffset;
+  pcre2_code *re =
+    pcre2_compile((const PCRE2_UCHAR *) sre, PCRE2_ZERO_TERMINATED,
+                  re_compile_flags | PCRE2_UTF | PCRE2_NO_UTF_CHECK | PCRE2_UCP,
+                  &errcode, &erroffset, re_compile_ctx);
   if (!re) {
-    do_rawlog(LT_ERR, "Unable to compile RE '%s': %s", sre, err);
+    PCRE2_UCHAR errmsg[512];
+    pcre2_get_error_message(errcode, errmsg, sizeof errmsg);
+    do_rawlog(LT_ERR, "Unable to compile RE '%s': %s", sre,
+              (const char *) errmsg);
     mush_panic("Internal error");
   }
   return re;
 }
 
 static bool
-check_re(const pcre *re, UChar32 c)
+check_re(const pcre2_code *re, pcre2_match_data *md, UChar32 c)
 {
-  char cbuf[5] = {'\0'};
+  PCRE2_UCHAR cbuf[5] = {'\0'};
   int clen = 0;
-  int ovector[10];
+  int m;
+
   U8_APPEND_UNSAFE(cbuf, clen, c);
-  return pcre_exec(re, NULL, cbuf, clen, 0, PCRE_NO_UTF8_CHECK, ovector, 10) >
-         0;
+  m = pcre2_match(re, cbuf, clen, 0,
+                  re_match_flags | PCRE2_UTF | PCRE2_NO_UTF_CHECK, md,
+                  re_match_ctx);
+  return m >= 0;
 }
 
 bool
 re_isprint(UChar32 c)
 {
-  static pcre *re = NULL;
+  static pcre2_code *re = NULL;
+  static pcre2_match_data *md;
   if (!re) {
     re = build_re("[[:print:]]");
+    md = pcre2_match_data_create_from_pattern(re, NULL);
   }
-  return check_re(re, c);
+  return check_re(re, md, c);
 }
 
 bool
 re_isspace(UChar32 c)
 {
-  static pcre *re = NULL;
+  static pcre2_code *re = NULL;
+  static pcre2_match_data *md;
   if (!re) {
     re = build_re("\\p{Xps}");
+    md = pcre2_match_data_create_from_pattern(re, NULL);
   }
-  return check_re(re, c);
+  return check_re(re, md, c);
 }
 
 bool
 re_islower(UChar32 c)
 {
-  static pcre *re = NULL;
+  static pcre2_code *re = NULL;
+  static pcre2_match_data *md;
   if (!re) {
     re = build_re("\\p{Ll}");
+    md = pcre2_match_data_create_from_pattern(re, NULL);
   }
-  return check_re(re, c);
+  return check_re(re, md, c);
 }
 
 bool
 re_isupper(UChar32 c)
 {
-  static pcre *re = NULL;
+  static pcre2_code *re = NULL;
+  static pcre2_match_data *md;
   if (!re) {
     re = build_re("\\p{Lu}");
+    md = pcre2_match_data_create_from_pattern(re, NULL);
   }
-  return check_re(re, c);
+  return check_re(re, md, c);
 }
 
 bool
 re_isdigit(UChar32 c)
 {
-  static pcre *re = NULL;
+  static pcre2_code *re = NULL;
+  static pcre2_match_data *md;
   if (!re) {
     re = build_re("\\p{Nd}");
+    md = pcre2_match_data_create_from_pattern(re, NULL);
   }
-  return check_re(re, c);
+  return check_re(re, md, c);
 }
 
 bool
 re_isalnum(UChar32 c)
 {
-  static pcre *re = NULL;
+  static pcre2_code *re = NULL;
+  static pcre2_match_data *md;
   if (!re) {
     re = build_re("\\p{Xan}");
+    md = pcre2_match_data_create_from_pattern(re, NULL);
   }
-  return check_re(re, c);
+  return check_re(re, md, c);
 }
 
 bool
 re_isalpha(UChar32 c)
 {
-  static pcre *re = NULL;
+  static pcre2_code *re = NULL;
+  static pcre2_match_data *md;
   if (!re) {
     re = build_re("\\p{L}");
+    md = pcre2_match_data_create_from_pattern(re, NULL);
   }
-  return check_re(re, c);
+  return check_re(re, md, c);
 }
 
 bool
 re_ispunct(UChar32 c)
 {
-  static pcre *re = NULL;
+  static pcre2_code *re = NULL;
+  static pcre2_match_data *md;
   if (!re) {
     re = build_re("[[:punct:]]");
+    md = pcre2_match_data_create_from_pattern(re, NULL);
   }
-  return check_re(re, c);
+  return check_re(re, md, c);
 }
 
 #ifdef HAVE_ICU

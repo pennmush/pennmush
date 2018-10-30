@@ -426,8 +426,8 @@ FUNCTION(fun_json_map)
     return;
   }
 
-  mapper = prepare_statement(sqldb, "SELECT type, value, key FROM json_each(?)",
-                             "json_map");
+  mapper = prepare_statement_cache(
+    sqldb, "SELECT type, value, key FROM json_each(?)", "json_map", 0);
 
   pe_regs = pe_regs_create(PE_REGS_ARG, "fun_json_map");
   for (i = 3; i <= nargs; i++) {
@@ -460,7 +460,7 @@ FUNCTION(fun_json_map)
     sqlite3_str_reset(rbuff);
     sqlite3_str_finish(rbuff);
   }
-  sqlite3_reset(mapper);
+  sqlite3_finalize(mapper);
   pe_regs_free(pe_regs);
 }
 

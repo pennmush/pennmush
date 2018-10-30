@@ -294,10 +294,7 @@ signal_cpu_limit(int signo)
 }
 
 #elif defined(WIN32)
-#if _MSC_VER <= 1100 && !defined(UINT_PTR)
-#define UINT_PTR UINT
-#endif
-UINT_PTR timer_id;
+UINT_PTR timer_id = 0;
 VOID CALLBACK
 win32_timer(HWND hwnd __attribute__((__unused__)),
             UINT uMsg __attribute__((__unused__)),
@@ -352,11 +349,12 @@ start_cpu_timer(void)
       timer_set = 0;
   }
 #elif defined(WIN32) /* Windoze way */
-  if (options.queue_entry_cpu_time > 0)
-    timer_id = SetTimer(NULL, 0, (unsigned) options.queue_entry_cpu_time,
-                        (TIMERPROC) win32_timer);
-  else
+  if (options.queue_entry_cpu_time > 0) {
+    timer_set = timer_id =
+      SetTimer(NULL, 0, (UINT) options.queue_entry_cpu_time, win32_timer);
+  } else {
     timer_set = 0;
+  }
 #endif               /* HAVE_SETITIMER / WIN32 */
 #endif               /* PROFILING */
 }

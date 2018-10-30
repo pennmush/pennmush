@@ -1268,9 +1268,13 @@ do_search(dbref player, const char *arg1, char **arg3)
 
     myargs[0] = arg2;
     myargs[1] = arg3[1];
-    for (i = 2; i < INT_MAX && (arg3[i] != NULL); i++) {
+    for (i = 2; i < INT_MAX && (arg3[i] != NULL) && j < MAX_ARG; i++) {
       if ((s = strchr(arg3[i], '='))) {
         *s++ = '\0';
+        if (j == MAX_ARG - 1) {
+          /* Not enough room for arg and value */
+          break;
+        }
         myargs[j++] = arg3[i];
         myargs[j++] = s;
       } else {

@@ -78,6 +78,7 @@ ssize_t recv_with_creds(int, void *, size_t, int *, int *);
 void make_nonblocking(int s);
 void make_blocking(int s);
 void set_keepalive(int s, int timeout);
+void set_close_exec(int s);
 bool is_blocking_err(int);
 
 /* Win32 uses closesocket() to close a socket, and so will we */

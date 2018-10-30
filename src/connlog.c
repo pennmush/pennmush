@@ -10,6 +10,9 @@
 #include <limits.h>
 #include <time.h>
 #include <string.h>
+#ifdef HAVE_PTHREAD_H
+#include <pthread.h>
+#endif
 
 #include "mushtype.h"
 #include "dbdefs.h"
@@ -55,6 +58,40 @@ checkpoint_event(void *arg __attribute__((__unused__)))
 {
   update_checkpoint();
   return 1;
+}
+
+#ifdef HAVE_PTHREAD_ATFORK
+static bool relaunch = 0;
+static void
+conndb_prefork(void)
+{
+  if (connlog_db) {
+    close_sql_db(connlog_db);
+    connlog_db = NULL;
+    relaunch = 1;
+  } else {
+    relaunch = 0;
+  }
+}
+
+static void
+conndb_postfork_parent(void)
+{
+  if (relaunch) {
+    connlog_db = open_sql_db(options.connlog_db, 1);
+  }
+}
+
+#endif
+
+static bool
+connlog_optimize(void *vptr __attribute__((__unused__)))
+{
+  if (connlog_db) {
+    return optimize_db(connlog_db);
+  } else {
+    return false;
+  }
 }
 
 /** Intialize connlog database.
@@ -250,7 +287,11 @@ init_conndb(bool rebooting)
   }
 
   sq_register_loop(90, checkpoint_event, NULL, NULL);
-  sq_register_loop(25 * 60 * 60 + 300, optimize_db, connlog_db, NULL);
+  sq_register_loop(25 * 60 * 60 + 300, connlog_optimize, NULL, NULL);
+
+#ifdef HAVE_PTHREAD_ATFORK
+  pthread_atfork(conndb_prefork, conndb_postfork_parent, NULL);
+#endif
 
   return 1;
 

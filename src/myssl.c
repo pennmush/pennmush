@@ -93,6 +93,20 @@ static DH *get_dh2048(void);
 static BIO *bio_err = NULL;
 static SSL_CTX *ctx = NULL;
 
+static const char *
+time_string(void)
+{
+  static char buffer[100];
+  time_t now;
+  struct tm *ltm;
+
+  now = time(NULL);
+  ltm = localtime(&now);
+  strftime(buffer, 100, "[%Y-%m-%d %H:%M:%S]", ltm);
+
+  return buffer;
+}
+
 /** Generate 128 bits of random noise for seeding RNGs. Attempts to
  * use various OS-specific sources of random bits, with a fallback
  * based on time and pid. */
@@ -107,7 +121,7 @@ generate_seed(uint64_t seeds[])
   /* On OpenBSD and up to date Linux, use getentropy() to avoid the
      open/read/close sequence with /dev/urandom */
   if (!seed_generated && getentropy(seeds, len) == 0) {
-    fprintf(stderr, "Seeded RNG with getentropy()\n");
+    fprintf(stderr, "%s Seeded RNG with getentropy()\n", time_string());
     seed_generated = true;
   }
 #endif
@@ -118,7 +132,7 @@ generate_seed(uint64_t seeds[])
      for that. */
   if (!seed_generated) {
     arc4random_buf(seeds, len);
-    fprintf(stderr, "Seeded RNG with arc4random\n");
+    fprintf(stderr, "%s Seeded RNG with arc4random\n", time_string());
     seed_generated = true;
   }
 #endif
@@ -128,7 +142,7 @@ generate_seed(uint64_t seeds[])
     /* Use the Win32 bcrypto RNG interface */
     if (BCryptGenRandom(NULL, (PUCHAR) seeds, len,
                         BCRYPT_USE_SYSTEM_PREFERRED_RNG) == STATUS_SUCCESS) {
-      fprintf(stderr, "Seeding RNG with BCryptGenRandom()\n");
+      fprintf(stderr, "%s Seeding RNG with BCryptGenRandom()\n", time_string());
       seed_generated = true;
     }
   }
@@ -144,15 +158,19 @@ generate_seed(uint64_t seeds[])
       int r = read(fd, (void *) seeds, len);
       close(fd);
       if (r != len) {
-        fprintf(stderr, "Couldn't read from /dev/urandom! Resorting to normal "
-                        "seeding method.\n");
+        fprintf(stderr,
+                "%s Couldn't read from /dev/urandom! Resorting to normal "
+                "seeding method.\n",
+                time_string());
       } else {
-        fprintf(stderr, "Seeding RNG with /dev/urandom\n");
+        fprintf(stderr, "%s Seeding RNG with /dev/urandom\n", time_string());
         seed_generated = true;
       }
     } else {
-      fprintf(stderr, "Couldn't open /dev/urandom to seed random number "
-                      "generator. Resorting to normal seeding method.\n");
+      fprintf(stderr,
+              "%s Couldn't open /dev/urandom to seed random number "
+              "generator. Resorting to normal seeding method.\n",
+              time_string());
     }
   }
 #endif
@@ -195,7 +213,7 @@ ssl_init(char *private_key_file, char *ca_file, char *ca_dir,
   }
 
   lock_file(stderr);
-  fputs("Seeding OpenSSL random number pool.\n", stderr);
+  fprintf(stderr, "%s Seeding OpenSSL random number pool.\n", time_string());
   unlock_file(stderr);
   while (!RAND_status()) {
     /* At this point, a system with /dev/urandom or a EGD file in the usual
@@ -219,7 +237,8 @@ ssl_init(char *private_key_file, char *ca_file, char *ca_dir,
   }
 
   lock_file(stderr);
-  fprintf(stderr, "Seeded after %u %s.\n", reps, reps > 1 ? "cycles" : "cycle");
+  fprintf(stderr, "%s Seeded after %u %s.\n", time_string(), reps,
+          reps > 1 ? "cycles" : "cycle");
   unlock_file(stderr);
 
   /* Set up SIGPIPE handler here? */
@@ -321,13 +340,13 @@ client_verify_callback(int preverify_ok, X509_STORE_CTX *x509_ctx)
   X509_NAME_oneline(X509_get_subject_name(err_cert), buf, 256);
   if (!preverify_ok) {
     lock_file(stderr);
-    fprintf(stderr, "verify error:num=%d:%s:depth=%d:%s\n", err,
-            X509_verify_cert_error_string(err), depth, buf);
+    fprintf(stderr, "%s verify error:num=%d:%s:depth=%d:%s\n", time_string(),
+            err, X509_verify_cert_error_string(err), depth, buf);
     if (err == X509_V_ERR_UNABLE_TO_GET_ISSUER_CERT) {
       X509_NAME_oneline(
         X509_get_issuer_name(X509_STORE_CTX_get_current_cert(x509_ctx)), buf,
         256);
-      fprintf(stderr, "issuer= %s\n", buf);
+      fprintf(stderr, "%s issuer= %s\n", time_string(), buf);
     }
     unlock_file(stderr);
     return preverify_ok;
@@ -378,7 +397,7 @@ get_dh2048(void)
   p = BN_bin2bn(dh2048_p, sizeof(dh2048_p), NULL);
   if (!p) {
     lock_file(stderr);
-    fputs("Error in BN_bin2bn 1!\n", stderr);
+    fprintf(stderr, "%s Error in BN_bin2bn 1!\n", time_string());
     unlock_file(stderr);
     DH_free(dh);
     return NULL;
@@ -387,7 +406,7 @@ get_dh2048(void)
   g = BN_bin2bn(dh2048_g, sizeof(dh2048_g), NULL);
   if (!g) {
     lock_file(stderr);
-    fputs("Error in BN_bin2bn 2!\n", stderr);
+    fprintf(stderr, "%s Error in BN_bin2bn 2!\n", time_string());
     unlock_file(stderr);
     BN_free(p);
     DH_free(dh);
@@ -399,7 +418,7 @@ get_dh2048(void)
   dh->p = BN_bin2bn(dh2048_p, sizeof(dh2048_p), NULL);
   if (!dh->p) {
     lock_file(stderr);
-    fputs("Error in BN_bin2bn 1!\n", stderr);
+    fprintf(stderr, "%s Error in BN_bin2bn 1!\n", time_string());
     unlock_file(stderr);
     DH_free(dh);
     return NULL;
@@ -408,7 +427,7 @@ get_dh2048(void)
   dh->g = BN_bin2bn(dh2048_g, sizeof(dh2048_g), NULL);
   if (!dh->g) {
     lock_file(stderr);
-    fputs("Error in BN_bin2bn 2!\n", stderr);
+    fprintf(stderr, "%s Error in BN_bin2bn 2!\n", time_string());
     unlock_file(stderr);
     DH_free(dh);
     return NULL;
@@ -601,7 +620,8 @@ ssl_accept(SSL *ssl)
         /* The client sent a certificate which verified OK */
         X509_NAME_oneline(X509_get_subject_name(peer), buf, 256);
         lock_file(stderr);
-        fprintf(stderr, "SSL client certificate accepted: %s", buf);
+        fprintf(stderr, "%s SSL client certificate accepted: %s", time_string(),
+                buf);
         unlock_file(stderr);
         state |= MYSSL_VERIFIED;
       }
@@ -707,8 +727,7 @@ static void
 ssl_errordump(const char *msg)
 {
   lock_file(stderr);
-  fputs(msg, stderr);
-  fputc('\n', stderr);
+  fprintf(stderr, "%s %s\n", time_string(), msg);
   ERR_print_errors(bio_err);
   unlock_file(stderr);
 }

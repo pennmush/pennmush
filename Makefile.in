@@ -20,9 +20,9 @@ CC=@PTHREAD_CC@
 SQL_CFLAGS=@MYSQL_CFLAGS@ @POSTGRESQL_CPPFLAGS@
 SQL_LDFLAGS=@MYSQL_LDFLAGS@ @POSTGRESQL_LDFLAGS@
 
-CCFLAGS=@CFLAGS@ -I.. -I../hdrs -include ../config.h -include ../confmagic.h -include ../options.h @PTHREAD_CFLAGS@ @CPPFLAGS@ @ICU_CPPFLAGS@ @PCRE_CFLAGS@ @OPENSSL_INCLUDES@ @CURL_CFLAGS@
+CCFLAGS=@CFLAGS@ -I.. -I../hdrs -include ../config.h -include ../confmagic.h -include ../options.h @PTHREAD_CFLAGS@ @CPPFLAGS@ @ICU_CPPFLAGS@ @OPENSSL_INCLUDES@ @CURL_CFLAGS@
 LDFLAGS=@LDFLAGS@  @OPENSSL_LDFLAGS@ 
-CLIBS=@PTHREAD_LIBS@ @LIBS@ @ICU_LIBS@ @PCRE_LIBS@ @OPENSSL_LIBS@ @POSTGRESQL_LIBS@ @CURL_LIBS@
+CLIBS=@PTHREAD_LIBS@ @LIBS@ @ICU_LIBS@ @OPENSSL_LIBS@ @POSTGRESQL_LIBS@ @CURL_LIBS@
 INSTALL=@INSTALL@
 INSTALLDIR=$installdir
 CP=@CP@
@@ -34,7 +34,14 @@ SHELL=/bin/sh
 # Where to install with 'make globalinstall'
 GLOBAL_INSTALL=@libexecdir@
 
+PCRE2_DIR=pcre2-10.32
+
+
 all: config.h autogen game/mush.cnf
+	@if [ ! -d pcre2 ]; then \
+		echo "Making all in pcre2"; \
+		(cd $(PCRE2_DIR) && make install); \
+	fi
 	@echo "Making all in src."
 	(cd src; @MAKE@ all "CC=$(CC)" "CCFLAGS=$(CCFLAGS)" \
 	"LDFLAGS=$(LDFLAGS)" "CLIBS=$(CLIBS)" "MAKE=$(MAKE)" \
@@ -170,6 +177,8 @@ test: netmud
 	(cd test; sh alltests.sh)
 
 clean:
+	(cd $(PCRE2_DIR); @MAKE@ clean)
+	rm -rf pcre2/
 	(cd src; @MAKE@ clean)
 	(cd game; rm -f netmush info_slave)
 

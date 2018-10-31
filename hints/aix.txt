@@ -1,0 +1,8 @@
+2018-10-13 notes:
+
+Oleo was kind enough to test a bit on AIX.
+
+The default /bin/sh won't run configure; use `/bin/ksh93 configure`.
+
+Some tweaking of CPPFLAGS, LDFLAGS, and configure options might be
+needed depending on what software packages are installed.

@@ -31,7 +31,7 @@ AC_PATH_PROG(PERL, perl)
 if test -z "${PERL}"; then
    AC_MSG_ERROR([perl is required to build and run PennMUSH])
 fi
-# In case anbody's still using a truely ancient version of perl	that doesn't
+# In case anbody's still using a truely ancient version of perl that doesn't
 # support things we use.
 AX_PROG_PERL_VERSION([5.10.0])
 

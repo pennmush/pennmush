@@ -22,7 +22,7 @@ Version 1.8.7 patchlevel 0 Aug 10 2018
 
 Major Changes:
 
-* Support websocket connections. See https://github.com/grapenut/websockclient for a sample in-browser client. [Grapenut, 1007]
+* Support WebSocket connections. See https://github.com/grapenut/websockclient for a sample in-browser client. [Grapenut, 1007]
 * Change attributes from being stored in sorted linked lists to sorted arrays; results in faster lookups and less memory usage. [SW]
 * Penn now comes with the Sqlite3 database engine bundled with it, and uses it internally in a few ways:
 

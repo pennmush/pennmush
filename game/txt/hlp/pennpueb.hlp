@@ -53,12 +53,13 @@ See also: HTML, PUEBLO
 & HTML FUNCTIONS
   HTML Functions are used to output HTML tags to HTML capable users. These tags will be stripped by the system for anything non-HTML related. These functions are only available when Pueblo support is enabled (see '@config pueblo').
 
-  html()         tag()          endtag()       tagwrap()
+  html()      tag()      endtag()      tagwrap()      wshtml()
 
   Examples:
     > say html(a href="http://www.pennmush.org")PennMUSH[html(/a)]
     > say tag(a,href="http://www.pennmush.org")PennMUSH[endtag(a)]
     > say tagwrap(a,href="http://www.pennmush.org",PennMUSH)
+    > say wshtml(<a href="http://www.pennmush.org">PennMUSH</a>)
 
   Each of these produces the HTML output:
     <a href="http://www.pennmush.org">PennMUSH</a>
@@ -117,22 +118,22 @@ Function: tagwrap(<name>[, <parameters>], <string>)
   
 See also: tag(), endtag(), html()
 & WEBSOCKETS
-  Websockets are a network protocol used by JavaScript-enabled web browsers to make persistent network connections, similar to the telnet connection you use to connect to PennMUSH. With Websockets enabled in mush.cnf, it is possible to connect from MUSH clients embedded in HTML pages using JavaScript. A Websocket client can natively render HTML, but can also parse Pueblo links into HTML links that send a command to the MUSH when clicked. For safety, we separate plain text from the other kinds of HTML/Pueblo code that we want rendered. In order to render HTML/Pueblo, a player with the Pueblo_Send power uses special functions to embed HTML/Pueblo markup. Players without the PUEBLO_SEND power can not use these markup functions. Any HTML code strings that are not properly marked up will simply show up as unrendered plain text.
+  WebSockets are a network protocol used by JavaScript-enabled web browsers to make persistent network connections, similar to the telnet connection you use to connect to PennMUSH. With WebSockets enabled in mush.cnf, it is possible to connect from MUSH clients embedded in HTML pages using JavaScript. A WebSocket client can natively render HTML, but can also parse Pueblo links into HTML links that send a command to the MUSH when clicked. For safety, we separate plain text from the other kinds of HTML/Pueblo code that we want rendered. In order to render HTML/Pueblo, a player with the Pueblo_Send power uses special functions to embed HTML/Pueblo markup. Players without the PUEBLO_SEND power can not use these markup functions. Any HTML code strings that are not properly marked up will simply show up as unrendered plain text.
 
   See https://github.com/grapenut/websockclient for an example client.
 
   The different kinds of markup that can be sent to clients are plain text, HTML tags, Pueblo links, JSON objects, and prompts. Without using any HTML markup functions, output is rendered as normal plain text (including ANSI and xterm256 color).
 
   See 'help HTML Functions' for functions used to embed HTML markup tags one at a time.
-  See 'help wshtml()' for help embedding large segments of raw HTML markup to be sent to Websocket clients.
+  See 'help wshtml()' for help embedding large segments of raw HTML markup to be sent to WebSocket clients.
 
-  Support for Pueblo links depends on the Websocket client, however the example client above supports xch_cmd for command links and xch_hint for tooltip text popups. For clickable command links, embed a link tag with the command to be executed in the "xch_cmd" attribute, e.g. <a xch_cmd="+who">Who is online?</a>.
+  Support for Pueblo links depends on the WebSocket client, however the example client above supports xch_cmd for command links and xch_hint for tooltip text popups. For clickable command links, embed a link tag with the command to be executed in the "xch_cmd" attribute, e.g. <a xch_cmd="+who">Who is online?</a>.
 
   You can also send data encapsulated in a JSON object.
   See 'help json()' for information about formatting data into JSON object strings.
-  See 'help wsjson()' for help sending formatted JSON object strings to Websocket clients as a JavaScript object.
+  See 'help wsjson()' for help sending formatted JSON object strings to WebSocket clients as a JavaScript object.
 
-  See `help @prompt` for information about sending telnet GOAHEAD prompts. Support for prompts depends on the Websocket client. The example client above shows prompts on their own line separating the input and output windows, but requires PROMPT_NEWLINES to be turned off.
+  See `help @prompt` for information about sending telnet GOAHEAD prompts. Support for prompts depends on the WebSocket client. The example client above shows prompts on their own line separating the input and output windows, but requires PROMPT_NEWLINES to be turned off.
   
 See also: HTML Functions, json(), pueblo, wshtml(), wsjson()
 & WSHTML()
@@ -140,22 +141,22 @@ See also: HTML Functions, json(), pueblo, wshtml(), wsjson()
   wshtml(<html string>[, <default string>])
   wsjson(<json string>[, <default string>])
 
-  These functions are used to embed HTML and JSON markup into the output for Websocket-enabled clients. They require the Pueblo_Send power.
+  These functions are used to embed HTML and JSON markup into the output for WebSocket-enabled clients. They require the Pueblo_Send power.
   
-  wshtml() embeds <html string> as HTML markup, to be rendered as HTML by a Websocket client. The <default string> is shown as plain text if the recipient is not Websocket-enabled.
+  wshtml() embeds <html string> as HTML markup, to be rendered as HTML by a WebSocket client. The <default string> is shown as plain text if the recipient is not WebSocket-enabled.
 
-  wsjson() embeds <json string> as a JSON object which can be captured by a Websocket client. The <default string> is shown as plain text if the recipient is not Websocket-enabled. See 'help json()' for information about formatting JSON object strings.
+  wsjson() embeds <json string> as a JSON object which can be captured by a WebSocket client. The <default string> is shown as plain text if the recipient is not WebSocket-enabled. See 'help json()' for information about formatting JSON object strings.
 
   For example, if one uses:
 
     @emit [wshtml(<a href="http://pennmush.org">PennMUSH</a>,Go to http://pennmush.org)]
 
-  then any players in the room with a Websocket connection would see (rendered as HTML)
+  then any players in the room with a WebSocket connection would see (rendered as HTML)
 
     <a href="http://pennmush.org">PennMUSH</a>
 
-  while non-Websocket connections and listening objects would see
+  while non-WebSocket connections and listening objects would see
 
     Go to http://pennmush.org
 
-See also: websockets, pueblo, json(), HTML Functions
+See also: WebSockets, Pueblo, HTML Functions, JSON Functions

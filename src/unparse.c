@@ -149,7 +149,7 @@ real_unparse(dbref player, dbref loc, int obey_myopic, int use_nameformat,
   if (SUPPORT_HTML) {
     char tmp[100];
     PUSE;
-    snprintf(tmp, sizeof tmp, "XCH_CMD=\"examine #%d\"", loc);
+    snprintf(tmp, sizeof tmp, "XCH_CMD=\"look #%d\"", loc);
     tag_wrap("A", tmp, p);
     PEND;
     return pbuff;

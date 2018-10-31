@@ -79,7 +79,6 @@ look_exits(dbref player, dbref loc, const char *exit_name, NEW_PE_INFO *pe_info)
   char *s1, *s2;
   char *p;
   int exit_count, this_exit, total_count;
-  int texits;
   ufun_attrib ufun;
   PUEBLOBUFF;
 
@@ -94,7 +93,7 @@ look_exits(dbref player, dbref loc, const char *exit_name, NEW_PE_INFO *pe_info)
     mush_panic("Unable to allocate memory in look_exits");
   s1 = tbuf1;
   s2 = tbuf2;
-  texits = exit_count = total_count = 0;
+  exit_count = total_count = 0;
   this_exit = 1;
 
   if (fetch_ufun_attrib("EXITFORMAT", loc, &ufun,
@@ -181,12 +180,7 @@ look_exits(dbref player, dbref loc, const char *exit_name, NEW_PE_INFO *pe_info)
       safe_tag_wrap("A", tmp, pbuff, nbuf, &p, NOTHING);
       *p = '\0';
       if (Transparented(loc) && !(Opaque(thing))) {
-        if (SUPPORT_HTML && !texits) {
-          texits = 1;
-          notify_noenter_by(loc, player, open_tag("UL"));
-        }
         s1 = tbuf1;
-        safe_tag("LI", tbuf1, &s1);
         safe_chr(' ', tbuf1, &s1);
         if (Destination(thing) == NOTHING)
           safe_format(tbuf1, &s1, T("%s leads nowhere."), nbuf);
@@ -200,7 +194,6 @@ look_exits(dbref player, dbref loc, const char *exit_name, NEW_PE_INFO *pe_info)
           safe_format(tbuf1, &s1, T("%s leads to %s."), nbuf,
                       AName(Destination(thing), AN_LOOK, NULL));
         }
-        safe_tag_cancel("LI", tbuf1, &s1);
         *s1 = '\0';
         notify_nopenter_by(loc, player, tbuf1);
       } else {
@@ -215,12 +208,6 @@ look_exits(dbref player, dbref loc, const char *exit_name, NEW_PE_INFO *pe_info)
         }
       }
     }
-  }
-  if (SUPPORT_HTML && texits) {
-    PUSE;
-    tag_cancel("UL");
-    PEND;
-    notify_noenter_by(loc, player, pbuff);
   }
   *s2 = '\0';
   notify_by(loc, player, tbuf2);
@@ -295,25 +282,16 @@ look_contents(dbref player, dbref loc, const char *contents_name,
       /* something exists!  show him everything */
       PUSE;
       safe_str(contents_name, pbuff, &pp);
-      tag("UL");
       PEND;
       notify_nopenter_by(loc, player, pbuff);
       DOLIST (thing, Contents(loc)) {
-        char tmp[50];
         if (can_see(player, thing, can_see_loc)) {
           PUSE;
-          tag("LI");
-          snprintf(tmp, sizeof tmp, "XCH_CMD=\"look #%d\"", thing);
-          tag_wrap("A", tmp, unparse_object_myopic(player, thing, AN_LOOK));
-          tag_cancel("LI");
+          safe_str(unparse_object_myopic(player, thing, AN_LOOK), pbuff, &pp);
           PEND;
           notify_nopenter_by(loc, player, pbuff);
         }
       }
-      PUSE;
-      tag_cancel("UL");
-      PEND;
-      notify_noenter_by(loc, player, pbuff);
       break; /* we're done */
     }
   }

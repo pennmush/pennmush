@@ -468,6 +468,23 @@ ustrupper_a(const char *s, const char *name)
 #endif
 }
 
+TEST_GROUP(ustrupper_a)
+{
+  char *upper;
+  upper = ustrupper_a("aaaA", "string");
+  TEST("ustrupper_a.1", strcmp(upper, "AAAA") == 0);
+  mush_free(upper, "string");
+  upper = ustrupper_a("\xC3\xA1\xC3\xA2", "string");
+  TEST("ustrupper_a.2", strcmp(upper, "\xC3\x81\xC3\x82") == 0);
+  mush_free(upper, "string");
+#ifdef HAVE_ICU
+  // Will fail without ICU; tests german Eszett
+  upper = ustrupper_a("thi\xC3\x9F", "string");
+  TEST("ustrupper_a.3", strcmp(upper, "THISS") == 0);
+  mush_free(upper, "string");
+#endif
+}
+
 /** Return a lowercased version of an ASCII/UTF-8 string in a newly allocated
  * buffer.
  *
@@ -506,6 +523,17 @@ ustrlower_a(const char *s, const char *name)
   udowncasestr(out);
   return out;
 #endif
+}
+
+TEST_GROUP(ustrlower_a)
+{
+  char *lower;
+  lower = ustrlower_a("AAAa", "string");
+  TEST("ustrlower_a.1", strcmp(lower, "aaaa") == 0);
+  mush_free(lower, "string");
+  lower = ustrlower_a("\xC3\x81\xC3\x82", "string");
+  TEST("ustrlower_a.2", strcmp(lower, "\xC3\xA1\xC3\xA2") == 0);
+  mush_free(lower, "string");
 }
 
 /** Return an uppercased version of an ASCII/Latin1 string in a caller-supplied
@@ -602,6 +630,18 @@ uupcasestr(char *s)
   return s;
 }
 
+TEST_GROUP(uupcasestr)
+{
+  // TEST uupcasestr REQUIRES toupper
+  char str[100];
+  strcpy(str, "aaaa");
+  TEST("uupcasestr.1", strcmp(uupcasestr(str), "AAAA") == 0);
+  strcpy(str, "\xC3\xA1\xC3\xA2");
+  TEST("uupcasestr.2", strcmp(uupcasestr(str), "\xC3\x81\xC3\x82") == 0);
+  strcpy(str, "thi\xC3\x9F");
+  TEST("uupcasestr.3", strcmp(uupcasestr(str), "THI\xC3\x9F") == 0);
+}
+
 static bool
 udowncasestr_cb(UChar32 c, char *s, int offset, int len,
                 void *data __attribute__((__unused__)))
@@ -625,6 +665,18 @@ udowncasestr(char *s)
 {
   for_each_cp(s, udowncasestr_cb, NULL);
   return s;
+}
+
+TEST_GROUP(udowncasestr)
+{
+  // TEST udowncasestr REQUIRES tolower
+  char str[100];
+  strcpy(str, "AAAA");
+  TEST("udowncasestr.1", strcmp(udowncasestr(str), "aaaa") == 0);
+  strcpy(str, "\xC3\x81\xC3\x82");
+  TEST("udowncasestr.2", strcmp(udowncasestr(str), "\xC3\xA1\xC3\xA2") == 0);
+  strcpy(str, "THI\xC3\x9F");
+  TEST("udowncasestr.3", strcmp(udowncasestr(str), "thi\xC3\x9F") == 0);
 }
 
 /** Safely add an accented string to a buffer.
@@ -1344,17 +1396,26 @@ TEST_GROUP(seek_char)
 char *
 seek_cp(const char *s, UChar32 c)
 {
+  int cpos = 0;
   int offset = 0;
   UChar32 curr;
 
   U8_NEXT(s, offset, -1, curr);
   while (curr) {
     if (curr == c) {
-      return (char *) s + offset;
+      return (char *) s + cpos;
     }
+    cpos = offset;
     U8_NEXT(s, offset, -1, curr);
   }
-  return (char *) s + offset;
+  return (char *) s + cpos;
+}
+
+TEST_GROUP(seek_cp)
+{
+  TEST("seek_cp.1", *seek_char("ABA", 'B') == 'B');
+  TEST("seek_cp.2", *seek_char("AAA", 'B') == '\0');
+  TEST("seek_cp.3", *seek_cp("AA\xC3\xA1q", 0x00E1) == '\xC3');
 }
 
 /** Search for all copies of old in string, and replace each with newbit.
@@ -1601,9 +1662,15 @@ next_token_cp(char *str, UChar32 sep)
       while (str[offset] && str[offset] != TAG_END) {
         offset += 1;
       }
+      if (str[offset]) {
+        offset += 1;
+      }
       break;
     case ESC_CHAR:
       while (str[offset] && str[offset] != 'm') {
+        offset += 1;
+      }
+      if (str[offset]) {
         offset += 1;
       }
       break;
@@ -1614,15 +1681,34 @@ next_token_cp(char *str, UChar32 sep)
     return NULL;
   }
   if (sep == ' ') {
-    while (c == sep) {
-      U8_NEXT(str, offset, -1, c);
+    if (c == ' ') {
+      while (c == sep) {
+        U8_NEXT(str, offset, -1, c);
+      }
+      U8_PREV(str, 0, offset, c);
     }
   }
   return str + offset;
 }
 
+TEST_GROUP(next_token_cp)
+{
+  char *c;
+  c = next_token_cp("  a b", ' ');
+  TEST("next_token_cp.1", c && *c == 'a');
+  c = next_token_cp("a|b", '|');
+  TEST("next_token_cp.2", c && *c == 'b');
+  c = next_token_cp("\x1B[0ma b", ' ');
+  TEST("next_token_cp.3", c && *c == 'b');
+  c = next_token_cp("   ", ' ');
+  TEST("next_token_cp.4", c && *c == '\0');
+  TEST("next_token_cp.5", next_token_cp("", '|') == NULL);
+  c = next_token_cp("a\xC2\xA0q", 0x00A0);
+  TEST("next_token_cp.6", c && *c == 'q');
+}
+
 /** Split out the next token from a string, destructively modifying it.
- * As usually, if the separator is a space, we skip multiple spaces.
+ * As usual, if the separator is a space, we skip multiple spaces.
  * The string's address is updated to be past the token, and the token
  * is returned. This code from TinyMUSH 2.0.
  * \param sp pointer to string to split from.
@@ -1699,7 +1785,7 @@ TEST_GROUP(split_token)
 }
 
 /** Split out the next token from a string, destructively modifying it.
- * As usually, if the separator is a space, we skip multiple spaces.
+ * As usual, if the separator is a space, we skip multiple spaces.
  * The string's address is updated to be past the token, and the token
  * is returned.
  * \param sp pointer to UTF-8 string to split from.
@@ -1728,9 +1814,15 @@ split_token_cp(char **sp, UChar32 sep)
       while (str[offset] && str[offset] != TAG_END) {
         offset += 1;
       }
+      if (str[offset]) {
+        offset += 1;
+      }
       break;
     case ESC_CHAR:
       while (str[offset] && str[offset] != 'm') {
+        offset += 1;
+      }
+      if (str[offset]) {
         offset += 1;
       }
       break;
@@ -1738,7 +1830,7 @@ split_token_cp(char **sp, UChar32 sep)
     U8_NEXT(str, offset, -1, c);
   }
   if (!c) {
-    str = NULL;
+    *sp = NULL;
   } else {
     int endoffset = offset;
     U8_PREV(str, 0, endoffset, c);
@@ -1748,11 +1840,41 @@ split_token_cp(char **sp, UChar32 sep)
       while (c == sep) {
         U8_NEXT(str, offset, -1, c);
       }
+      U8_PREV(str, 0, offset, c);
     }
+    *sp = str + offset;
   }
 
-  *sp = str + offset;
   return save;
+}
+
+TEST_GROUP(split_token_cp)
+{
+  char *c, *t;
+  char buff[BUFFER_LEN];
+  t = NULL;
+  c = split_token_cp(&t, ' ');
+  TEST("split_token_cp.1", c == NULL && t == NULL);
+  strcpy(buff, "  a b");
+  t = buff;
+  c = split_token_cp(&t, ' ');
+  TEST("split_token_cp.2", strcmp(c, "") == 0 && strcmp(t, "a b") == 0);
+  strcpy(buff, "a|b");
+  t = buff;
+  c = split_token_cp(&t, '|');
+  TEST("split_token_cp.3", strcmp(c, "a") == 0 && strcmp(t, "b") == 0);
+  strcpy(buff, "\x1B[0ma b");
+  t = buff;
+  c = split_token_cp(&t, ' ');
+  TEST("split_token_cp.4", strcmp(c, "\x1B[0ma") == 0 && strcmp(t, "b") == 0);
+  strcpy(buff, "   ");
+  t = buff;
+  c = split_token_cp(&t, ' ');
+  TEST("split_token_cp.5", c && *c == '\0' && *t == '\0');
+  strcpy(buff, "");
+  t = buff;
+  c = split_token_cp(&t, '|');
+  TEST("split_token_cp.6", c && *c == '\0' && t == NULL);
 }
 
 /** Count the number of tokens in a string.
@@ -1771,6 +1893,19 @@ do_wordcount(char *str, char sep)
   for (n = 0; str; str = next_token(str, sep), n++) {
   }
   return n;
+}
+
+TEST_GROUP(do_wordcount)
+{
+  // TEST do_wordcount REQUIRES next_token
+  char buff[] = "A B C D";
+  char buff2[] = "A|B|C|D";
+  char buff3[] = "A  B  C  D";
+  TEST("do_wordcount.1", do_wordcount(buff, ' ') == 4);
+  TEST("do_wordcount.2", do_wordcount(buff2, '|') == 4);
+  TEST("do_wordcount.3", do_wordcount(buff3, ' ') == 4);
+  TEST("do_wordcount.4", do_wordcount(buff3, '|') == 1);
+  TEST("do_wordcount.5", do_wordcount("", ' ') == 0);
 }
 
 /** Count the number of tokens in a string.
@@ -1792,17 +1927,17 @@ do_uwordcount(char *str, UChar32 sep)
   return n;
 }
 
-TEST_GROUP(do_wordcount)
+TEST_GROUP(do_uwordcount)
 {
-  // TEST do_wordcount REQUIRES next_token
+  // TEST do_uwordcount REQUIRES next_token_cp
   char buff[] = "A B C D";
   char buff2[] = "A|B|C|D";
   char buff3[] = "A  B  C  D";
-  TEST("do_wordcount.1", do_wordcount(buff, ' ') == 4);
-  TEST("do_wordcount.2", do_wordcount(buff2, '|') == 4);
-  TEST("do_wordcount.3", do_wordcount(buff3, ' ') == 4);
-  TEST("do_wordcount.4", do_wordcount(buff3, '|') == 1);
-  TEST("do_wordcount.5", do_wordcount("", ' ') == 0);
+  TEST("do_uwordcount.1", do_uwordcount(buff, ' ') == 4);
+  TEST("do_uwordcount.2", do_uwordcount(buff2, '|') == 4);
+  TEST("do_uwordcount.3", do_uwordcount(buff3, ' ') == 4);
+  TEST("do_uwordcount.4", do_uwordcount(buff3, '|') == 1);
+  TEST("do_uwordcount.5", do_uwordcount("", ' ') == 0);
 }
 
 /** Given a string, a word, and a separator, remove first occurence
@@ -1893,6 +2028,19 @@ remove_uword(char *list, char *word, UChar32 sep)
     sqlite3_str_appendall(out, sp);
   }
   return sqlite3_str_finish(out);
+}
+
+TEST_GROUP(remove_uword)
+{
+  // TEST remove_uword REQUIRES split_token_cp
+  char buff[BUFFER_LEN];
+  char *c;
+  strcpy(buff, "adam boy charles");
+  c = remove_uword(buff, "boy", ' ');
+  TEST("remove_uword.1", strcmp(c, "adam charles") == 0);
+  strcpy(buff, "adam|boy|charles");
+  c = remove_uword(buff, "charles", '|');
+  TEST("remove_uword.2", strcmp(c, "adam|boy") == 0);
 }
 
 /** Return the next name in a list. A name may be a single word, or
@@ -2780,6 +2928,13 @@ strlen_cp(const char *s)
   return n;
 }
 
+TEST_GROUP(strlen_cp)
+{
+  TEST("strlen_cp.1", strlen_cp("aaaa") == 4);
+  TEST("strlen_cp.1", strlen_cp("aa\xE1\xA1") == 3);
+  TEST("strlen_cp.2", strlen_cp("aa\x61\xCC\x81") == 4);
+}
+
 /** Return the number of extended grapheme clusters in a UTF-8 string */
 int
 strlen_gc(const char *s)
@@ -2791,6 +2946,14 @@ strlen_gc(const char *s)
     n += 1;
   }
   return n;
+}
+
+TEST_GROUP(strlen_gc)
+{
+  // TEST strlen_gc REQUIRES gcbytes
+  TEST("strlen_gc.1", strlen_gc("aaaa") == 4);
+  TEST("strlen_gc.1", strlen_gc("aa\xE1\xA1") == 3);
+  TEST("strlen_gc.2", strlen_gc("aa\x61\xCC\x81") == 3);
 }
 
 /** Case-insensitive UTF-8 string comparison. If ICU is not being
@@ -2936,6 +3099,26 @@ gc_breaks(const char *s, int *arrlen)
     s += bytes;
   }
 
-  *arrlen = ngcs;
+  *arrlen = ngcs - 1;
   return gcs;
+}
+
+TEST_GROUP(gc_breaks)
+{
+  // TEST gc_breaks REQUIRES gcbytes
+  int nbreaks;
+  int *breaks;
+
+  breaks = gc_breaks("aaa", &nbreaks);
+  TEST("gc_breaks.1",
+       nbreaks == 3 && breaks[0] == 0 && breaks[1] == 1 && breaks[2] == 2);
+  mush_free(breaks, "breaks");
+  breaks = gc_breaks("a\xE1\xA1q", &nbreaks);
+  TEST("gc_breaks.2",
+       nbreaks == 3 && breaks[0] == 0 && breaks[1] == 1 && breaks[2] == 3);
+  mush_free(breaks, "breaks");
+  breaks = gc_breaks("aa\x61\xCC\x81q", &nbreaks);
+  TEST("gc_breaks.3", nbreaks == 4 && breaks[0] == 0 && breaks[1] == 1 &&
+                        breaks[2] == 2 && breaks[3] == 5);
+  mush_free(breaks, "breaks");
 }

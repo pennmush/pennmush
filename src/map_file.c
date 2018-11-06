@@ -136,7 +136,7 @@ map_file(const char *filename, bool writable)
   f->len = s.st_size;
   f->data = mmap(NULL, s.st_size, prot, MAP_SHARED, fd, 0);
 
-  if (!f->data) {
+  if (f->data == (void *) -1) {
     do_rawlog(LT_ERR, "map_file: unable to mmap file '%s': %s", filename,
               strerror(errno));
     close(fd);
@@ -219,6 +219,16 @@ TEST_GROUP(map_file)
   fclose(f);
   TEST("map_file.open_file.2", bytes == 7);
   TEST("map_file.writable.5", memcmp(data, "aBcdefg", 7) == 0);
+
+  // Non-existent file
+  m = map_file("no_such_file.txt", 0);
+  TEST("map_file.missing_file.1", m == NULL);
+
+  // Un-mappable file
+#ifdef HAVE_DEV_URANDOM
+  m = map_file("/dev/urandom", 0);
+  TEST("map_file.unmappable.1", m == NULL);
+#endif
 
 cleanup:
   remove(fname);

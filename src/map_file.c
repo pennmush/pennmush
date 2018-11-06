@@ -136,7 +136,7 @@ map_file(const char *filename, bool writable)
   f->len = s.st_size;
   f->data = mmap(NULL, s.st_size, prot, MAP_SHARED, fd, 0);
 
-  if (!f->data) {
+  if (f->data == (void *)-1) {
     do_rawlog(LT_ERR, "map_file: unable to mmap file '%s': %s", filename,
               strerror(errno));
     close(fd);

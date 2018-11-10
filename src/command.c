@@ -215,7 +215,7 @@ COMLIST commands[] = {
   {"@MAPSQL", "NOTIFY COLNAMES SPOOF", cmd_mapsql, CMD_T_ANY | CMD_T_EQSPLIT, 0,
    0},
   {"@MESSAGE", "NOEVAL SPOOF NOSPOOF REMIT OEMIT SILENT NOISY", cmd_message,
-   CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_RS_ARGS, 0, 0},
+   CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_RS_ARGS | CMD_T_NOGAGGED, 0, 0},
   {"@MONIKER", NULL, cmd_moniker, CMD_T_ANY | CMD_T_EQSPLIT, 0, 0},
   {"@MOTD", "CONNECT LIST WIZARD DOWN FULL CLEAR", cmd_motd,
    CMD_T_ANY | CMD_T_NOGAGGED, 0, 0},
@@ -404,11 +404,11 @@ COMLIST commands[] = {
   {"UNIMPLEMENTED_COMMAND", NULL, cmd_unimplemented,
    CMD_T_ANY | CMD_T_NOPARSE | CMD_T_INTERNAL | CMD_T_NOP, 0, 0},
 
-  {"ADDCOM", NULL, cmd_addcom, CMD_T_ANY | CMD_T_EQSPLIT, 0, 0},
-  {"DELCOM", NULL, cmd_delcom, CMD_T_ANY, 0, 0},
-  {"@CLIST", "FULL", cmd_clist, CMD_T_ANY, 0, 0},
-  {"COMTITLE", NULL, cmd_comtitle, CMD_T_ANY | CMD_T_EQSPLIT, 0, 0},
-  {"COMLIST", NULL, cmd_comlist, CMD_T_ANY, 0, 0},
+  {"ADDCOM", NULL, cmd_addcom, CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_NOGAGGED, 0, 0},
+  {"DELCOM", NULL, cmd_delcom, CMD_T_ANY | CMD_T_NOGAGGED, 0, 0},
+  {"@CLIST", "FULL", cmd_clist, CMD_T_ANY | CMD_T_NOGAGGED, 0, 0},
+  {"COMTITLE", NULL, cmd_comtitle, CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_NOGAGGED, 0, 0},
+  {"COMLIST", NULL, cmd_comlist, CMD_T_ANY | CMD_T_NOGAGGED, 0, 0},
 
   {NULL, NULL, NULL, 0, 0, 0}};
 

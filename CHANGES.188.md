@@ -41,11 +41,11 @@ Minor Changes
 
 * Sockets commands now inline $-commands, so, e.g: $,* *: chat aliases don't hit queue. [GM]
 * Millisecond timing in bsd.c for polling waits in prep for subsecond @waits. [GM]
-* Sqlite3's `REGEXP` operator is always available and uses pcre regular expressions (Previously it depended on libicu and used java style REs). [SW]
+* Sqlite3's `REGEXP` operator is always available and uses pcre regular expressions (previously it depended on libicu and used java style REs). [SW]
 * Update `local.dst` to include example of millisecond callback loop. [MT]
-* Updated to use PCRE2 10.31 for regular expressions. [SW}
+* Updated to use PCRE2 10.31 for regular expressions. [SW]
 * Wildcard patterns are sometimes converted to regular expressions when matched against many strings. [SW]
-* Add '--disable-socket-quota' option for our test suite [GM]
+* Add '--disable-socket-quota' option for our test suite. [GM]
 * The list of color definitions used with `ansi()`, `colors()`, etc. is now kept in game/txt/colors.json. [SW]
 * Sqlite3 updated to 3.25.1. Biggest user-visible change is support for window functions. [SW]
 
@@ -65,3 +65,5 @@ Fixes
 * Various PCRE calls in the softcode have had CPU time limit watchdogs added. Discovered by Ashen-Shugar. [GM]
 * Fixed a potential overflow bug in `@search`. Reported by eery. [MG]
 * Fix a file descriptor leak caused by recent OpenSSL versions. [SW]
+* Added GAGGED restrictions that were missing from a few commands, including `@message` and the MUXcomm aliases. [MG]
+* Minor help updates, including clarification of what GAGGED blocks, suggested by Merit. [#1262, MG, MT]

@@ -218,9 +218,8 @@ See also: @teleport, home, goto
 & GAGGED
   Flag: GAGGED (players)
 
-  The Gagged flag prevents a player from speaking, building, moving objects, and many other things, leaving him able to do little more than move himself and look. It's normally used as a penalty for those who break MUSH rules.
+  The Gagged flag can only be set by Wizards. It's intended as a severe punishment for rulebreakers; players with this flag set can do little more than move themselves and look - it prevents players from using most other built-in commands (including speaking, building, altering objects, moving any object but themselves, using the channel system, and sending @mail), and from using $-commands.
 
-  Only wizards can set this flag.
 See also: FIXED
 & GOING
 & GOING_TWICE

@@ -1127,7 +1127,7 @@ FUNCTION(fun_timecalc)
       safe_str("#-1 DATE ERROR", buff, bp);
     }
   } else {
-    safe_format(buff, bp, "#-1 %s", sqlite3_errstr(status));
+    safe_format(buff, bp, "#-1 %s", sqlite3_errmsg(db));
   }
   sqlite3_finalize(timer);
 }
@@ -1171,7 +1171,7 @@ FUNCTION(fun_secscalc)
       safe_str("#-1 DATE ERROR", buff, bp);
     }
   } else {
-    safe_format(buff, bp, "#-1 %s", sqlite3_errstr(status));
+    safe_format(buff, bp, "#-1 %s", sqlite3_errmsg(db));
   }
   sqlite3_finalize(timer);
 }

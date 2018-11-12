@@ -771,7 +771,7 @@ free_object(dbref thing)
     } while (is_busy_status(status));
     if (status != SQLITE_DONE) {
       do_rawlog(LT_ERR, "Unable to delete #%d from objects table: %s", thing,
-                sqlite3_errstr(status));
+                sqlite3_errmsg(sqldb));
     }
     sqlite3_reset(deleter);
   }

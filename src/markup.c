@@ -159,7 +159,7 @@ build_rgb_map(void)
   } while (is_busy_status(status));
   if (status != SQLITE_DONE) {
     do_rawlog(LT_ERR, "Unable to populate colors table: %s",
-              sqlite3_errstr(status));
+              sqlite3_errmsg(sqldb));
   }
   sqlite3_finalize(creator);
   unmap_file(mf);

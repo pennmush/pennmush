@@ -86,10 +86,10 @@ test('floordiv.2', $god, 'think floordiv(-13,4)', '^-4');
 test('floordiv.3', $god, 'think floordiv(13,-4)', '^-4');
 test('floordiv.4', $god, 'think floordiv(-13,-4)', '^3');
 
-test('mod.1', $god, 'think mod(13,4)', '^1');
-test('mod.2', $god, 'think mod(-13,4)', '^3');
-test('mod.3', $god, 'think mod(13,-4)', '^-3');
-test('mod.4', $god, 'think mod(-13,-4)', '^-1');
+test('mod.1', $god, 'think modulo(13,4)', '^1');
+test('mod.2', $god, 'think modulo(-13,4)', '^3');
+test('mod.3', $god, 'think modulo(13,-4)', '^-3');
+test('mod.4', $god, 'think modulo(-13,-4)', '^-1');
 
 test('remainder.1', $god, 'think remainder(13,4)', '^1');
 test('remainder.2', $god, 'think remainder(-13,4)', '^-1');

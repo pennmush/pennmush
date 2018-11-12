@@ -48,7 +48,7 @@ See also: @channel, @cemit
     %4:  The speaker's channel title, unless none is set, or the channel is NO_TITLE.
     %5:  The default message, as shown when no chatformat is set.
     %6:  The 'say' string for the message. This will usually be "says", unless altered by the SPEECHTEXT mogrifier.
-    %7:  "silent" if a silent @cemit caused this message, otherwise "noisy"
+    %7:  A space-separated list of extra options. Currently can contain: "silent" if a silent @cemit caused this message, otherwise "noisy"
 
     If the channel is NO_NAME, and the speaker either has no title or the channel is also set NO_TITLE, then %3 will be "Someone".
 
@@ -264,7 +264,7 @@ See also: cmogrifier()
   %4 - Player chan title*
   %5 - Player name*
   %6 - The "says" part of a message.
-  %7 - "noisy" if the channel name is being displayed, "silent" if not (From a silent @cemit).
+  %7 - A space-separated list of extra options. Currently can contain: "silent" if a silent @cemit caused this message, otherwise "noisy"
 
   The mogrify attributes available are:
   MOGRIFY`CHANNAME: %0 = default channel display. (e.g: "<Public>").

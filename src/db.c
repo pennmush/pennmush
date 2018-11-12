@@ -1374,8 +1374,9 @@ db_read_attrs(PENNFILE *f, dbref i, int count)
   }
 
   if (found != count)
-    do_rawlog(LT_ERR, "WARNING: Actual attribute count (%d) different than "
-                      "expected count (%d).",
+    do_rawlog(LT_ERR,
+              "WARNING: Actual attribute count (%d) different than "
+              "expected count (%d).",
               found, count);
 }
 
@@ -2158,7 +2159,7 @@ sql_from_hexstr_fun(sqlite3_context *ctx, int nargs __attribute__((unused)),
 sqlite3 *
 open_sql_db(const char *name, bool nocreate)
 {
-  sqlite3 *db;
+  sqlite3 *db = NULL;
   int status;
   int flags = SQLITE_OPEN_READWRITE | SQLITE_OPEN_URI | SQLITE_OPEN_NOMUTEX;
 
@@ -2172,7 +2173,11 @@ open_sql_db(const char *name, bool nocreate)
 
   if ((status = sqlite3_open_v2(name, &db, flags, NULL)) != SQLITE_OK) {
     do_rawlog(LT_ERR, "Unable to open sqlite3 database %s: %s",
-              *name ? name : ":unnamed:", sqlite3_errstr(status));
+              *name ? name : ":unnamed:",
+              db ? sqlite3_errmsg(db) : sqlite3_errstr(status));
+    if (db) {
+      sqlite3_close(db);
+    }
     return NULL;
   }
   if ((status = sqlite3_create_collation(db, "TRAILNUMBERS", SQLITE_UTF8, NULL,
@@ -2528,10 +2533,11 @@ set_objdata(dbref thing, const char *keybase, void *data)
   }
 
   sqldb = get_shared_db();
-  setter = prepare_statement(
-    sqldb, "INSERT INTO objdata(dbref, key, ptr) VALUES(?, ?, ?) ON "
-           "CONFLICT (dbref, key) DO UPDATE SET ptr=excluded.ptr",
-    "objdata.set");
+  setter =
+    prepare_statement(sqldb,
+                      "INSERT INTO objdata(dbref, key, ptr) VALUES(?, ?, ?) ON "
+                      "CONFLICT (dbref, key) DO UPDATE SET ptr=excluded.ptr",
+                      "objdata.set");
   if (!setter) {
     return NULL;
   }

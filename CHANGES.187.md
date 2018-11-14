@@ -41,6 +41,7 @@ Fixes
 * `@http` requests in-progress during a `@shutdown/reboot` would leak sockets. [SW,1246]
 * `lattrp()` and similar functions didn't behave the same with attribute trees as 1.8.6. Reported by Mercutio. [SW,1233]
 * Recursive calls to `json_map()` were broken. Reported by Mercutio [SW,1252]
+* Fixed a potential overflow bug in `@search`. Reported by eery. [MG]
 
 Version 1.8.7 patchlevel 0 Aug 10 2018
 ======================================

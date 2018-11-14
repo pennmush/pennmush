@@ -1,7 +1,7 @@
 login mortal
 run tests:
 
-test('json.1', $mortal, '&json me={ "a": 1, "b": 2, "c": [1,2,3] }', 'Set');
+$mortal->command('&json me={ "a": 1, "b": 2, "c": [1,2,3] }');
 
 # isjson tests
 test('json.isjson.1', $mortal, 'think isjson(v(json))', '1');
@@ -117,12 +117,16 @@ test('json.sort.4', $mortal, 'think json_mod(json(array, "e","m","a","z"), sort,
 
 # json_map
 
-test('json.2', $mortal, '&json_fn me=We got [art(%0)] %0: %1', 'Set');
-test('json.3', $mortal, '&json2_fn me=%0:%1:%2', 'Set');
+$mortal->command('&json_fn me=We got [art(%0)] %0: %1');
+$mortal->command('&json2_fn me=%0:%1:%2');
+$mortal->command('&json3_fn me=json_map(me/json4_fn, %1, @)');
+$mortal->command('&json4_fn me=%1');
 
 test('json.map.1', $mortal, 'think json_map(me/json_fn, "foo")', '^We got a string: foo$');
 test('json.map.2', $mortal, 'think json_map(me/json_fn, \["foo"\, 5\], @)', '^We got a string: foo@We got a number: 5$');
 test('json.map.3', $mortal, 'think json_map(me/json_fn, \["foo"\, \["bar"\, 10\]\], @)', '^We got a string: foo@We got an array: \["bar",10\]$');
 test('json.map.4', $mortal, 'think json_map(me/json2_fn, json(object, a, 1, b, true, c, null), @)', '^number:1:a@boolean:true:b@null:null:c$');
+# Test recursive calls
+test('json.map.5', $mortal, 'think json_map(me/json3_fn, v(json), #)', '^1#2#1@2@3$');
 
 

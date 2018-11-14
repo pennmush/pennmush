@@ -1190,7 +1190,7 @@ See also: @quota, quota(), Quotas Power, No_Quota Power
 
   Please see 'help setq()' for more information about the setq registers.
 
-See also: SUBSTITUTIONS, @trigger, USER-DEFINED COMMANDS, setq(), v(), r(), registers(), listq(), letq(), unsetq(), strmatch()
+See also: SUBSTITUTIONS, @trigger, USER-DEFINED COMMANDS, WILDCARDS, setq(), v(), r(), registers(), listq(), letq(), unsetq(), strmatch()
 & RQUOTA
   RQUOTA
 
@@ -1494,7 +1494,7 @@ See also: @destroy, @stats
 
   *BE SURE TO @LOCK/USE ME==ME IF YOU SET $-COMMANDS ON YOURSELF!*
 
-See also: GLOBAL COMMANDS, EVALUATION ORDER, STACK, SUBSTITUTIONS, @lock
+See also: GLOBAL COMMANDS, EVALUATION ORDER, STACK, SUBSTITUTIONS, WILDCARDS, @lock
 & VERBS
   Verb attributes are ones which are shown (or triggered) when you use a particular command, or perform a certain action. There are normally three: the 'verb' attribute (shown to the enactor), the 'overb' attribute (shown to others in the enactor's location), and the 'averb' attribute (an action list which is triggered). One example is @use, @ouse, and @ause, which are shown/triggered when the 'use' command is run on an object.
   
@@ -1570,9 +1570,16 @@ See also: @verb, attribute flags
     > wave to Muse
     Mike waves to Muse.
     
-  A backslash (\) can be used to escape * and ? if you want to match a literal asterisk or question mark.
+  A backslash (\) can be used to escape * and ? if you want to match a literal asterisk or question mark. (Note that you will often have to use \\ so that the softcode parser doesn't evaluate it away!)
   
-  The "**" wildcard is also available for matching attribute names. See HELP ATTRIBUTE TREES2 for more information.
+  > think strmatch(foobar, ?*?)
+  1
+  > think strmatch(foobar, \\?*\\?)
+  0
+  > think strmatch(?foobar?, \\?*\\?)
+  1
+    
+  The "**" wildcard is also available for matching attribute names - see HELP ATTRIBUTE TREES2 for more information.
   
   It's also possible to use regular expressions, rather than wildcards, for matching strings. Regexps allow a lot more control over what is matched, but are therefore somewhat more complex. See 'help regexp' for details.
   

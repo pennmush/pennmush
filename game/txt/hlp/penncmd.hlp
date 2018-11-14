@@ -1161,7 +1161,7 @@ See also: enter, leave, goto, ENTER_OK
   Replace a literal '^' with 'v'
   > @edit/regexp me/bar=\^, v
   
-See also: edit(), regedit(), ATTRIBUTES,
+See also: edit(), regedit(), ATTRIBUTES, WILDCARDS
 & @elock
 & @eunlock
   @elock <object>[=<key>]
@@ -1302,7 +1302,7 @@ See also: EXITS, @open, @link
   
   See 'help @filter2' for an example.
   
-See also: AUDIBLE, @infilter, attribute flags, LISTENING, @forwardlist, @prefix
+See also: AUDIBLE, @infilter, attribute flags, LISTENING, @forwardlist, @prefix, WILDCARDS
 & @filter2
 
   Example: 
@@ -1898,7 +1898,7 @@ See also: EXITS, @link, @open, LINK_OK, Link_Anywhere Power
     Cyclonus says, "Whee!"
     Recorder records: Whee!
 
-See also: LISTENING, @ahear, @amhear, @aahear
+See also: LISTENING, @ahear, @amhear, @aahear, WILDCARDS
 & LOCKING
 & LOCKS
 & @lock
@@ -2616,7 +2616,8 @@ See also: GENDER, subj(), poss(), aposs(), obj()
   
   If the /player switch is given, <host-pattern> is treated as a player name, and sitelock rules are added for that player's LASTIP and LASTSITE, if set.
 
-Continued in 'help @sitelock2'
+  Continued in 'help @sitelock2'.
+See also: WILDCARDS, REGEXPS, ipaddr(), hostname()  
 & @sitelock2
 
   Sitelock allow/deny options:
@@ -2820,7 +2821,7 @@ See also: @scan
   @switch/inplace is an alias for @switch/inline/nobreak/localize.
 
   See 'help @switch3' for examples.
-See also: switch wildcards, switch(), @if, @break, stext(), slev()
+See also: SWITCH WILDCARDS, switch(), @if, @break, stext(), slev()
 & @switch3
   Examples: 
     > &SWITCH_EX thing=$foo *: @switch %0=*a*, :acks, *b*, :bars, :glurps
@@ -3241,11 +3242,11 @@ See: @enter, @efail, @ealias, leave, @lock, @idescribe, INTERIORS
 & examine
   examine[/<switches>] <object>[/<attribute>] 
   
-  Displays all available information about <object>. <object> may be an object, 'me' or 'here'. You must control the object to examine it. If you do not own the object, or it is not visible, you will just see the name of the object's owner. May be abbreviated 'ex <object>'. If the attribute parameter is given, you will only see that attribute (good for looking at code). You can also wild-card match on attributes. 
+  Displays all available information about <object>. <object> may be an object, 'me' or 'here'. You must control the object to examine it. If you do not own the object, or it is not visible, you will just see the name of the object's owner. May be abbreviated 'ex <object>'. If the attribute parameter is given, you will only see that attribute (good for looking at code). You can also wildcard match on attributes. 
   The * wildcard matches any number of characters except a backtick (`).
   The ? wildcard matches a single character except a backtick (`).
   The ** wildcard matches any number of characters, including backticks.
-  For example. to see all the attributes that began with a 'v' you could do ex <object>/v**
+  For example, to see all the attributes that began with a 'v' you could do ex <object>/v**
   
   The /brief switch is equivalent to the 'brief' command.
   The /debug switch is wizard-only and shows raw values for certain fields in an object. 
@@ -3254,7 +3255,7 @@ See: @enter, @efail, @ealias, leave, @lock, @idescribe, INTERIORS
   The /all switch shows the values of VEILED attributes.
   The /opaque switch omits contents listings.
 
-See also: ATTRIBUTE TREES, brief, lattr()
+See also: ATTRIBUTE TREES, brief, lattr(), WILDCARDS
 & follow
   follow <object>
 

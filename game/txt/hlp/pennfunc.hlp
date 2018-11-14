@@ -2056,7 +2056,7 @@ See also: first(), rest(), before(), after()
 
   When returning large numbers of attributes, the results may be truncated due to buffer limits. In these cases, you can use nattr() and xattr() to retrieve the results in smaller pieces.
 
-See also: nattr(), xattr(), hasattr(), examine, grep(), wildcards
+See also: nattr(), xattr(), hasattr(), examine, grep(), WILDCARDS
 & NATTR()
 & NATTRP()
 & ATTRCNT()
@@ -2076,7 +2076,7 @@ See also: nattr(), xattr(), hasattr(), examine, grep(), wildcards
 
   attrcnt() and attrpcnt() are aliases for nattr() and nattrp() respectively.
 
-See also: lattr(), hasattr(), xattr(), wildcards
+See also: lattr(), hasattr(), xattr(), WILDCARDS
 & LCON()
   lcon(<object>[, <type>])
 
@@ -3746,7 +3746,7 @@ See also: r(), listq(), unsetq(), letq(), localize(), ulocal(), registers()
     > think setq(name,Walker,num,#6061,loc,Bahamas)[unsetq(n*)][listq()]
     LOC
 
-See also: setq(), letq(), r(), localize(), registers()
+See also: setq(), letq(), r(), localize(), registers(), WILDCARDS
 & REGISTERS()
   registers([<pattern>[, <types>[, <osep>]]])
 
@@ -4353,7 +4353,7 @@ See also: words(), strfirstof()
     > say strmatch(foo:bar=baz,*:*=*,L1 L2 right)/%q<L1>/%q<L2>/%q<right>
     You say, "1/foo/bar/baz"
 
-See also: comp(), match(), setq(), r()
+See also: comp(), match(), setq(), r(), WILDCARDS
 & STRREPLACE()
   strreplace(<string>, <start>, <length>, <text>)
 
@@ -4401,7 +4401,7 @@ See also: aposs(), obj(), poss()
 
   The string "#$" in the <list>s will be replaced with the value of <str>, /before/ <list> is evaluated. You can also use $N in <list> to refer to the Nth subpattern which matched in <re>, with $0 being the entire matching string. Use $<name> (the '<>' are literal) to refer to named subpatterns.
 
-See also: switch(), regmatch(), regedit()
+See also: switch(), regmatch(), regedit(), REGEXPS
 & SWITCH()
 & SWITCHALL()
 & CASE()
@@ -4440,7 +4440,7 @@ See also: reswitch(), stext(), slev(), if(), cond(), firstof()
     > say switch(foo bazaar,f?o b*r,$0-$1)
     You say, "o-azaa"
 & SWITCH WILDCARDS
-  @switch, @select, switch() and switchall() normally do wildcard matching between their first argument and the <expr>ession arguments, with the normal * and ? special characters. However, if one of the <expr>essions starts with "<" or ">", a less than or greater than check is done instead of wildcard matching for that pair.
+  @switch, @select, switch(), and switchall() normally do wildcard matching between their first argument and the <expr>ession arguments, with the normal * and ? special characters. However, if one of the <expr>essions starts with "<" or ">", a less-than or greater-than check is done instead of wildcard matching for that pair.
 
   switch(X, >Y, A, B) returns A if X is greater than Y, and B if it's not.
   switch(X, >=Y, A, B) returns A if X is greater than or equal to Y, and B if it's not.
@@ -4788,6 +4788,7 @@ See also: @lock, lock(), elock(), lockfilter(), locktypes
 
     See also: log()
     "
+See also: WILDCARDS
 & TIME()
 & UTCTIME()
   time()
@@ -5802,7 +5803,7 @@ See also: strlen(), items()
 
   xattrp() and regxattrp() will include attributes from parents. Do note that parent attributes are listed _after_ child attributes, not sorted alphabetically.
 
-See also: nattr(), lattr(), wildcards
+See also: nattr(), lattr(), WILDCARDS, REGEXPS
 & XOR()
   xor(<boolean1>, <boolean2>[, ... , <booleanN>])
 
@@ -5940,63 +5941,69 @@ See also: @uptime, secs(), convsecs(), time(), starttime(), restarttime(), resta
 
 See also: @suggest
 & CONNLOG()
-  CONNLOG(all|[not] logged in|<name>, <spec>...[, <sep>])
+  CONNLOG(all|[not] logged in|<name>, <spec>...[, <osep>])
 
-  If connection tracking is enabled, returns a list of connections that match the given <spec>. The format of the list elements is '<dbref> <unique-id>', with elements seperated by <sep> (Defaulting to |). <unique-id> is an identifier that can be used to get more information from the connection with connrecord().
+  If connection tracking is enabled, this Wizard-only returns a list of connections that match the given <spec>. The format of the list elements is '<dbref> <unique-id>', with elements seperated by <osep> (defaulting to |). <unique-id> is an identifier that can be used to get more information from the connection with connrecord().
 
-  If the first argument is 'all', all connections are returned. If it's 'logged in', all connections that logged in are returned. 'not logged in' shows connections that never logged in. Otherwise, only connections for the given player are returned. If a connection that never logged in is returned, the dbref is #-1 for that record.
+  If the first argument is 'all', all connections are returned. If it's 'logged in', all connections that are logged in to players are returned. 'not logged in' shows connections that never logged in. Otherwise, only connections for the given player are returned. If a connection that never logged in is returned, the dbref is #-1 for that record.
 
+  This function must be enabled (by the use_connlog @config option); if disabled, it returns #-1.
+  
+  Continued in 'help connlog2'.
+& CONNLOG2
   <spec> is one or more of the following:
 
- + Time-based constraints
-  * between, <startsecs>, <endsecs> - connections that existed during the given time frame.
-  * at, <secs> - connections that existed at the given time.
-  * before, <secs> - connections that existed before the given time.
-  * after, <secs> - connections that existed after the given time.
+  Time-based constraints:
+    * between, <startsecs>, <endsecs> - connections that existed during the given time frame.
+    * at, <secs> - connections that existed at the given time.
+    * before, <secs> - connections that existed before the given time.
+    * after, <secs> - connections that existed after the given time.
+  Only one time-based constraints can be used in a query. All times are the number of seconds since the epoch, as returned by secs().
+   
+  Source-based constraits:
+    * ip, <pattern> - connections from IP addresses that match the wildcard <pattern>.
+    * hostname, <pattern> - connections from hostnames that match the wildcard <pattern>.
 
-See CONNLOG2 for more.
-& CONNLOG2
-+ Source-based constraits
-  * ip, <pattern> - connections from IP addresses that match the wildcard <pattern>.
-  * hostname, <pattern> - connections from hostnames that match the wildcard <pattern>.
+  Others:
+    * count - if given, instead of returning a list of connections, returns the total number of matching connections.
 
-+ Others
-  * count - if given, instead of returning a list of connections, returns the total number of matching connections.
-
- Only one time-based constraint can be used in a query.
-
- Times are the number of seconds since the epoch, like what secs() returns.
-
- This function is Wizard only.
-
- Example:
- > think connlog(logged in, after, secscalc(now, -15 minutes))
- shows all connections that were present during the last 15 minutes
- > think connlog(all, ip, 127.0.0.1)
- shows all connections ever made from localhost.
- > think connlog(all, count, before, secs())
- shows the total number of connections made since logging began.
-
+  See 'help connlog3' for examples.
 See also: addrlog(), connrecord()
+& CONNLOG3
+  Examples:
+   > think connlog(logged in, after, secscalc(now, -15 minutes))
+   shows all connections that were present during the last 15 minutes
+   
+   > think connlog(all, ip, 127.0.0.1)
+   shows all connections ever made from localhost.
+
+   > think connlog(all, count, before, secs())
+   shows the total number of connections made since logging began.
+
 & CONNRECORD()
- CONNRECORD(<id>[, <sep>])
+ CONNRECORD(<id>[, <osep>])
 
   This Wizard-only function returns information about a connection if enhanced logging is enabled.
 
-  <id> is a value returned by connlog(). connrecord() returns the following fields: DBREF NAME IPADDR HOSTNAME CONNECTION-TIME DISCONNECTION-TIME DISCONNECTION-REASON SSL WEBSOCKET. If the optional <sep> argument is given, it is used instead of space to seperate fields.
+  <id> is a value returned by connlog(). connrecord() returns the following fields: DBREF NAME IPADDR HOSTNAME CONNECTION-TIME DISCONNECTION-TIME DISCONNECTION-REASON SSL WEBSOCKET. If the optional <osep> argument is given, it is used instead of space to seperate fields.
 
- If a single connection had multiple logins and logouts, only the last one is used. If a connection was never logged in, the DBREF field is #-1 and the NAME field is -. If the connection is still active, the DISCONNECTION-TIME is -1 and DISCONNECTION-REASON is -.
+  If a single connection had multiple logins and logouts, only the last one is used. If a connection was never logged in, the DBREF field is #-1 and the NAME field is -. If the connection is still active, the DISCONNECTION-TIME is -1 and DISCONNECTION-REASON is -.
 
-  Times are in seconds since the epoch, like what secs() returns.
+  Times are in seconds since the epoch, as returned by secs().
+  
+  This function must be enabled (by the use_connlog @config option); if disabled, it returns #-1.
 
 See also: connlog()
 & ADDRLOG()
- ADDRLOG([count,], ip|hostname, <pattern>[, <sep>)
+  ADDRLOG([count,], ip|hostname, <pattern>[, <osep>)
 
- Searches the log of unique sites that have connected to the mush and returns a list of 'IPADDRESS HOSTNAME' pairs that match the given field with the given wildcard pattern, separated by <sep>, which defaults to |. If 'count' is given, returns the total number of matches instead.
+  Searches the log of unique sites that have connected to the mush and returns a list of 'IPADDRESS HOSTNAME' pairs that match the given field with the given wildcard pattern, separated by <osep>, which defaults to |. If 'count' is given, returns the total number of matches instead.
 
- Restricted to See_all, Wizard and Royal objects.
+  Restricted to See_all, Wizard, and Royalty objects.
+  
+  This function must be enabled (by the use_connlog @config option); if disabled, it returns #-1.
 
+See also: connlog(), connrecord()
 & URLENCODE()
   URLENCODE(<string>)
 

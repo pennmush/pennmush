@@ -1,5 +1,5 @@
 & 1.8.7p1
-Version 1.8.7 patchlevel 1 ??? ?? 20??
+Version 1.8.7 patchlevel 1 Nov 20 2018
 
 Minor Changes:
 
@@ -16,13 +16,18 @@ Fixes:
 
 * [1mconnrecord()[0m returns an error if extended connection logging is disabled. [SW]
 * [1mconnlog()[0m didn’t handle future dates very well. [SW]
+* dbtools programs couldn’t handle attributes with quote marks in the name. Reported by [MG]. [SW,1228]
+* [1m@http[0m requests in-progress during a [1m@shutdown/reboot[0m would leak sockets. [SW,1246]
+* [1mlattrp()[0m and similar functions didn’t behave the same with attribute trees as 1.8.6. Reported by Mercutio. [SW,1233]
+* Recursive calls to [1mjson_map()[0m were broken. Reported by Mercutio [SW,1252]
+* Fixed a potential overflow bug in [1m@search[0m. Reported by eery. [MG]
 
 & 1.8.7p0
 Version 1.8.7 patchlevel 0 Aug 10 2018
 
 Major Changes:
 
-* Support WebSocket connections. See https://github.com/grapenut/websockclient for a sample in-browser client. [Grapenut, 1007]
+* Support websocket connections. See https://github.com/grapenut/websockclient for a sample in-browser client. [Grapenut, 1007]
 * Change attributes from being stored in sorted linked lists to sorted arrays; results in faster lookups and less memory usage. [SW]
 * Penn now comes with the Sqlite3 database engine bundled with it, and uses it internally in a few ways:
 

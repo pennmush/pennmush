@@ -63,7 +63,6 @@ Fixes
 
 * `add_function` in .cnf files was not properly using the upper case'd string. [#1223, MT]
 * Various PCRE calls in the softcode have had CPU time limit watchdogs added. Discovered by Ashen-Shugar. [GM]
-* Fixed a potential overflow bug in `@search`. Reported by eery. [MG]
 * Fix a file descriptor leak caused by recent OpenSSL versions. [SW]
 * Added GAGGED restrictions that were missing from a few commands, including `@message` and the MUXcomm aliases. [MG]
 * Minor help updates, including clarification of what GAGGED blocks, suggested by Merit. [#1262, MG, MT]

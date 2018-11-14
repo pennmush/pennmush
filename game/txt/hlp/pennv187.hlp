@@ -1,6 +1,6 @@
 & changes
 & 1.8.7p1
-Version 1.8.7 patchlevel 1 ??? ?? 20??
+Version 1.8.7 patchlevel 1 Nov 20 2018
 
 This is a list of changes in this patchlevel which are probably of
 interest to players. More information about new commands and functions
@@ -14,10 +14,26 @@ A list of the patchlevels associated with each release can
 be read in 'help patchlevels'.
 
 
+Minor Changes:
+
+* [1mhelp/search[0m takes a [1m/brief[0m switch to display just the names of
+matching entries. [SW]
+* help full text search includes @ and + in tokens, so things like
+[1mhelp/search "@force"[0m work as expected. Also enabled porter
+stemming of search phrases (Searching for [1mwizard[0m matches
+[1mwizards[0m). Noticed by [MG]. [SW]
+* Add [1mhelp/find[0m which mimics the pre-1.8.7 behavior of
+[1mhelp/search[0m. Suggested by [MG]. [SW]
+
 Fixes:
 
 * [1mconnrecord()[0m returns an error if extended connection logging is disabled. [SW]
 * [1mconnlog()[0m didn’t handle future dates very well. [SW]
+* dbtools programs couldn’t handle attributes with quote marks in the name. Reported by [MG]. [SW,1228]
+* [1m@http[0m requests in-progress during a [1m@shutdown/reboot[0m would leak sockets. [SW,1246]
+* [1mlattrp()[0m and similar functions didn’t behave the same with attribute trees as 1.8.6. Reported by Mercutio. [SW,1233]
+* Recursive calls to [1mjson_map()[0m were broken. Reported by Mercutio [SW,1252]
+* Fixed a potential overflow bug in [1m@search[0m. Reported by eery. [MG]
 
 & 1.8.7p0
 Version 1.8.7 patchlevel 0 Aug 10 2018

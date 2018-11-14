@@ -17,7 +17,7 @@ Numbers next to the developer credit refer to Github issue numbers.
 
 -------------------------------------------------------------------------------
 
-Version 1.8.7 patchlevel 1 ??? ?? 20??
+Version 1.8.7 patchlevel 1 Nov 20 2018
 ======================================
 
 Minor Changes

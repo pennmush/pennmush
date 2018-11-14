@@ -1491,9 +1491,7 @@ atr_iter_get_parent(dbref player, dbref thing, const char *name, unsigned flags,
             if (AF_Private(ptr))
               continue;
           }
-          if (strchr(AL_NAME(ptr), '`')) {
-            continue;
-          }
+
           if (((flags & AIG_MORTAL) ? Is_Visible_Attr(parent, ptr)
                                     : Can_Read_Attr(player, parent, ptr)) &&
               ((flags & AIG_REGEX)
@@ -1509,6 +1507,7 @@ atr_iter_get_parent(dbref player, dbref thing, const char *name, unsigned flags,
               if (AF_Private(ptr) && thing != parent) {
                 continue;
               }
+
               if (strchr(AL_NAME(ptr), '`')) {
                 /* We need to check all the branches of the tree for no_inherit
                  */
@@ -1531,11 +1530,13 @@ atr_iter_get_parent(dbref player, dbref thing, const char *name, unsigned flags,
                   continue;
               }
 
-              if (((flags & AIG_MORTAL) ? Is_Visible_Attr(thing, ptr)
+              if (!st_find(AL_NAME(ptr), &seen) &&
+                  ((flags & AIG_MORTAL) ? Is_Visible_Attr(thing, ptr)
                                         : Can_Read_Attr(player, thing, ptr)) &&
                   ((flags & AIG_REGEX)
                      ? quick_regexp_match(name, AL_NAME(ptr), 0, NULL)
                      : atr_wild(name, AL_NAME(ptr)))) {
+                st_insert(AL_NAME(ptr), &seen);
                 result += func(player, thing, parent, name, ptr, args);
               }
             }

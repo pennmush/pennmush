@@ -145,6 +145,24 @@ test('atree.parent.24', $god, 'think get(child/foo`bar)', '^$');
 test('atree.parent.25', $god, 'think get(child/foo)', 'wibble');
 test('atree.parent.26', $god, 'think get(child/foo`bar)', '^$');
 
+# lattr() and lattrp() tests
+$mortal->command("&tree`leaf parent=X");
+$mortal->command("&tree child=Y");
+
+test('atree.lattr.1', $mortal, 'think lattr(child/tree**)', '^TREE$');
+test('atree.lattr.2', $mortal, 'think lattr(child/tree`)', '^$');
+test('atree.lattr.3', $mortal, 'think lattr(parent/tree`)', '^TREE`LEAF$');
+test('atree.lattr.4', $mortal, 'think lattr(parent/tree`**)', '^TREE`LEAF$');
+test('atree.lattr.5', $mortal, 'think lattr(parent/tree**)', '^TREE TREE`LEAF$');
+
+test('atree.lattrp.1', $mortal, 'think lattrp(child/tree`)', '^TREE`LEAF$');
+test('atree.lattrp.2', $mortal, 'think lattrp(child/tree`**)', '^TREE`LEAF$');
+test('atree.lattrp.3', $mortal, 'think lattrp(child/tree**)', '^TREE TREE`LEAF$');
+$mortal->command("&tree`leaf child=Z");
+test('atree.lattrp.4', $mortal, 'think lattrp(child/tree`)', '^TREE`LEAF$');
+test('atree.lattrp.5', $mortal, 'think lattrp(child/tree`**)', '^TREE`LEAF$');
+test('atree.lattrp.6', $mortal, 'think lattrp(child/tree**)', '^TREE TREE`LEAF$');
+
 # Mix permissions and parents
 # If parent is inheritable again, and mortal_dark,
 # then we can't see the ancestor through it

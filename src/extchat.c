@@ -1653,11 +1653,13 @@ do_cemit(dbref player, const char *name, const char *msg, int flags)
     notify(player, T("What do you want to emit?"));
     return;
   }
-  if (flags & PEMIT_SILENT)
+  if (flags & PEMIT_SILENT) {
     cb_flags |= CB_QUIET;
+  }
 
-  if (!(flags & PEMIT_SPOOF))
+  if (!(flags & PEMIT_SPOOF)) {
     cb_flags |= CB_NOSPOOF; /* Show NOSPOOF headers */
+  }
 
   channel_send(chan, player, cb_flags, msg);
   ChanNumMsgs(chan)++;
@@ -3208,7 +3210,7 @@ chat_player_announce(DESC *desc_player, char *msg, int ungag)
   format.thing = AMBIGUOUS;
   format.attr = "CHATFORMAT";
   format.checkprivs = 0;
-  format.numargs = 7;
+  format.numargs = 8;
   format.targetarg = -1;
   format.args[0] = "@";
   format.args[1] = buff2;
@@ -3216,6 +3218,7 @@ chat_player_announce(DESC *desc_player, char *msg, int ungag)
   format.args[3] = accname;
   format.args[4] = "";
   format.args[6] = "";
+  format.args[7] = "noisy";
 
   for (d = descriptor_list; d != NULL; d = d->next) {
     viewer = d->player;
@@ -3448,8 +3451,9 @@ FUNCTION(fun_cemit)
     safe_str(T(e_perm), buff, bp);
     return;
   }
-  if (nargs < 3 || !parse_boolean(args[2]))
+  if (nargs < 3 || !parse_boolean(args[2])) {
     flags |= PEMIT_SILENT;
+  }
   do_cemit(executor, args[0], args[1], flags);
 }
 
@@ -3574,8 +3578,9 @@ FUNCTION(fun_crecall)
 COMMAND(cmd_cemit)
 {
   int flags = SILENT_OR_NOISY(sw, !options.noisy_cemit);
-  if (!strcmp(cmd->name, "@NSCEMIT") && Can_Nspemit(executor))
+  if (!strcmp(cmd->name, "@NSCEMIT") && Can_Nspemit(executor)) {
     flags |= PEMIT_SPOOF;
+  }
 
   do_cemit(executor, arg_left, arg_right, flags);
 }
@@ -3811,7 +3816,7 @@ channel_send(CHAN *channel, dbref player, int flags, const char *origmessage)
 
       /* Should we skip buffering this message? */
       if (parse_boolean(
-            mogrify(mogrifier, "MOGRIFY`NOBUFFER", player, 6, argv, ""))) {
+            mogrify(mogrifier, "MOGRIFY`NOBUFFER", player, 5, argv, ""))) {
         skip_buffer = 1;
       }
 
@@ -3820,31 +3825,37 @@ channel_send(CHAN *channel, dbref player, int flags, const char *origmessage)
       argv[3] = message;
       argv[4] = title;
       argv[5] = playername;
+      argv[6] = speechtext;
+      if (flags & CB_QUIET) {
+        argv[7] = "silent";
+      } else {
+        argv[7] = "noisy";
+      }
 
       argv[0] = channame;
       snprintf(
         channame, BUFFER_LEN, "%s",
-        mogrify(mogrifier, "MOGRIFY`CHANNAME", player, 6, argv, channame));
+        mogrify(mogrifier, "MOGRIFY`CHANNAME", player, 8, argv, channame));
 
       argv[0] = title;
       snprintf(title, BUFFER_LEN, "%s",
-               mogrify(mogrifier, "MOGRIFY`TITLE", player, 6, argv, title));
+               mogrify(mogrifier, "MOGRIFY`TITLE", player, 8, argv, title));
 
       argv[0] = playername;
       snprintf(
         playername, BUFFER_LEN, "%s",
-        mogrify(mogrifier, "MOGRIFY`PLAYERNAME", player, 6, argv, playername));
+        mogrify(mogrifier, "MOGRIFY`PLAYERNAME", player, 8, argv, playername));
 
       if (flags & CB_SPEECH) {
         argv[0] = speechtext;
         snprintf(speechtext, BUFFER_LEN, "%s",
-                 mogrify(mogrifier, "MOGRIFY`SPEECHTEXT", player, 6, argv,
+                 mogrify(mogrifier, "MOGRIFY`SPEECHTEXT", player, 8, argv,
                          speechtext));
       }
 
       argv[0] = message;
       snprintf(message, BUFFER_LEN, "%s",
-               mogrify(mogrifier, "MOGRIFY`MESSAGE", player, 6, argv, message));
+               mogrify(mogrifier, "MOGRIFY`MESSAGE", player, 8, argv, message));
     }
   }
 
@@ -3902,8 +3913,14 @@ channel_send(CHAN *channel, dbref player, int flags, const char *origmessage)
     argv[4] = title;
     argv[5] = buff;
     argv[6] = speechtext;
+    if (flags & CB_QUIET) {
+      argv[7] = "silent";
+    } else {
+      argv[7] = "noisy";
+    }
+
     snprintf(buff, BUFFER_LEN, "%s",
-             mogrify(mogrifier, "MOGRIFY`FORMAT", player, 7, argv, buff));
+             mogrify(mogrifier, "MOGRIFY`FORMAT", player, 8, argv, buff));
   }
 
   if (Channel_Interact(channel)) {
@@ -3917,7 +3934,7 @@ channel_send(CHAN *channel, dbref player, int flags, const char *origmessage)
   format.thing = AMBIGUOUS;
   format.attr = "CHATFORMAT";
   format.checkprivs = 0;
-  format.numargs = 7;
+  format.numargs = 8;
   format.targetarg = -1;
   format.args[0] = (char *) ctype;
   format.args[1] = ChanName(channel);
@@ -3926,6 +3943,11 @@ channel_send(CHAN *channel, dbref player, int flags, const char *origmessage)
   format.args[4] = title;
   format.args[5] = buff;
   format.args[6] = speechtext;
+  if (flags & CB_QUIET) {
+    format.args[7] = "silent";
+  } else {
+    format.args[7] = "noisy";
+  }
 
   for (u = ChanUsers(channel); u; u = u->next) {
     current = CUdbref(u);

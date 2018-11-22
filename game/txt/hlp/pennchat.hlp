@@ -48,6 +48,7 @@ See also: @channel, @cemit
     %4:  The speaker's channel title, unless none is set, or the channel is NO_TITLE.
     %5:  The default message, as shown when no chatformat is set.
     %6:  The 'say' string for the message. This will usually be "says", unless altered by the SPEECHTEXT mogrifier.
+    %7:  A space-separated list of extra options. Currently can contain: "silent" if a silent @cemit caused this message, otherwise "noisy"
 
     If the channel is NO_NAME, and the speaker either has no title or the channel is also set NO_TITLE, then %3 will be "Someone".
 
@@ -236,23 +237,25 @@ See also: @clock
 
   Mogrifiers let you tweak every aspect of a channel's output, before it goes to individual players' @chatformats. 
 
-  Before it begins mogrifying, three mogrifiers that alter the way chats are handled are run, using the same arguments as @chatformat (except that %5 is not set). First, <object>'s MOGRIFY`BLOCK attribute is called. If MOGRIFY`BLOCK returns a non-empty string, then the resultant string is sent back to the player, and no message is broadcast on the channel.
+  Before it begins mogrifying, three mogrifiers that alter the way chats are handled are run. First, <object>'s MOGRIFY`BLOCK attribute is called. If MOGRIFY`BLOCK returns a non-empty string, then the resultant string is sent back to the player, and no message is broadcast on the channel.
   
   Next, MOGRIFY`OVERRIDE is called. If it returns a true value, player's individual @chatformats will not be called for the message.
   
   The MOGRIFY`NOBUFFER attribute is then called. If it returns a true value, the message will not be included in the channel's recall buffer.
 
+  These three all set %0 as chat type, %1 as the channel name, %2 as the message, %3 as the player name, and %4 as the channel title.
+
   Continued in 'help mogrify2'.
 & mogrify2
   After that, mogrifiers which alter individual portions of the message are called. See 'help mogrify3' for details.
   
-  After all these mogrifiers are called, MOGRIFY`FORMAT is evaluated. It has the same use as @chatformat, but on a channel-wide level. It receives all mogrified text (if any), so is generally intended only for reformatting the whole channel text. It is also overriden by individual @chatformats (unless MOGRIFY`OVERRIDE returned true).
+  After all these mogrifiers are called, MOGRIFY`FORMAT is evaluated. It has the same use and arguments as @chatformat, but on a channel-wide level. It receives all mogrified text (if any), so is generally intended only for reformatting the whole channel text. It is also overriden by individual @chatformats (unless MOGRIFY`OVERRIDE returned true).
 
   See 'help mogrify3' for info on specific mogrifiers, and 'help mogrify4' for some examples.
 See also: cmogrifier()
 & mogrify3
 
-  There are mogrify attributes for each individual piece of the channel message. If any evaluate to a non-empty string, they replace that portion of the chat message. Each mogrify attribtute is passed six arguments:
+  There are mogrify attributes for each individual piece of the channel message. If any evaluate to a non-empty string, they replace that portion of the chat message. Each mogrify attribtute is passed eight arguments:
 
   %0 - (Depends on the mogrifier.)
   %1 - Channel name (unmogrified).
@@ -260,6 +263,8 @@ See also: cmogrifier()
   %3 - Message.
   %4 - Player chan title*
   %5 - Player name*
+  %6 - The "says" part of a message.
+  %7 - A space-separated list of extra options. Currently can contain: "silent" if a silent @cemit caused this message, otherwise "noisy"
 
   The mogrify attributes available are:
   MOGRIFY`CHANNAME: %0 = default channel display. (e.g: "<Public>").

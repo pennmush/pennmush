@@ -540,7 +540,7 @@ build_help_file(help_file *h)
     status = sqlite3_step(add_cat);
     if (status != SQLITE_DONE) {
       do_rawlog(LT_ERR, "Unable to add %s to suggestions: %s", h->command,
-                sqlite3_errstr(status));
+                sqlite3_errmsg(sqldb));
       sqlite3_exec(help_db, "ROLLBACK TRANSACTION", NULL, NULL, NULL);
       sqlite3_exec(sqldb, "ROLLBACK TRANSACTION", NULL, NULL, NULL);
       return 0;
@@ -945,7 +945,7 @@ write_topic(help_file *h, const char *body)
   } while (is_busy_status(status));
   if (status != SQLITE_DONE) {
     do_rawlog(LT_ERR, "Unable to insert help entry body: %s\n",
-              sqlite3_errstr(status));
+              sqlite3_errmsg(help_db));
     sqlite3_reset(query);
     return;
   }
@@ -979,7 +979,7 @@ write_topic(help_file *h, const char *body)
       do_rawlog(
         LT_ERR,
         "Unable to insert help topic %s: %s (Possible duplicate entry?)",
-        cur->topic, sqlite3_errstr(status));
+        cur->topic, sqlite3_errmsg(help_db));
     } else {
       sqlite3_bind_text(add_suggest, 1, cur->topic, -1, SQLITE_STATIC);
       sqlite3_step(add_suggest);
@@ -1401,12 +1401,12 @@ help_build_index(help_file *h)
         sqlite3_bind_int(adder, 2, page);
         sqlite3_bind_text(adder, 3, t, -1, SQLITE_TRANSIENT);
         status = sqlite3_step(adder);
-        sqlite3_reset(adder);
         if (status != SQLITE_DONE) {
           do_rawlog(LT_ERR, "While building entries database for %s: %s",
-                    h->command, sqlite3_errstr(status));
+                    h->command, sqlite3_errmsg(help_db));
           break;
         }
+        sqlite3_reset(adder);
         page += 1;
         count = 0;
       }

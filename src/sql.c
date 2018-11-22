@@ -1257,7 +1257,8 @@ penn_mysql_free_sql_query(MYSQL_RES *qres)
      mysql_fetch_row() until a NULL value is returned, otherwise, the
      unfetched rows are returned as part of the result set for you
      next query." Ewww. */
-  while (mysql_fetch_row(qres)) {}
+  while (mysql_fetch_row(qres)) {
+  }
   mysql_free_result(qres);
   /* A single query can return multiple result sets; read and discard
      any that are remaining. */
@@ -1265,8 +1266,9 @@ penn_mysql_free_sql_query(MYSQL_RES *qres)
     if (mysql_next_result(mysql_connp) == 0) {
       qres = mysql_use_result(mysql_connp);
       if (qres) {
-	while (mysql_fetch_row(qres)) {}
-	mysql_free_result(qres);
+        while (mysql_fetch_row(qres)) {
+        }
+        mysql_free_result(qres);
       }
     }
   }
@@ -1439,10 +1441,15 @@ penn_sqlite3_sql_init(void)
                                 SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE,
                                 NULL)) != SQLITE_OK) {
     do_rawlog(LT_ERR, "sqlite3: Failed to open %s: %s", SQL_DB,
-              sqlite3_errstr(status));
+              sqlite3_connp ? sqlite3_errmsg(sqlite3_connp)
+                            : sqlite3_errstr(status));
     queue_event(SYSEVENT, "SQL`CONNECTFAIL", "%s,%s", "sqlite3",
-                sqlite3_errstr(status));
-    sqlite3_connp = NULL;
+                sqlite3_connp ? sqlite3_errmsg(sqlite3_connp)
+                              : sqlite3_errstr(status));
+    if (sqlite3_connp) {
+      sqlite3_close(sqlite3_connp);
+      sqlite3_connp = NULL;
+    }
     return 0;
   } else {
 #ifdef HAVE_ICU
@@ -1455,7 +1462,7 @@ penn_sqlite3_sql_init(void)
            sqlite3_connp, "regexp", 2, SQLITE_UTF8 | SQLITE_DETERMINISTIC, NULL,
            sql_regexp_fun, NULL, NULL)) != SQLITE_OK) {
       do_rawlog(LT_ERR, "Unable to register sqlite3 regexp() function: %s",
-                sqlite3_errstr(status));
+                sqlite3_errmsg(sqlite3_connp));
     }
 
     queue_event(SYSEVENT, "SQL`CONNECT", "%s", "sqlite3");

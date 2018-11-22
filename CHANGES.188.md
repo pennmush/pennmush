@@ -47,7 +47,7 @@ Minor Changes
 * Wildcard patterns are sometimes converted to regular expressions when matched against many strings. [SW]
 * Add '--disable-socket-quota' option for our test suite. [GM]
 * The list of color definitions used with `ansi()`, `colors()`, etc. is now kept in game/txt/colors.json. [SW]
-* Sqlite3 updated to 3.25.1. Biggest user-visible change is support for window functions. [SW]
+* Sqlite3 updated to 3.25.3. Biggest user-visible change is support for window functions. [SW]
 
 Softcode
 --------

@@ -364,7 +364,7 @@ connlog_connection(const char *ip, const char *host, bool ssl)
     id = sqlite3_last_insert_rowid(connlog_db);
   } else {
     do_rawlog(LT_ERR, "Failed to record connection timestamp from %s: %s", ip,
-              sqlite3_errstr(status));
+              sqlite3_errmsg(connlog_db));
     sqlite3_exec(connlog_db, "ROLLBACK TRANSACTION", NULL, NULL, NULL);
     return -1;
   }
@@ -396,7 +396,7 @@ connlog_connection(const char *ip, const char *host, bool ssl)
   sqlite3_reset(adder);
   if (status != SQLITE_DONE) {
     do_rawlog(LT_ERR, "Failed to record connection from %s: %s", ip,
-              sqlite3_errstr(status));
+              sqlite3_errmsg(connlog_db));
     sqlite3_exec(connlog_db, "ROLLBACK TRANSACTION", NULL, NULL, NULL);
     return -1;
   }
@@ -432,7 +432,7 @@ connlog_login(int64_t id, dbref player)
   sqlite3_reset(login);
   if (status != SQLITE_DONE) {
     do_rawlog(LT_ERR, "Failed to record login to #%d: %s", player,
-              sqlite3_errstr(status));
+              sqlite3_errmsg(connlog_db));
   }
 }
 
@@ -457,7 +457,7 @@ connlog_set_websocket(int64_t id)
   sqlite3_reset(ws);
   if (status != SQLITE_DONE) {
     do_rawlog(LT_ERR, "Failed to record websocket for connlog id %lld: %s",
-              (long long) id, sqlite3_errstr(status));
+              (long long) id, sqlite3_errmsg(connlog_db));
   }
 }
 
@@ -767,7 +767,7 @@ FUNCTION(fun_connlog)
 
   if (status != SQLITE_DONE) {
     *bp = sbp;
-    safe_format(buff, bp, "#-1 SQLITE ERROR %s", sqlite3_errstr(status));
+    safe_format(buff, bp, "#-1 SQLITE ERROR %s", sqlite3_errmsg(connlog_db));
   }
   sqlite3_finalize(search);
   return;
@@ -848,7 +848,7 @@ FUNCTION(fun_connrecord)
     safe_str(sep, buff, bp);
     safe_integer(sqlite3_column_int(rec, 8), buff, bp);
   } else if (status != SQLITE_DONE) {
-    safe_format(buff, bp, "#-1 SQLITE ERROR %s", sqlite3_errstr(status));
+    safe_format(buff, bp, "#-1 SQLITE ERROR %s", sqlite3_errmsg(connlog_db));
   } else {
     safe_str("#-1 NO SUCH RECORD", buff, bp);
   }
@@ -955,7 +955,8 @@ FUNCTION(fun_addrlog)
 
   if (rc != SQLITE_DONE) {
     *bp = sbp;
-    safe_format(buff, bp, T("#-1 SQLITE ERROR: %s"), sqlite3_errstr(rc));
+    safe_format(buff, bp, T("#-1 SQLITE ERROR: %s"),
+                sqlite3_errmsg(connlog_db));
   }
 
   sqlite3_finalize(stmt);

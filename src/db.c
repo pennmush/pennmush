@@ -1374,8 +1374,9 @@ db_read_attrs(PENNFILE *f, dbref i, int count)
   }
 
   if (found != count)
-    do_rawlog(LT_ERR, "WARNING: Actual attribute count (%d) different than "
-                      "expected count (%d).",
+    do_rawlog(LT_ERR,
+              "WARNING: Actual attribute count (%d) different than "
+              "expected count (%d).",
               found, count);
 }
 
@@ -2158,7 +2159,7 @@ sql_from_hexstr_fun(sqlite3_context *ctx, int nargs __attribute__((unused)),
 sqlite3 *
 open_sql_db(const char *name, bool nocreate)
 {
-  sqlite3 *db;
+  sqlite3 *db = NULL;
   int status;
   int flags = SQLITE_OPEN_READWRITE | SQLITE_OPEN_URI | SQLITE_OPEN_NOMUTEX;
 
@@ -2172,14 +2173,18 @@ open_sql_db(const char *name, bool nocreate)
 
   if ((status = sqlite3_open_v2(name, &db, flags, NULL)) != SQLITE_OK) {
     do_rawlog(LT_ERR, "Unable to open sqlite3 database %s: %s",
-              *name ? name : ":unnamed:", sqlite3_errstr(status));
+              *name ? name : ":unnamed:",
+              db ? sqlite3_errmsg(db) : sqlite3_errstr(status));
+    if (db) {
+      sqlite3_close(db);
+    }
     return NULL;
   }
   if ((status = sqlite3_create_collation(db, "TRAILNUMBERS", SQLITE_UTF8, NULL,
                                          comp_trailing_numbers)) != SQLITE_OK) {
     do_rawlog(LT_ERR,
               "Unable to attach TRAILNUMBERS collator to database %s: %s",
-              *name ? name : ":unnamed:", sqlite3_errstr(status));
+              *name ? name : ":unnamed:", sqlite3_errmsg(db));
   }
 
 #ifdef HAVE_ICU
@@ -2191,13 +2196,13 @@ open_sql_db(const char *name, bool nocreate)
          db, "regexp", 2, SQLITE_UTF8 | SQLITE_DETERMINISTIC, NULL,
          sql_regexp_fun, NULL, NULL)) != SQLITE_OK) {
     do_rawlog(LT_ERR, "Unable to register sqlite3 regexp() function: %s",
-              sqlite3_errstr(status));
+              sqlite3_errmsg(db));
   }
   if ((status = sqlite3_create_function(
          db, "from_hexstr", 1, SQLITE_UTF8 | SQLITE_DETERMINISTIC, NULL,
          sql_from_hexstr_fun, NULL, NULL)) != SQLITE_OK) {
     do_rawlog(LT_ERR, "Unable to register sqlite3 from_hexstr() function: %s",
-              sqlite3_errstr(status));
+              sqlite3_errmsg(db));
   }
   sqlite3_spellfix_init(db, NULL, NULL);
   sqlite3_remember_init(db, NULL, NULL);
@@ -2292,7 +2297,7 @@ close_sql_db(sqlite3 *db)
                                        &delete_all_stmts, NULL)) != SQLITE_OK) {
         do_rawlog(LT_ERR,
                   "Unable to prepare query statement_cache.delete_all: %s",
-                  sqlite3_errstr(status));
+                  sqlite3_errmsg(db));
         delete_all_stmts = NULL;
       }
     }
@@ -2304,7 +2309,7 @@ close_sql_db(sqlite3 *db)
                                        &find_all_stmts, NULL)) != SQLITE_OK) {
         do_rawlog(LT_ERR,
                   "Unable to prepare query statement_cache.find_all: %s",
-                  sqlite3_errstr(status));
+                  sqlite3_errmsg(db));
         find_all_stmts = NULL;
       }
     }
@@ -2349,7 +2354,7 @@ sqlite3_stmt *
 prepare_statement_cache(sqlite3 *db, const char *query, const char *name,
                         bool cache)
 {
-  sqlite3_stmt *stmt;
+  sqlite3_stmt *stmt = NULL;
   int status;
   int flags = cache ? SQLITE_PREPARE_PERSISTENT : 0;
 
@@ -2365,8 +2370,11 @@ prepare_statement_cache(sqlite3 *db, const char *query, const char *name,
                                     SQLITE_OPEN_FULLMUTEX,
                                   NULL)) != SQLITE_OK) {
       do_rawlog(LT_ERR, "Unable to create prepared statement cache: %s",
-                sqlite3_errstr(status));
-      statement_cache = NULL;
+                db ? sqlite3_errmsg(statement_cache) : sqlite3_errstr(status));
+      if (statement_cache) {
+        sqlite3_close(statement_cache);
+        statement_cache = NULL;
+      }
       return NULL;
     }
 
@@ -2379,7 +2387,7 @@ prepare_statement_cache(sqlite3 *db, const char *query, const char *name,
       do_rawlog(LT_ERR, "Unable to build prepared statement cache table: %s",
                 errmsg);
       sqlite3_free(errmsg);
-      sqlite3_close_v2(statement_cache);
+      sqlite3_close(statement_cache);
       statement_cache = NULL;
       return NULL;
     }
@@ -2392,7 +2400,7 @@ prepare_statement_cache(sqlite3 *db, const char *query, const char *name,
                                      SQLITE_PREPARE_PERSISTENT, &find_stmt,
                                      NULL)) != SQLITE_OK) {
       do_rawlog(LT_ERR, "Unable to prepare query statement_cache.find: %s",
-                sqlite3_errstr(status));
+                sqlite3_errmsg(statement_cache));
       find_stmt = NULL;
       return NULL;
     }
@@ -2405,7 +2413,7 @@ prepare_statement_cache(sqlite3 *db, const char *query, const char *name,
                                      SQLITE_PREPARE_PERSISTENT, &insert_stmt,
                                      NULL)) != SQLITE_OK) {
       do_rawlog(LT_ERR, "Unable to prepare query statement_cache.insert: %s",
-                sqlite3_errstr(status));
+                sqlite3_errmsg(statement_cache));
       insert_stmt = NULL;
       return NULL;
     }
@@ -2430,7 +2438,7 @@ prepare_statement_cache(sqlite3 *db, const char *query, const char *name,
   if ((status = sqlite3_prepare_v3(db, query, -1, flags, &stmt, NULL)) !=
       SQLITE_OK) {
     do_rawlog(LT_ERR, "Unable to prepare query %s: %s", name,
-              sqlite3_errstr(status));
+              sqlite3_errmsg(db));
     return NULL;
   }
 
@@ -2467,7 +2475,7 @@ close_statement(sqlite3_stmt *stmt)
                                        NULL)) != SQLITE_OK) {
         do_rawlog(LT_ERR,
                   "Unable to prepare query statement_cache.delete_one: %s",
-                  sqlite3_errstr(status));
+                  sqlite3_errmsg(statement_cache));
         delete_stmt = NULL;
         return;
       }
@@ -2528,10 +2536,11 @@ set_objdata(dbref thing, const char *keybase, void *data)
   }
 
   sqldb = get_shared_db();
-  setter = prepare_statement(
-    sqldb, "INSERT INTO objdata(dbref, key, ptr) VALUES(?, ?, ?) ON "
-           "CONFLICT (dbref, key) DO UPDATE SET ptr=excluded.ptr",
-    "objdata.set");
+  setter =
+    prepare_statement(sqldb,
+                      "INSERT INTO objdata(dbref, key, ptr) VALUES(?, ?, ?) ON "
+                      "CONFLICT (dbref, key) DO UPDATE SET ptr=excluded.ptr",
+                      "objdata.set");
   if (!setter) {
     return NULL;
   }
@@ -2546,7 +2555,7 @@ set_objdata(dbref thing, const char *keybase, void *data)
 
   if (status != SQLITE_DONE) {
     do_rawlog(LT_ERR, "Unable to execute objdata set query for #%d/%s: %s",
-              thing, keybase, sqlite3_errstr(status));
+              thing, keybase, sqlite3_errmsg(sqldb));
   }
   sqlite3_reset(setter);
 
@@ -2582,7 +2591,7 @@ get_objdata(dbref thing, const char *keybase)
     data = (void *) ((intptr_t) sqlite3_column_int64(getter, 0));
   } else if (status != SQLITE_DONE) {
     do_rawlog(LT_TRACE, "Unable to execute objdata get query for #%d/%s: %s",
-              thing, keybase, sqlite3_errstr(status));
+              thing, keybase, sqlite3_errmsg(sqldb));
   }
   sqlite3_reset(getter);
   return data;
@@ -2613,7 +2622,7 @@ delete_objdata(dbref thing, const char *keybase)
 
   if (status != SQLITE_DONE) {
     do_rawlog(LT_ERR, "Unable to execute objdata delete query for #%d: %s",
-              thing, sqlite3_errstr(status));
+              thing, sqlite3_errmsg(sqldb));
   }
   sqlite3_reset(deleter);
 }
@@ -2634,7 +2643,7 @@ add_object_table(dbref obj)
   } while (is_busy_status(status));
   if (status != SQLITE_DONE) {
     do_rawlog(LT_ERR, "Unable to add #%d to objects table: %s", obj,
-              sqlite3_errstr(status));
+              sqlite3_errmsg(sqldb));
   }
   sqlite3_reset(adder);
 }

@@ -1559,7 +1559,7 @@ build_linked_table(void)
     if (status != SQLITE_DONE) {
       do_rawlog(LT_ERR,
                 "Unable to insert (#%d <- #%d) into entrances table: %s", to, n,
-                sqlite3_errstr(status));
+                sqlite3_errmsg(sqldb));
     }
   }
   sqlite3_exec(sqldb, "COMMIT TRANSACTION", NULL, NULL, NULL);

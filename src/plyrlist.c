@@ -214,7 +214,7 @@ lookup_player_name(const char *name)
     d = sqlite3_column_int(looker, 0);
   } else if (status != SQLITE_DONE) {
     do_rawlog(LT_ERR, "Unable to run players lookup query for %s: %s", name,
-              sqlite3_errstr(status));
+              sqlite3_errmsg(sqldb));
   }
   sqlite3_reset(looker);
   return d;
@@ -244,7 +244,7 @@ delete_player(dbref player)
   if (status != SQLITE_DONE) {
     do_rawlog(LT_ERR,
               "Unable to execute query to delete players names for #%d: %s",
-              player, sqlite3_errstr(status));
+              player, sqlite3_errmsg(sqldb));
   }
   sqlite3_reset(deleter);
 }

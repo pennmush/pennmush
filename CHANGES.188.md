@@ -58,6 +58,7 @@ Softcode
 * `@respond` for manipulating HTTP response codes and headers. [GM]
 * `hmac()` for creating authentication fingerprints. [SW]
 * `@chatformat` and channel mogrifiers are told if `@cemit/silent` is being used. [1267, SW]
+* `strdistance()` returns the Levenshtein edit distance between two strings. [SW, Rhost]
 
 Fixes
 -----

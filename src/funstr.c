@@ -2517,3 +2517,60 @@ FUNCTION(fun_formdecode)
   safe_str(T("#-1 FUNCTION DISABLED"), buff, bp);
 #endif
 }
+
+static int
+min2(int a, int b)
+{
+  return a < b ? a : b;
+}
+
+static int
+min3(int a, int b, int c)
+{
+  return min2(min2(a, b), c);
+}
+
+FUNCTION(fun_strdistance)
+{
+  /* Compute the Levenshtein distance between two strings. Algorithm
+     stolen from Wikipedia. */
+
+  bool cs = 1;
+  int *v0, *v1;
+  int i, j;
+  int len1, len2;
+
+  if (arglens[0] == 0 || arglens[1] == 0) {
+    safe_integer(-1, buff, bp);
+    return;
+  }
+
+  len1 = arglens[0];
+  len2 = arglens[1];
+
+  if (nargs == 3) {
+    cs = !parse_boolean(args[2]);
+  }
+
+  v0 = mush_calloc(len2 + 1, sizeof(int), "int.array");
+  v1 = mush_calloc(len2 + 1, sizeof(int), "int.array");
+
+  for (i = 0; i <= len2; i += 1) {
+    v0[i] = i;
+  }
+
+  for (i = 0; i < len1; i += 1) {
+    v1[0] = i + 1;
+    for (j = 0; j < len2; j += 1) {
+      int del_cost = v0[j + 1] + 1;
+      int ins_cost = v1[j] + 1;
+      int sub_cost = v0[j] + (cs ? args[0][i] != args[1][j]
+                                 : tolower(args[0][i]) != tolower(args[1][j]));
+      v1[j + 1] = min3(del_cost, ins_cost, sub_cost);
+    }
+    memcpy(v0, v1, sizeof(int) * (len2 + 1));
+  }
+  safe_integer(v0[len2], buff, bp);
+  mush_free(v0, "int.array");
+  mush_free(v1, "int.array");
+}

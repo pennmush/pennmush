@@ -764,6 +764,7 @@ FUNTAB flist[] = {
   {"STRFIRSTOF", fun_firstof, 2, INT_MAX, FN_NOPARSE},
   {"STRALLOF", fun_allof, 2, INT_MAX, FN_NOPARSE},
   {"STRCAT", fun_strcat, 1, INT_MAX, FN_REG},
+  {"STRDISTANCE", fun_strdistance, 2, 3, FN_REG | FN_STRIPANSI},
   {"STRINGSECS", fun_stringsecs, 1, 1, FN_REG | FN_STRIPANSI},
   {"STRINSERT", fun_str_rep_or_ins, 3, -3, FN_REG},
   {"STRIPACCENTS", fun_stripaccents, 1, 2, FN_REG},

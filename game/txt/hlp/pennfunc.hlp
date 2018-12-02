@@ -193,10 +193,11 @@ See also: string functions, regexp
   pos()            regedit()        regmatch()       repeat()
   right()          rjust()          scramble()       secure()
   space()          spellnum()       squish()         strallof()
-  strcat()         strdelete()      strfirstof()     strinsert()
-  stripaccents()   stripansi()      strlen()         strmatch()
-  strreplace()     switch()         tr()             trim()
-  ucstr()          urldecode()      urlencode()      wrap()
+  strcat()         strdelete()      strdistance()    strfirstof()
+  strinsert()      stripaccents()   stripansi()      strlen()
+  strmatch()       strreplace()     switch()         tr()
+  trim()           ucstr()          urldecode()      urlencode()
+  wrap()
 
 
 See also: STRINGS
@@ -6028,3 +6029,17 @@ See also: urlencode(), @http
   lZj9lZYz8qZKfX6YWWZ3SqbzNLyALlszAXcuyO1u7Vo=
 
 See also: digest()
+& STRDISTANCE()
+ STRDISTANCE(<string1>, <string2>[, <case-insensitive>])
+
+ This function will calculate the levenshtein distance between two strings. This basically is the value calculated by the number of letters that differ between the two strings entered. If either string fed to this function is null, it returns a -1. You may specify a true third argument to expressly require case insensitivity in the matching. The default behavior is case sensitivity.
+
+ Examples:
+ > think strdistance(this, thiz)
+ 1
+ > think strdistance(this, This)
+ 1
+ > think strdistance(this, This, 1)
+ 0
+ > think strdistance(kitten, sitting)
+ 3

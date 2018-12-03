@@ -230,6 +230,7 @@ struct options_table {
                                         files */
   char guest_file[2][FILE_PATH_LEN]; /**< Names of text and html guest files */
   char who_file[2][FILE_PATH_LEN];   /**< Names of text and html who files */
+  char index_html[FILE_PATH_LEN];    /**< Name of the default HTTP landing page */
   int log_commands;                  /**< Should we log all commands? */
   int log_forces;                    /**< Should we log force commands? */
   int support_pueblo;                /**< Should the MUSH send Pueblo tags? */

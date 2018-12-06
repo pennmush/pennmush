@@ -3018,6 +3018,8 @@ GMCP_HANDLER(gmcp_softcode_example)
   pe_regs_setenv(pe_regs, 2, msg);
   queue_attribute_base_priv(obj, attrname, d->player, 1, pe_regs, QUEUE_DEFAULT,
                             NOTHING, NULL, NULL);
+  pe_regs_free(pe_regs);
+  
   return 1;
 }
 

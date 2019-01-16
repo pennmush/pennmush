@@ -17,7 +17,7 @@ Numbers next to the developer credit refer to Github issue numbers.
 
 -------------------------------------------------------------------------------
 
-Version 1.8.8 patchlevel 0 ??? ?? 2018
+Version 1.8.8 patchlevel 0 ??? ?? 2019
 ======================================
 
 WARNING! With the removal of the object queue, please be careful when upgrading that you do not have any infinitely looping triggers without an @wait.
@@ -48,6 +48,7 @@ Minor Changes
 * Add '--disable-socket-quota' option for our test suite. [GM]
 * The list of color definitions used with `ansi()`, `colors()`, etc. is now kept in game/txt/colors.json. [SW]
 * Sqlite3 updated to 3.25.3. Biggest user-visible change is support for window functions. [SW]
+* Update cJSON to 1.7.10 [SW]
 
 Softcode
 --------

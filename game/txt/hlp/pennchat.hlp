@@ -554,12 +554,12 @@ See also: CHAT, @channel, @cemit, @clock
     Lists all aliases and their matching channels.
 
   See 'help muxcomsys2' for how to enable MUX com aliases.
-  See also: CHANNELS, @channel, @chat
+See also: CHANNELS, @channel, @chat
 & MUXCOMSYS2
 & MUXCOMM2
   To enable the MUX comsys aliases, set use_muxcomm to yes in game/mush.cnf and @shutdown/reboot.
   
-  Aliases are stored by "addcom" in attributes on the player, in the format
+  Aliases are stored by "addcom" in attributes on the player, in the format:
   
     &CHANALIAS`<alias> <player>=<channel-name>
 

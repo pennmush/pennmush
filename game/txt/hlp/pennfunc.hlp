@@ -2183,7 +2183,7 @@ See also: lcon(), exit(), next(), lvexits()
     > say ljust(foo,12,=+)
     You say, "foo=+=+=+=+="
 
-    > say ljust(This is too long, 9)
+    > say ljust(This is too long,9,,1)
     You say, "This is t"
 
 See also: align(), center(), rjust(), left()

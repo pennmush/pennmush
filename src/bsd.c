@@ -924,7 +924,10 @@ update_quotas(struct timeval current)
   last = current;
 
   DESC_ITER (d) {
-    d->quota += COMMANDS_PER_SECOND * msecs;
+    if (d->conn_flags & CONN_NOQUOTA) 
+      d->quota = QUOTA_MAX;
+    else
+      d->quota += COMMANDS_PER_SECOND * msecs;
     if (d->quota > QUOTA_MAX)
       d->quota = QUOTA_MAX;
   }
@@ -3019,7 +3022,7 @@ GMCP_HANDLER(gmcp_softcode_example)
   queue_attribute_base_priv(obj, attrname, d->player, 1, pe_regs, QUEUE_DEFAULT,
                             NOTHING, NULL, NULL);
   pe_regs_free(pe_regs);
-  
+
   return 1;
 }
 
@@ -3113,13 +3116,13 @@ FUNCTION(fun_oob)
       }
     }
   } while (l && *l && (p = next_in_list(&l)));
-  
+
   if (failed && i < 1) {
     safe_str("#-1 NO VALID PLAYERS", buff, bp);
   } else {
     safe_integer(i, buff, bp);
   }
-  
+
   cJSON_Delete(json);
 }
 
@@ -4912,7 +4915,19 @@ sockset(DESC *d, char *name, char *val)
       return T("Accents will not be stripped.");
     }
   }
-
+  if (!strcasecmp(name, "NOQUOTA")) {
+    ival = isyes(val);
+    if (!GoodObject(d->player) || !Wizard(d->player)) {
+      return T("Only Wizards can set this option.");
+    }
+    if (ival) {
+        d->conn_flags |= CONN_NOQUOTA;
+        return T("NOQUOTA turned on. Command quota is now ignored.");
+    } else {
+      d->conn_flags &= ~CONN_NOQUOTA;
+      return T("NOQUOTA turned off. Command quota will be respected.");
+    }
+  }
   snprintf(retval, BUFFER_LEN, T("@sockset option '%s' is not a valid option."),
            name);
   return retval;
@@ -7572,6 +7587,11 @@ do_reboot(dbref player, int flag)
       args[n++] = "--pid-file";
       args[n++] = pidfile;
     }
+
+    if (disable_socket_quota) {
+      args[n++] =  "--disable-socket-quota";
+    }
+
     args[n++] = confname;
     args[n] = NULL;
 

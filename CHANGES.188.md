@@ -49,6 +49,8 @@ Minor Changes
 * The list of color definitions used with `ansi()`, `colors()`, etc. is now kept in game/txt/colors.json. [SW]
 * Sqlite3 updated to 3.25.3. Biggest user-visible change is support for window functions. [SW]
 * Update cJSON to 1.7.10 [SW]
+* @SOCKSET now has a NOQUOTA option. Descriptors set with this flag will be refreshed with QUOTA_MAX every refresh. Can only be set by a logged in wizard. [MT]
+* The "--disable-socket-quota" command line option will now persist through @shutdown/reboot.  [MT]
 
 Softcode
 --------

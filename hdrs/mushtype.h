@@ -224,6 +224,9 @@ struct text_queue {
  * the MUSH is running in
  */
 #define CONN_STRIPACCENTS 0x80
+/** Socket receives QUOTA_NAX every refresh. */
+#define CONN_NOQUOTA 0x160
+
 /** Default connection, nothing special */
 #define CONN_DEFAULT (CONN_PROMPT_NEWLINES | CONN_AWAITING_FIRST_DATA)
 /** Bits reserved for the color style */

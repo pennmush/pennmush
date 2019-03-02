@@ -1736,13 +1736,14 @@ restrict_command(dbref player, COMMAND_INFO *command, const char *xrestriction)
   if (GoodObject(player) && (!xrestriction || !*xrestriction))
     return 0;
 
-  if (command->restrict_message) {
-    mush_free((void *) command->restrict_message, "cmd_restrict_message");
-    command->restrict_message = NULL;
-  }
   rsave = restriction = mush_strdup(xrestriction, "rc.string");
   message = strchr(restriction, '"');
   if (message) {
+    // Clear old message if there was one.      
+    if (command->restrict_message) {
+      mush_free((void *) command->restrict_message, "cmd_restrict_message");
+      command->restrict_message = NULL;
+    }
     *(message++) = '\0';
     if ((message = trim_space_sep(message, ' ')) && *message)
       command->restrict_message = mush_strdup(message, "cmd_restrict_message");

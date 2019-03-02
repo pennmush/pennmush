@@ -49,6 +49,7 @@ Minor Changes
 * The list of color definitions used with `ansi()`, `colors()`, etc. is now kept in game/txt/colors.json. [SW]
 * Sqlite3 updated to 3.27.1. Biggest user-visible change is support for window functions. [SW]
 * Update cJSON to 1.7.10 [SW]
+* @command/restrict will only clear the failure message if a new one is supplied. [MT]
 
 Softcode
 --------

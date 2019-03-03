@@ -257,7 +257,7 @@ struct text_queue {
 #define CONN_HTTP_CLOSE 0x80000
 
 /* Socket ignores command input quota */
-#define CONN_NOSOCKET   0x100000
+#define CONN_NOQUOTA   0x100000
 
 /* Flag for WebSocket client. */
 #define CONN_WEBSOCKETS_REQUEST 0x10000000

@@ -2688,6 +2688,7 @@ Continued in 'help @sitelock3'
     terminaltype:    Your terminal type, used by terminfo()
     prompt_newlines: Set whether a newline is shown after prompts from @prompt, same as PROMPT_NEWLINES
     stripaccents:    Strip accents for this connection. Like the NOACCENTS flag, but connection-specific. Set by default on connections which negotiate charset as [US-]ASCII
+	noquota:         Input command quota is set to max every refresh. Can only be set by a logged-in Wizard.
 
   Note that changing 'telnet' or 'pueblo' may stop your client from parsing or displaying output correctly; only use if you know what you're doing!
   

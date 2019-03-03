@@ -50,6 +50,8 @@ Minor Changes
 * Sqlite3 updated to 3.27.1. Biggest user-visible change is support for window functions. [SW]
 * Update cJSON to 1.7.10 [SW]
 * @command/restrict will only clear the failure message if a new one is supplied. [MT]
+* @SOCKSET now has a NOQUOTA option which causes that socket to be given the max command input quota per refresh. [MT]
+* --disable-socket-quota is now preserved across reboots. [MT]
 
 Softcode
 --------

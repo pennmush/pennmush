@@ -11,7 +11,7 @@
 
 #include <openssl/ssl.h>
 
-SSL_CTX *ssl_init(char *private_key_file, char *ca_file, char *ca_dir,
+SSL_CTX *ssl_init(char *private_key_file, char *certificate_file, char *ca_file, char *ca_dir,
                   int req_client_cert);
 SSL *ssl_setup_socket(int sock);
 void ssl_close_connection(SSL *ssl);

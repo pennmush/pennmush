@@ -192,7 +192,7 @@ generate_seed(uint64_t seeds[])
  * \return pointer to SSL context object.
  */
 SSL_CTX *
-ssl_init(char *private_key_file, char *ca_file, char *ca_dir,
+ssl_init(char *private_key_file, char *certificate_file, char *ca_file, char *ca_dir,
          int req_client_cert)
 {
   const SSL_METHOD
@@ -259,6 +259,21 @@ ssl_init(char *private_key_file, char *ca_file, char *ca_dir,
                     "ciphers supported.");
     }
     if (!SSL_CTX_use_PrivateKey_file(ctx, private_key_file, SSL_FILETYPE_PEM)) {
+      ssl_errordump(
+        "Unable to load private key - only anonymous ciphers supported.");
+    }
+  }
+
+  /* Load keys/certs from alternative file */
+  /* Should really load the key from one file and the cert from another */
+  /* but since the older behavior is to load them from the same file we */
+  /* will try to load both from both files to avoid user confusion */
+  if (certificate_file && *certificate_file) {
+    if (!SSL_CTX_use_certificate_chain_file(ctx, certificate_file)) {
+      ssl_errordump("Unable to load server certificate - only anonymous "
+                    "ciphers supported.");
+    }
+    if (!SSL_CTX_use_PrivateKey_file(ctx, certificate_file, SSL_FILETYPE_PEM)) {
       ssl_errordump(
         "Unable to load private key - only anonymous ciphers supported.");
     }

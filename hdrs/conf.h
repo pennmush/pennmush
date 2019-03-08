@@ -340,7 +340,9 @@ struct options_table {
   int chunk_migrate_amount;   /**< Number of attrs to migrate each second */
   char attr_compression[256]; /**< How to compress attribute text in-memory */
   int read_remote_desc; /**< Can players read DESCRIBE attribute remotely? */
-  char ssl_private_key_file[FILE_PATH_LEN]; /**< File to load the server's cert
+  char ssl_private_key_file[FILE_PATH_LEN]; /**< File to load the server's key
+                                               from */
+  char ssl_certificate_file[FILE_PATH_LEN]; /**< File to load the server's cert
                                                from */
   char ssl_ca_file[FILE_PATH_LEN]; /**< File to load the CA certs from */
   char ssl_ca_dir[FILE_PATH_LEN];  /**< Directory to load the CA certs from */

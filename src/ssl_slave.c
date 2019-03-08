@@ -569,7 +569,7 @@ main(int argc __attribute__((__unused__)),
   }
 #endif
 
-  if (!ssl_init(cf.private_key_file, cf.ca_file, cf.ca_dir,
+  if (!ssl_init(cf.private_key_file, cf.certificate_file, cf.ca_file, cf.ca_dir,
                 cf.require_client_cert)) {
     errputs(stderr, "SSL initialization failure!");
     exit(EXIT_FAILURE);

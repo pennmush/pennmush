@@ -203,6 +203,9 @@ ssl_init(char *private_key_file, char *certificate_file, char *ca_file, char *ca
   pcg32_random_t rand_state;
   uint64_t seeds[2];
   bool seeded = false;
+  
+  bool foundKey = false;
+  bool foundCert = false;
 
   if (!bio_err) {
     if (!SSL_library_init())
@@ -254,13 +257,11 @@ ssl_init(char *private_key_file, char *certificate_file, char *ca_file, char *ca
 
   /* Load keys/certs */
   if (private_key_file && *private_key_file) {
-    if (!SSL_CTX_use_certificate_chain_file(ctx, private_key_file)) {
-      ssl_errordump("Unable to load server certificate - only anonymous "
-                    "ciphers supported.");
+    if (SSL_CTX_use_certificate_chain_file(ctx, private_key_file)) {
+      foundCert = true;
     }
-    if (!SSL_CTX_use_PrivateKey_file(ctx, private_key_file, SSL_FILETYPE_PEM)) {
-      ssl_errordump(
-        "Unable to load private key - only anonymous ciphers supported.");
+    if (SSL_CTX_use_PrivateKey_file(ctx, private_key_file, SSL_FILETYPE_PEM)) {
+      foundKey = true;
     }
   }
 
@@ -269,16 +270,29 @@ ssl_init(char *private_key_file, char *certificate_file, char *ca_file, char *ca
   /* but since the older behavior is to load them from the same file we */
   /* will try to load both from both files to avoid user confusion */
   if (certificate_file && *certificate_file) {
-    if (!SSL_CTX_use_certificate_chain_file(ctx, certificate_file)) {
-      ssl_errordump("Unable to load server certificate - only anonymous "
-                    "ciphers supported.");
+    if (!foundCert) {
+      if (SSL_CTX_use_certificate_chain_file(ctx, certificate_file)) {
+        foundCert = true;
+      }
     }
-    if (!SSL_CTX_use_PrivateKey_file(ctx, certificate_file, SSL_FILETYPE_PEM)) {
-      ssl_errordump(
-        "Unable to load private key - only anonymous ciphers supported.");
+    
+    if (!foundKey) {
+      if (SSL_CTX_use_PrivateKey_file(ctx, certificate_file, SSL_FILETYPE_PEM)) {
+        foundKey = true;
+      }
     }
   }
 
+  /* Add a log entry if we didn't find a certificate or key in either file */
+  if (!foundCert) {
+    ssl_errordump("Unable to load server certificate - only anonymous "
+                  "ciphers supported.");
+  }
+  
+  if (!foundKey) {
+    ssl_errordump("Unable to load private key - only anonymous ciphers supported.");
+  }
+  
   /* Load trusted CAs */
   if ((ca_file && *ca_file) || (ca_dir && *ca_dir)) {
     if (!SSL_CTX_load_verify_locations(ctx,

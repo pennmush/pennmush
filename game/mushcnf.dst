@@ -239,7 +239,7 @@ ssl_private_key_file  server-key.crt
 # together and place them in ssl_private_key_file, OR you may keep
 # them as separate files and load the private key from 
 # ssl_private_key_file and the certficate from ssl_certficate_file.
-# ssl_certificate_file
+ssl_certificate_file server-cert.crt
 
 # A file containing one or more certificates of certifying authorities
 # that the server should trust to certify clients who connect and

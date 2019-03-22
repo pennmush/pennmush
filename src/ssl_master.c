@@ -150,6 +150,7 @@ make_ssl_slave(void)
     cf.normal_port = options.port;
     cf.ssl_port = options.ssl_port;
     strcpy(cf.private_key_file, options.ssl_private_key_file);
+    strcpy(cf.certificate_file, options.ssl_certificate_file);
     strcpy(cf.ca_file, options.ssl_ca_file);
     strcpy(cf.ca_dir, options.ssl_ca_dir);
     cf.require_client_cert = options.ssl_require_client_cert;

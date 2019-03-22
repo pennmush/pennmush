@@ -230,7 +230,16 @@ ssl_ip_addr
 # owner. If this is commented out, the server will not present a
 # certificate, so clients that attempt to authenticate the server
 # will fail.
+# You may also load the certificate and private key individually
+# from separate files by using the ssl_certificate_file option below.
 ssl_private_key_file  server-key.crt
+
+# The file containing the MUSH server's certificate. For backwards
+# compatibility you may concatenate the certificate and key files
+# together and place them in ssl_private_key_file, OR you may keep
+# them as separate files and load the private key from 
+# ssl_private_key_file and the certficate from ssl_certficate_file.
+ssl_certificate_file server-cert.crt
 
 # A file containing one or more certificates of certifying authorities
 # that the server should trust to certify clients who connect and

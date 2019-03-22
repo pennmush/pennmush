@@ -44,6 +44,7 @@ Minor Changes:
 * Add ‘–disable-socket-quota’ option for our test suite. [GM]
 * The list of color definitions used with [1mansi()[0m, [1mcolors()[0m, etc. is now kept in game/txt/colors.json. [SW]
 * Sqlite3 updated to 3.25.1. Biggest user-visible change is support for window functions. [SW]
+* Added configuration option 'ssl_certificate_file' allowing SSL certificates and private keys to be split into separate files. [grapenut, 1291]
 
 Softcode:
 

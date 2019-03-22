@@ -1,6 +1,6 @@
 % Use SSL with PennMUSH
 %
-% Revised: 04 Jan 2018
+% Revised: 20 Mar 2019
 
 Introduction
 ============
@@ -18,8 +18,8 @@ The following features are supported:
 * Use of digest routines in the crytpo library for encrypting
   passwords and the digest() function.
 
-An SSL overview
-===============
+I. An SSL overview
+==================
 
 When an SSL client connects to an SSL server, it performs a
 "handshake" that looks something like this:
@@ -44,8 +44,8 @@ its list of trusted CAs, and may perform other verification.
 Once session keys have been exchanged, the client and server can
 communicate secure from eavesdropping.
 
-Compiling with OpenSSL
-======================
+II. Compiling with OpenSSL
+==========================
 
 What to install
 ---------------
@@ -88,8 +88,8 @@ as they did before, with the only change being that they won't get
 booted on a `@shutdown/reboot`. It's transparent to the player and the
 game.
 
-MUSH configuration overview
-===========================
+III. MUSH configuration overview
+================================
 
 mush.cnf includes a number of directives that control SSL configuration:
 
@@ -112,7 +112,13 @@ mush.cnf includes a number of directives that control SSL configuration:
 
 :    Specifies the name of the file (relative to the
      game/ directory if it's not an absolute path) that contains the MUSH
-     server's certificate and private key. See section IV below.
+     server's private key. See section IV below.
+
+`ssl_certificate_file`
+
+:    Specifies the name of the file (relative to the
+     game/ directory if it's not an absolute path) that contains the MUSH
+     server's certificate. See section IV below.
 
 `ssl_ca_file`
 
@@ -136,24 +142,31 @@ mush.cnf includes a number of directives that control SSL configuration:
      the MUSH server will require clients to present valid (that is,
      signed by a CA for which ssl_ca_file holds a certificate)
      certificates in order to connect. As no mud clients currently do
-     this, you probably want it off. See section V below.
+     this, you probably want it off. See section IV below.
 
 `socket_file`
 
 :    The path to a file to use as a unix domain socket
      used for talking to the optional SSL connection proxy.
 
-Installing a server certificate
-===============================
+IV. Installing a server certificate
+===================================
 
 SSL support requires that the MUSH present a server certificate
 (except as discussed below).  You must create a file containing the
-certificate and the associated private key (stripped of any passphrase
-protection) and point the `ssl_private_key_file` directive at this
-file. This file should only be readable by the MUSH account!
+certificate and point the `ssl_certificate_file` directive at this file.
+Then create another file with the associated private key (stripped of
+any passphrase protection) and point the `ssl_private_key_file`
+directive at this file. For backwards compatibility, you may concatenate
+the certificate and private key into the same file and reference the
+single combined file with either directive.
 
-How do you get such a certificate and private key? Here are the steps
-  you can use with openssl's command-line tool:
+**These files should only be readable by the MUSH user account!**
+
+How do you get such a certificate and private key?
+--------------------------------------------------
+
+**Here are the steps you can use with OpenSSL's command-line tool:**
 
 1. Generate a certificate signing request (mymush.csr) and a private
    key (temp.key). You will be asked to answer several questions.
@@ -189,6 +202,14 @@ validate certificates will fail to validate a self-signed certificate
 unless the user manually installs the certificate in their client and
 configures it to be trusted. How to do that is beyond the scope of
 this document, and highly client-dependent.
+
+**OR use `certbot` to obtain free signed certificates from Let's Encrypt:**
+
+Let's Encrypt is a certificate authority that provides short-term signed
+certificates for free. The `certbot` command-line utility automates the
+process of obtaining new certificates and renewing expired certificates.
+See <https://certbot.eff.org> for instructions on running `certbot` and
+find their FAQ at <https://certbot.eff.org/faq/>.
 
 Another option is to skip the use of a certificate altogether.  If you
 don't provide an `ssl_private_key_file`, the server will only accept

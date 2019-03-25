@@ -147,7 +147,7 @@ AC_CHECK_HEADERS([netinet/in.h sys/un.h sys/resource.h sys/event.h sys/uio.h])
 AC_CHECK_HEADERS([poll.h sys/select.h sys/inotify.h langinfo.h crypt.h])
 AC_CHECK_HEADERS([event2/event.h event2/dns.h fenv.h sys/param.h])
 AC_CHECK_HEADERS([sys/prctl.h byteswap.h endian.h sys/endian.h pthread.h])
-AC_CHECK_HEADERS([sys/ucred.h], [], [], [
+AC_CHECK_HEADERS([sys/ucred.h sys/file.h], [], [], [
 AC_INCLUDES_DEFAULT
 #ifdef HAVE_SYS_PARAM_H
 #include <sys/param.h>
@@ -263,7 +263,7 @@ fi
 AC_CHECK_FUNCS([cbrt log2 lrint imaxdiv hypot])
 AC_CHECK_FUNCS([getuid geteuid seteuid getpriority setpriority])
 AC_CHECK_FUNCS([socketpair sigaction sigprocmask writev])
-AC_CHECK_FUNCS([fcntl poll kqueue inotify_init1])
+AC_CHECK_FUNCS([fcntl flock poll kqueue inotify_init1])
 AC_CHECK_FUNCS([pread pwrite eventfd pledge pipe2])
 AC_CHECK_FUNCS([fetestexcept feclearexcept])
 AX_FUNC_POSIX_MEMALIGN

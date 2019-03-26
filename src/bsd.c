@@ -52,6 +52,9 @@
 #ifdef HAVE_UNISTD_H
 #include <unistd.h>
 #endif
+#ifdef HAVE_SYS_FILE_H
+#include <sys/file.h>
+#endif
 #ifdef HAVE_SYS_UIO_H
 #include <sys/uio.h>
 #endif
@@ -471,6 +474,7 @@ void load_reboot_db(void);
 
 static bool in_suid_root_mode __attribute__((__unused__)) = 0;
 static char *pidfile = NULL;
+static int pidfile_fd = -1;
 static char **saved_argv = NULL;
 
 int file_watch_init(void);
@@ -555,11 +559,24 @@ main(int argc, char **argv)
           detach_session = 0;
         else if (strcmp(argv[n], "--disable-socket-quota") == 0) {
           disable_socket_quota = true;
+        } else if (strncmp(argv[n], "--pidfile-fd", 12) == 0) {
+          char *eq;
+          if ((eq = strchr(argv[n], '='))) {
+            pidfile_fd = atoi(eq + 1);
+          } else {
+            if (n + 1 >= argc) {
+              fprintf(stderr, "%s: --pidfile-fd needs a file descriptor.\n",
+                      argv[0]);
+              return EXIT_FAILURE;
+            }
+            pidfile_fd = atoi(argv[n + 1]);
+            n++;
+          }
         } else if (strncmp(argv[n], "--pid-file", 10) == 0) {
           char *eq;
-          if ((eq = strchr(argv[n], '=')))
+          if ((eq = strchr(argv[n], '='))) {
             pidfile = eq + 1;
-          else {
+          } else {
             if (n + 1 >= argc) {
               fprintf(stderr, "%s: --pid-file needs a filename.\n", argv[0]);
               return EXIT_FAILURE;
@@ -606,15 +623,60 @@ main(int argc, char **argv)
 #endif
 
 #ifdef HAVE_GETPID
-  if (pidfile) {
+  /* Acquire a lock on the pidfile if needed. */
+  if (pidfile && pidfile_fd == -1) {
+#ifdef HAVE_FLOCK
+    char mypid[16];
+    int pidlen;
+    pidfile_fd =
+      open(pidfile, O_CREAT | O_WRONLY, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
+    if (pidfile_fd < 0) {
+      fprintf(stderr, "%s: Unable to create pidfile '%s': %s\n", argv[0],
+              pidfile, strerror(errno));
+      return EXIT_FAILURE;
+    }
+
+    /* Now attempt to acquire a lock on the file. Use flock(2) instead
+       of the fcntl(2) locks used elsewhere because its semantics are
+       a better fit for reboots and so it can be used with the Linux-utils
+       flock(1) program. */
+    if (flock(pidfile_fd, LOCK_EX | LOCK_NB) < 0) {
+      if (errno == EWOULDBLOCK) {
+        fprintf(stderr,
+                "%s: Unable to acquire lock on pidfile '%s'. Another instance "
+                "of the game is running.\n",
+                argv[0], pidfile);
+      } else {
+        fprintf(stderr, "%s: Unable to acquire lock on pidfile '%s': %s\n",
+                argv[0], pidfile, strerror(errno));
+      }
+      return EXIT_FAILURE;
+    }
+
+    /* And write the current pid */
+    pidlen = snprintf(mypid, sizeof mypid, "%d\n", (int) getpid());
+    if (ftruncate(pidfile_fd, 0) < 0) {
+      fprintf(stderr, "%s: Unable to update pidfile '%s': %s\n", argv[0],
+              pidfile, strerror(errno));
+      remove(pidfile);
+      return EXIT_FAILURE;
+    }
+    if (write(pidfile_fd, mypid, pidlen) != pidlen) {
+      fprintf(stderr, "%s: Unable to update pidfile '%s': %s\n", argv[0],
+              pidfile, strerror(errno));
+      remove(pidfile);
+      return EXIT_FAILURE;
+    }
+#else
     FILE *f;
     if (!(f = fopen(pidfile, "w"))) {
       fprintf(stderr, "%s: Unable to write to pidfile '%s'\n", argv[0],
               pidfile);
       return EXIT_FAILURE;
     }
-    fprintf(f, "%d\n", getpid());
+    fprintf(f, "%d\n", (int) getpid());
     fclose(f);
+#endif
   }
 #endif
 
@@ -820,8 +882,12 @@ main(int argc, char **argv)
   curl_global_cleanup();
 #endif
 
-  if (pidfile)
+  if (pidfile) {
     remove(pidfile);
+  }
+  if (pidfile_fd != -1) {
+    close(pidfile_fd);
+  }
 
 #ifdef WIN32SERVICES
   /* Keep service manager happy */
@@ -3022,7 +3088,7 @@ GMCP_HANDLER(gmcp_softcode_example)
   queue_attribute_base_priv(obj, attrname, d->player, 1, pe_regs, QUEUE_DEFAULT,
                             NOTHING, NULL, NULL);
   pe_regs_free(pe_regs);
-  
+
   return 1;
 }
 
@@ -3116,13 +3182,13 @@ FUNCTION(fun_oob)
       }
     }
   } while (l && *l && (p = next_in_list(&l)));
-  
+
   if (failed && i < 1) {
     safe_str("#-1 NO VALID PLAYERS", buff, bp);
   } else {
     safe_integer(i, buff, bp);
   }
-  
+
   cJSON_Delete(json);
 }
 
@@ -4921,8 +4987,8 @@ sockset(DESC *d, char *name, char *val)
       return T("Only Wizards can set this option.");
     }
     if (ival) {
-        d->conn_flags |= CONN_NOQUOTA;
-        return T("NOQUOTA turned on. Command quota is now ignored.");
+      d->conn_flags |= CONN_NOQUOTA;
+      return T("NOQUOTA turned on. Command quota is now ignored.");
     } else {
       d->conn_flags &= ~CONN_NOQUOTA;
       return T("NOQUOTA turned off. Command quota will be respected.");
@@ -7578,8 +7644,9 @@ do_reboot(dbref player, int flag)
   end_all_logs();
 #ifndef WIN32
   {
-    const char *args[6];
+    const char *args[8];
     int n = 0;
+    char fd_str[16];
 
     args[n++] = saved_argv[0];
     args[n++] = "--no-session";
@@ -7587,8 +7654,13 @@ do_reboot(dbref player, int flag)
       args[n++] = "--pid-file";
       args[n++] = pidfile;
     }
+    if (pidfile_fd != -1) {
+      snprintf(fd_str, sizeof fd_str, "%d", pidfile_fd);
+      args[n++] = "--pidfile-fd";
+      args[n++] = fd_str;
+    }
     if (disable_socket_quota) {
-      args[n++] =  "--disable-socket-quota";
+      args[n++] = "--disable-socket-quota";
     }
     args[n++] = confname;
     args[n] = NULL;

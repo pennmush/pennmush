@@ -65,6 +65,8 @@
 
 #undef HAVE_PTHREAD_H
 
+#undef HAVE_SYS_FILE_H
+
 /* C99ish headers. The first two are really really nice to have. */
 
 #undef HAVE_STDINT_H
@@ -279,6 +281,8 @@ typedef bool _Bool;
 #undef HAVE_WRITEV
 
 #undef HAVE_FCNTL
+
+#undef HAVE_FLOCK
 
 #undef HAVE_INOTIFY_INIT1
 

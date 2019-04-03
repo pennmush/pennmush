@@ -112,11 +112,20 @@ fi
 # if [ "$mush" -gt 0 ]; then
 
 # New style, look for a pid file.
-if [ -f "$PIDFILE" ]; then
+if [ -x /usr/bin/flock ]; then
+    # On linux, use flock(1) to see if the file is locked.
+    /usr/bin/flock -E 5 -n "$PIDFILE" -c true
+    if [ $? -eq 5 ]; then
+        mush=0
+    else
+        mush=1
+    fi
+elif [ -f "$PIDFILE" ]; then
+    # Otherwise see if the process listed in the file is running.
     kill -0 $(cat "$PIDFILE") 2>/dev/null
     mush=$?
 else
-    mush=1;
+    mush=1
 fi
 
 if [ "$mush" -eq 0 ]; then

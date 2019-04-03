@@ -52,6 +52,7 @@ Minor Changes
 * @command/restrict will only clear the failure message if a new one is supplied. [MT]
 * @SOCKSET now has a NOQUOTA option which causes that socket to be given the max command input quota per refresh. [MT]
 * --disable-socket-quota is now preserved across reboots. [MT]
+* Improved detection of an already running game. [SW]
 
 Softcode
 --------

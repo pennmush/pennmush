@@ -35,6 +35,7 @@ Major Changes
 * A single command queue for players and objects. No more @trigger waits. [GM]
 * A restructuring of bsd.c, to make it easier to reason about Penn's queue cycle. [GM]
 * Millisecond timing in bsd.c for polling waits in prep for subsecond @waits. [GM]
+* The old chunkswap system for storing attribute text is no more. [1278, SW]
 
 Minor Changes
 -------------

@@ -100,7 +100,7 @@ void generic_command_failure(dbref executor, dbref enactor, char *string,
 bool init_compress(PENNFILE *);
 char *safe_uncompress(char const *) __attribute_malloc__;
 char *text_uncompress(char const *);
-char *text_compress(char const *) __attribute_malloc__;
+char *text_compress(char const *, size_t *) __attribute_malloc__;
 #define compress text_compress
 #define uncompress text_uncompress
 

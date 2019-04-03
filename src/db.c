@@ -905,12 +905,14 @@ db_paranoid_write_object(PENNFILE *f, dbref i, int flag)
       AL_CREATOR(list) = owner;
 
       if (fixtext) {
-        char *t = compress(tbuf1);
-        if (!t)
+        size_t len;
+        char *t = compress(tbuf1, &len);
+        if (!t) {
           return 0;
+        }
 
         chunk_delete(list->data);
-        list->data = chunk_create(t, strlen(t), 0);
+        list->data = chunk_create(t, len, 0);
         free(t);
       }
       if (fixname) {

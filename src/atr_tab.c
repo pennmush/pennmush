@@ -253,8 +253,9 @@ attr_read(PENNFILE *f)
     a->data = NULL_CHUNK_REFERENCE;
   } else if (AL_FLAGS(a) & AF_ENUM) {
     /* Store string as it is */
-    char *t = compress(tmp);
-    a->data = chunk_create(t, strlen(t), 0);
+    size_t len;
+    char *t = compress(tmp, &len);
+    a->data = chunk_create(t, len, 0);
     free(t);
   } else if (AL_FLAGS(a) & AF_RLIMIT) {
     /* Need to validate regexp */
@@ -262,6 +263,7 @@ attr_read(PENNFILE *f)
     pcre2_code *re;
     int errcode;
     PCRE2_SIZE erroffset;
+    size_t len;
 
     re = pcre2_compile((const PCRE2_UCHAR *) tmp, PCRE2_ZERO_TERMINATED,
                        re_compile_flags | PCRE2_CASELESS, &errcode, &erroffset,
@@ -274,8 +276,8 @@ attr_read(PENNFILE *f)
     }
     pcre2_code_free(re); /* don't need it, just needed to check it */
 
-    t = compress(tmp);
-    a->data = chunk_create(t, strlen(t), 0);
+    t = compress(tmp, &len);
+    a->data = chunk_create(t, len, 0);
     free(t);
   }
 
@@ -732,8 +734,9 @@ do_attribute_limit(dbref player, const char *name, int type,
                     name);
     }
   } else {
-    char *t = compress(buff);
-    ap->data = chunk_create(t, strlen(t), 0);
+    size_t len;
+    char *t = compress(buff, &len);
+    ap->data = chunk_create(t, len, 0);
     free(t);
     ap->flags |= type;
     notify_format(player, T("%s -- Attribute %s set to: %s"), name,

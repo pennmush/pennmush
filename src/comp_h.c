@@ -5,7 +5,7 @@
  *
  * One of several options for attribute compression. Usually the best.
  * Talek's rewrite of compress.c, using a Huffman compression routine.
- * This routine adds some time to the MUSH startup, since it reads a file 
+ * This routine adds some time to the MUSH startup, since it reads a file
  * in order to auto-tune the compression at each restart. The SAMPLE_SIZE
  * define can trade efficiency for speed.
  * This rewrite was inspired by Javelin's rewrite on a similar vein.
@@ -16,18 +16,17 @@
 /* Compression routines */
 
 #ifdef WIN32
-#pragma warning( disable : 4244)        /* NJG: disable warning re conversion */
+#pragma warning(disable : 4244) /* NJG: disable warning re conversion */
 #endif
 
-#define TABLE_SIZE      256     /**< allow all characters */
-#define EOS             0       /**< use null code for end of string */
-#define CHAR_BITS       8       /**< number of bits in char */
-#define CHAR_MASK       255     /**< mask for just one char */
-#define CODE_BITS       25      /**< max number of bits in code */
+#define TABLE_SIZE 256 /**< allow all characters */
+#define EOS 0          /**< use null code for end of string */
+#define CHAR_BITS 8    /**< number of bits in char */
+#define CHAR_MASK 255  /**< mask for just one char */
+#define CODE_BITS 25   /**< max number of bits in code */
 #ifndef SAMPLE_SIZE
-#define SAMPLE_SIZE     0       /**< sample entire database */
+#define SAMPLE_SIZE 0 /**< sample entire database */
 #endif
-
 
 /** Type for a huffman code. It must be at least CODE_BITS+CHAR_BITS-1
  * bits long.
@@ -36,9 +35,9 @@ typedef unsigned long CType;
 
 /** A node in the huffman compression tree. */
 typedef struct cnode {
-  struct cnode *left;   /**< Left child node. */
-  struct cnode *right;  /**< Right child node. */
-  char c;               /**< character at this node. */
+  struct cnode *left;  /**< Left child node. */
+  struct cnode *right; /**< Right child node. */
+  char c;              /**< character at this node. */
 } CNode;
 
 static CNode *ctop;
@@ -64,22 +63,26 @@ static void build_ctable(CNode *root, CType code, int numbits);
  *     later uncompression will not go well.
  *
  * \param s string to be compressed.
+ * \param len Set to the number of bytes of the compressed string.
  * \return newly allocated compressed string.
  */
 static char *
-huff_text_compress(const char *s)
+huff_text_compress(const char *s, size_t *len)
 {
   CType stage;
   int bits = 0;
   const char *p;
   char *b, *buf;
-  int needed_length;
+  size_t needed_length;
 
   /* Part 1 - how long will the compressed string be? */
   for (p = s; p && *p; p++)
     bits += ltable[*p];
-  bits += CHAR_BITS * 2 - 1;    /* add space for the ending \0 */
+  bits += CHAR_BITS * 2 - 1; /* add space for the ending \0 */
   needed_length = bits / CHAR_BITS;
+  if (len) {
+    *len = needed_length;
+  }
 
   /* Part 2 - Actually get around to compressing the data... */
   p = s;
@@ -115,24 +118,24 @@ huff_text_compress(const char *s)
  * This macro is used for walking the compression tree.
  * It is a macro for efficiency.
  */
-#define WALK_TREE(bitpos) \
-do { \
-  if (*p & (bitpos)) \
-    node = node->right; \
-  else \
-    node = node->left; \
-  if (!node->left && !node->right) { \
-    /* Got a char */ \
-    *b++ = node->c; \
-    if (!*p || ((long)(b - buf) >= (long)(sizeof(buf) - 1))) { \
-      *b++ = EOS; \
-      return buf; \
-    } \
-    if (node->c == EOS) \
-      return buf; \
-    node = ctop; \
-  } \
-} while (0)
+#define WALK_TREE(bitpos)                                                      \
+  do {                                                                         \
+    if (*p & (bitpos))                                                         \
+      node = node->right;                                                      \
+    else                                                                       \
+      node = node->left;                                                       \
+    if (!node->left && !node->right) {                                         \
+      /* Got a char */                                                         \
+      *b++ = node->c;                                                          \
+      if (!*p || ((long) (b - buf) >= (long) (sizeof(buf) - 1))) {             \
+        *b++ = EOS;                                                            \
+        return buf;                                                            \
+      }                                                                        \
+      if (node->c == EOS)                                                      \
+        return buf;                                                            \
+      node = ctop;                                                             \
+    }                                                                          \
+  } while (0)
 
 /** Huffman uncompress a string.
  * Uncompression is a snap, too. Go bit by bit, using the
@@ -337,7 +340,8 @@ huff_init_compress(PENNFILE *f)
 #ifdef STANDALONE
   for (indx = 0; indx < TABLE_SIZE; indx++) {
     printf(isprint(indx) ? "Frequency for '%c': %d\n"
-           : "Frequency for %d: %d\n", indx, table[indx].freq);
+                         : "Frequency for %d: %d\n",
+           indx, table[indx].freq);
   }
 #endif
 
@@ -453,7 +457,7 @@ huff_init_compress(PENNFILE *f)
   /* Force a 1 at fifth position on the left edge of tree. (Or terminating
    * 1 for the all 0 code.)
    */
-  node = table[1].node;         /* top of tree */
+  node = table[1].node; /* top of tree */
   for (count = 0; node->left && (count < 4); count++)
     node = node->left;
   ctop = slab_malloc(huffman_slab, node);
@@ -477,7 +481,7 @@ huff_init_compress(PENNFILE *f)
 
   /* Part 4(e): Finally add in EOS as 00000000.
    */
-  node = table[1].node;         /* top of tree */
+  node = table[1].node; /* top of tree */
   for (count = 0; count < 8; count++) {
     if (!node->left) {
       ctop = slab_malloc(huffman_slab, node);
@@ -513,17 +517,12 @@ huff_init_compress(PENNFILE *f)
   return 1;
 }
 
-struct compression_ops huffman_ops = {
-  huff_init_compress,
-  huff_text_compress,
-  huff_text_uncompress
-};
+struct compression_ops huffman_ops = {huff_init_compress, huff_text_compress,
+                                      huff_text_uncompress};
 
 #ifdef STANDALONE
-void
-main(argc, argv)
-    int argc;
-    char *argv[];
+int
+main(int argc, char **argv)
 {
   FILE *input;
   char buffer[BUFFER_LEN];
@@ -563,19 +562,19 @@ main(argc, argv)
            strlen(newbuffer));
     p1 = buffer;
     p2 = newbuffer;
-/*
- * while (p1 && p2 && *p1 && *p2) {
- * if (*p1 != *p2) printf("Unequal: %d and %d\n",*p1,*p2);
- * else printf("Equal: %c and %c\n",*p1,*p2);
- * p1++; p2++;
- * }
- */
+    /*
+     * while (p1 && p2 && *p1 && *p2) {
+     * if (*p1 != *p2) printf("Unequal: %d and %d\n",*p1,*p2);
+     * else printf("Equal: %c and %c\n",*p1,*p2);
+     * p1++; p2++;
+     * }
+     */
     strcpy(newbuffer, otherbuf);
-/*
- * printf("Trying safe.\n");
- * buf = safe_uncompress(newbuffer);
- * printf("Safe uncompress: %s!\n",buf);
- */
+    /*
+     * printf("Trying safe.\n");
+     * buf = safe_uncompress(newbuffer);
+     * printf("Safe uncompress: %s!\n",buf);
+     */
   } while (1);
 }
 #endif

@@ -1,4 +1,3 @@
-
 /**
  * \file extmail.c
  *
@@ -1617,23 +1616,23 @@ real_send_mail(dbref player, dbref target, char *subject, char *message,
   if ((flags & M_FORWARD) && !string_prefix(sbuf, "Fwd:")) {
     char buff[BUFFER_LEN];
     snprintf(buff, sizeof buff, "Fwd: %.*s", SUBJECT_LEN, sbuf);
-    newp->subject = compress(chopstr(buff, SUBJECT_LEN));
+    newp->subject = compress(chopstr(buff, SUBJECT_LEN), NULL);
   } else if ((flags & M_REPLY) && !string_prefix(sbuf, "Re:")) {
     char buff[BUFFER_LEN];
     snprintf(buff, sizeof buff, "Re: %.*s", SUBJECT_LEN, sbuf);
-    newp->subject = compress(chopstr(buff, SUBJECT_LEN));
+    newp->subject = compress(chopstr(buff, SUBJECT_LEN), NULL);
   } else if ((a = atr_get_noparent(player, "MAILSUBJECT")) != NULL) {
     /* Don't bother to uncompress a->value */
     newp->subject = strdup(AL_STR(a));
   } else {
-    newp->subject = compress(sbuf);
+    newp->subject = compress(sbuf, NULL);
   }
   if (flags & M_FORWARD) {
     /* Forwarding passes the message already compressed */
     size_t len = strlen(message) + 1;
     newp->msgid = chunk_create(message, len, 1);
   } else {
-    uint16_t len;
+    size_t len;
     char *text;
     char buff[BUFFER_LEN], newmsg[BUFFER_LEN], *nm = newmsg;
 
@@ -1642,8 +1641,7 @@ real_send_mail(dbref player, dbref target, char *subject, char *message,
         call_attrib(player, "MAILSIGNATURE", buff, player, NULL, NULL))
       safe_str(buff, newmsg, &nm);
     *nm = '\0';
-    text = compress(newmsg);
-    len = strlen(text) + 1;
+    text = compress(newmsg, &len);
     newp->msgid = chunk_create(text, len, 1);
     free(text);
   }
@@ -2583,17 +2581,16 @@ load_mail(PENNFILE *fp)
     mp->time = mudtime;
 
   if (mail_flags & MDBF_SUBJECT) {
-    tbuf = compress(getstring_noalloc(fp));
+    tbuf = compress(getstring_noalloc(fp), NULL);
   }
-  text = compress(getstring_noalloc(fp));
-  len = strlen(text) + 1;
+  text = compress(getstring_noalloc(fp), &len);
   mp->msgid = chunk_create(text, len, 1);
   free(text);
   if (mail_flags & MDBF_SUBJECT)
     mp->subject = tbuf;
   else {
     strcpy(sbuf, get_message(mp));
-    mp->subject = compress(chopstr(sbuf, SUBJECT_LEN));
+    mp->subject = compress(chopstr(sbuf, SUBJECT_LEN), NULL);
   }
   mp->read = getref(fp);
   mp->next = NULL;
@@ -2607,27 +2604,29 @@ load_mail(PENNFILE *fp)
     mp = slab_malloc(mail_slab, NULL);
     mp->to = getref(fp);
     mp->from = getref(fp);
-    if (mail_flags & MDBF_SENDERCTIME)
+    if (mail_flags & MDBF_SENDERCTIME) {
       mp->from_ctime = (time_t) getref(fp);
-    else
+    } else {
       mp->from_ctime = 0; /* No one will have this creation time */
-    if (do_convtime(getstring_noalloc(fp), &ttm))
+    }
+    if (do_convtime(getstring_noalloc(fp), &ttm)) {
       mp->time = mktime(&ttm);
-    else /* do_convtime failed. Odd. */
+    } else { /* do_convtime failed. Odd. */
       mp->time = mudtime;
-    if (mail_flags & MDBF_SUBJECT)
-      tbuf = compress(getstring_noalloc(fp));
-    else
+    }
+    if (mail_flags & MDBF_SUBJECT) {
+      tbuf = compress(getstring_noalloc(fp), NULL);
+    } else {
       tbuf = NULL;
-    text = compress(getstring_noalloc(fp));
-    len = strlen(text) + 1;
+    }
+    text = compress(getstring_noalloc(fp), &len);
     mp->msgid = chunk_create(text, len, 1);
     free(text);
-    if (tbuf)
+    if (tbuf) {
       mp->subject = tbuf;
-    else {
+    } else {
       mush_strncpy(sbuf, get_message(mp), BUFFER_LEN);
-      mp->subject = compress(chopstr(sbuf, SUBJECT_LEN));
+      mp->subject = compress(chopstr(sbuf, SUBJECT_LEN), NULL);
     }
     mp->read = (uint32_t) getref(fp);
 

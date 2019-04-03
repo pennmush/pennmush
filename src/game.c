@@ -559,43 +559,20 @@ fork_and_dump(int forking)
 {
   pid_t child;
   bool nofork, status = true;
-#ifndef WIN32
-  bool split = false;
-#endif
 
   epoch++;
 
-#ifdef LOG_CHUNK_STATS
-  chunk_stats(NOTHING, 0);
-  chunk_stats(NOTHING, 1);
-#endif
   do_rawlog(LT_CHECK, "CHECKPOINTING: %s.#%d#", globals.dumpfile, epoch);
-  if (NO_FORK)
+  if (NO_FORK) {
     nofork = 1;
-  else
+  } else {
     nofork =
       !forking || (globals.paranoid_dump == 2); /* Don't fork for dump/debug */
+  }
 #if defined(WIN32) || !defined(HAVE_FORK)
   nofork = 1;
 #endif
 
-  if (!nofork && chunk_num_swapped()) {
-#ifndef WIN32
-    /* Try to clone the chunk swapfile. */
-    if (chunk_fork_file()) {
-      split = 1;
-    } else {
-      /* Ack, can't fork, 'cause we have stuff on disk... */
-      do_log(LT_ERR, 0, 0,
-             "fork_and_dump: Data are swapped to disk, so "
-             "nonforking dumps will be used.");
-      flag_broadcast(
-        "WIZARD", 0,
-        T("DUMP: Data are swapped to disk, so nonforking dumps will be used."));
-      nofork = 1;
-    }
-#endif
-  }
   if (!nofork) {
 #ifndef WIN32
 #ifdef HAVE_FORK
@@ -613,16 +590,9 @@ fork_and_dump(int forking)
         flag_broadcast(0, 0, "%s", DUMP_NOFORK_MESSAGE);
       child = 0;
       nofork = 1;
-      if (split) {
-        split = 0;
-        chunk_fork_done();
-      }
     } else if (child > 0) {
       forked_dump_pid = child;
       lower_priority_by(child, 8);
-      chunk_fork_parent();
-    } else {
-      chunk_fork_child();
     }
 #endif /* WIN32 */
   } else {
@@ -634,10 +604,6 @@ fork_and_dump(int forking)
     /* in the child */
     release_fd();
     status = dump_database_internal();
-#ifndef WIN32
-    if (split)
-      chunk_fork_done();
-#endif
     if (!nofork) {
       _exit(status ? 0 : 1); /* d_d_i() returns true on success but exit code
                                 should be 0 on success */
@@ -652,9 +618,6 @@ fork_and_dump(int forking)
       }
     }
   }
-#ifdef LOG_CHUNK_STATS
-  chunk_stats(NOTHING, 5);
-#endif
   return status;
 }
 
@@ -759,9 +722,6 @@ init_game_config(const char *conf)
   start_all_logs();
   config_file_checks();
 
-  /* Initialize the attribute chunk storage */
-  chunk_init();
-
   /* Set up telnet stuff */
   init_telnet_opts();
 
@@ -808,8 +768,9 @@ init_game_postdb(const char *conf)
 
 /* Set up ssl */
 #ifndef SSL_SLAVE
-  if (!ssl_init(options.ssl_private_key_file, options.ssl_certificate_file, options.ssl_ca_file,
-                options.ssl_ca_dir, options.ssl_require_client_cert)) {
+  if (!ssl_init(options.ssl_private_key_file, options.ssl_certificate_file,
+                options.ssl_ca_file, options.ssl_ca_dir,
+                options.ssl_require_client_cert)) {
     do_rawlog(LT_ERR, "SSL initialization failure");
     options.ssl_port = 0; /* Disable ssl */
   }

@@ -24,12 +24,13 @@
 #include "mymalloc.h"
 
 typedef bool (*init_fn)(PENNFILE *);
-typedef char *(*comp_fn)(char const *);
+typedef char *(*comp_fn)(char const *, size_t *);
+typedef char *(*decomp_fn)(char const *);
 
 struct compression_ops {
   init_fn init;
   comp_fn comp;
-  comp_fn decomp;
+  decomp_fn decomp;
 };
 
 #include "comp_h.c"
@@ -44,8 +45,11 @@ dummy_init(PENNFILE *f __attribute__((__unused__)))
 static char dummy_buff[BUFFER_LEN];
 
 static char *
-dummy_compress(char const *s)
+dummy_compress(char const *s, size_t *len)
 {
+  if (len) {
+    *len = strlen(s);
+  }
   return strdup(s);
 }
 
@@ -83,9 +87,9 @@ init_compress(PENNFILE *f)
 }
 
 __attribute_malloc__ char *
-text_compress(char const *s)
+text_compress(char const *s, size_t *len)
 {
-  return comp_ops->comp(s);
+  return comp_ops->comp(s, len);
 }
 
 char *

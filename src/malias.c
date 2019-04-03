@@ -239,7 +239,7 @@ do_malias_create(dbref player, char *alias, char *tolist)
   m->size = i;
   m->owner = player;
   m->name = mush_strdup(na, "malias_name");
-  m->desc = compress(na);
+  m->desc = compress(na, NULL);
   add_check("malias_desc");
   m->nflags = ALIAS_OWNER | ALIAS_MEMBERS;
   m->mflags = ALIAS_OWNER;
@@ -391,7 +391,7 @@ do_malias_desc(dbref player, char *alias, char *desc)
   } else if (Wizard(player) || (player == m->owner)) {
     if (m->desc)
       free(m->desc); /* No need to update MEM_CHECK records here */
-    m->desc = compress(desc);
+    m->desc = compress(desc, NULL);
     notify(player, T("MAIL: Description changed."));
   } else
     notify(player, T("MAIL: Permission denied."));
@@ -1044,7 +1044,7 @@ load_malias(PENNFILE *fp)
     }
 
     m->name = mush_strdup(getstring_noalloc(fp), "malias_name");
-    m->desc = compress(getstring_noalloc(fp));
+    m->desc = compress(getstring_noalloc(fp), NULL);
     add_check("malias_desc");
 
     m->nflags = getref(fp);

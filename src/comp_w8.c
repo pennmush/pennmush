@@ -228,10 +228,11 @@ output_previous_word(void)
  *     later uncompression will not go well.
  *
  * \param s string to be compressed.
+ * \param len stores the number of bytes of the compressed string.
  * \return newly allocated compressed string.
  */
 static char *
-word_text_compress(char const *s)
+word_text_compress(char const *s, size_t *len)
 {
   const char *p;
   static char buf[BUFFER_LEN];
@@ -265,6 +266,9 @@ word_text_compress(char const *s)
   total_uncomp += strlen(s); /* calculate size of uncompressed text */
 #endif
 
+  if (len) {
+    *len = strlen(buf);
+  }
   return strdup(buf);
 } /* end of compress; */
 

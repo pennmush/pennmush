@@ -1471,23 +1471,13 @@ COMMAND(cmd_slave)
 
 COMMAND(cmd_stats)
 {
-  if (SW_ISSET(sw, SWITCH_TABLES))
+  if (SW_ISSET(sw, SWITCH_TABLES)) {
     do_list_memstats(executor);
-  else if (SW_ISSET(sw, SWITCH_CHUNKS)) {
-    if (SW_ISSET(sw, SWITCH_REGIONS))
-      chunk_stats(executor, CSTATS_REGION);
-    else
-      chunk_stats(executor, CSTATS_SUMMARY);
-  } else if (SW_ISSET(sw, SWITCH_REGIONS))
-    chunk_stats(executor, CSTATS_REGIONG);
-  else if (SW_ISSET(sw, SWITCH_PAGING))
-    chunk_stats(executor, CSTATS_PAGINGG);
-  else if (SW_ISSET(sw, SWITCH_FREESPACE))
-    chunk_stats(executor, CSTATS_FREESPACEG);
-  else if (SW_ISSET(sw, SWITCH_FLAGS))
+  } else if (SW_ISSET(sw, SWITCH_FLAGS)) {
     flag_stats(executor);
-  else
+  } else {
     do_stats(executor, arg_left);
+  }
 }
 
 COMMAND(cmd_sweep)

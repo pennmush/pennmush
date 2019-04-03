@@ -306,16 +306,6 @@ PENNCONF conftable[] = {
   {"log_wipe_passwd", cf_str, options.log_wipe_passwd,
    sizeof options.log_wipe_passwd, 0, NULL},
 
-  {"use_chunk_system", cf_bool, &options.use_chunk, sizeof options.use_chunk, 0,
-   NULL},
-  {"chunk_swap_file", cf_str, options.chunk_swap_file,
-   sizeof options.chunk_swap_file, 0, "files"},
-  {"chunk_swap_initial_size", cf_int, &options.chunk_swap_initial, 1000000, 0,
-   "files"},
-  {"chunk_cache_memory", cf_int, &options.chunk_cache_memory, 1000000000, 0,
-   "files"},
-  {"chunk_migrate", cf_int, &options.chunk_migrate_amount, 100000, 0, "limits"},
-
   {"attr_compression", cf_str, options.attr_compression,
    sizeof options.attr_compression, 0, NULL},
 
@@ -1325,11 +1315,6 @@ conf_default_set(void)
   options.queue_entry_cpu_time = 1500;
   options.ascii_names = 1;
   options.call_lim = 10000;
-  options.use_chunk = 1;
-  strcpy(options.chunk_swap_file, "data/chunkswap");
-  options.chunk_swap_initial = 2048;
-  options.chunk_cache_memory = 1000000;
-  options.chunk_migrate_amount = 50;
   strcpy(options.attr_compression, "none");
   options.read_remote_desc = 0;
 #ifdef HAVE_SSL
@@ -1874,11 +1859,6 @@ show_compile_options(dbref player)
 #else
   notify(player, T(" @config/save is disabled."));
 #endif
-
-  if (options.use_chunk)
-    notify(player, T(" Attribute contents are managed by the chunk system."));
-  else
-    notify(player, T(" Attribute contents are managed by malloc."));
 
 #ifdef HAVE_ZONEINFO
   notify(player, T(" IANA symbolic timezones can be used."));

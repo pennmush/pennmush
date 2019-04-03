@@ -2,8 +2,6 @@
  * \file attrib.c
  *
  * \brief Manipulate attributes on objects.
- *
- *
  */
 
 #include "copyrite.h"
@@ -785,11 +783,13 @@ atr_new_add(dbref thing, const char *RESTRICT atr, const char *RESTRICT s,
     if (!s || !*s) {
       /* nothing */
     } else {
-      char *t = compress(s);
-      if (!t)
+      size_t len;
+      char *t = compress(s, &len);
+      if (!t) {
         return;
+      }
 
-      ptr->data = chunk_create(t, strlen(t), derefs);
+      ptr->data = chunk_create(t, len, derefs);
       free(t);
       set_cmd_flags(ptr);
     }
@@ -826,11 +826,13 @@ atr_new_add(dbref thing, const char *RESTRICT atr, const char *RESTRICT s,
   if (!s || !*s) {
     /* nothing */
   } else {
-    char *t = compress(s);
-    if (!t)
+    size_t len;
+    char *t = compress(s, &len);
+    if (!t) {
       return;
+    }
 
-    ptr->data = chunk_create(t, strlen(t), derefs);
+    ptr->data = chunk_create(t, len, derefs);
     free(t);
     set_cmd_flags(ptr);
   }
@@ -968,10 +970,12 @@ atr_add(dbref thing, const char *RESTRICT atr, const char *RESTRICT s,
         AL_FLAGS(root) |= AF_ROOT;
         AL_CREATOR(root) = Owner(player);
         if (!EMPTY_ATTRS) {
-          char *t = compress(" ");
-          if (!t)
+          size_t len;
+          char *t = compress(" ", &len);
+          if (!t) {
             mush_panic("Unable to allocate memory in atr_add()!");
-          root->data = chunk_create(t, strlen(t), 0);
+          }
+          root->data = chunk_create(t, len, 0);
           free(t);
         }
       } else
@@ -1002,12 +1006,13 @@ atr_add(dbref thing, const char *RESTRICT atr, const char *RESTRICT s,
   if (!s || !*s) {
     ptr->data = NULL_CHUNK_REFERENCE;
   } else {
-    char *t = compress(s);
+    size_t len;
+    char *t = compress(s, &len);
     if (!t) {
       ptr->data = NULL_CHUNK_REFERENCE;
       return AE_ERROR;
     }
-    ptr->data = chunk_create(t, strlen(t), 0);
+    ptr->data = chunk_create(t, len, 0);
     free(t);
     set_cmd_flags(ptr);
     if (AF_Command(ptr) && AF_Regexp(ptr)) {

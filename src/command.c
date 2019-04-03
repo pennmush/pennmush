@@ -297,8 +297,7 @@ COMLIST commands[] = {
   {"@SQL", NULL, cmd_sql, CMD_T_ANY, "WIZARD", "SQL_OK"},
   {"@SITELOCK", "BAN CHECK REGISTER REMOVE NAME PLAYER", cmd_sitelock,
    CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_RS_ARGS, "WIZARD", 0},
-  {"@STATS", "CHUNKS FREESPACE PAGING REGIONS TABLES FLAGS", cmd_stats,
-   CMD_T_ANY, 0, 0},
+  {"@STATS", "TABLES FLAGS", cmd_stats, CMD_T_ANY, 0, 0},
   {"@SUGGEST", "ADD DELETE LIST", cmd_suggest, CMD_T_ANY | CMD_T_EQSPLIT, 0, 0},
   {"@SWEEP", "CONNECTED HERE INVENTORY EXITS", cmd_sweep, CMD_T_ANY, 0, 0},
   {"@SWITCH",
@@ -404,10 +403,12 @@ COMLIST commands[] = {
   {"UNIMPLEMENTED_COMMAND", NULL, cmd_unimplemented,
    CMD_T_ANY | CMD_T_NOPARSE | CMD_T_INTERNAL | CMD_T_NOP, 0, 0},
 
-  {"ADDCOM", NULL, cmd_addcom, CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_NOGAGGED, 0, 0},
+  {"ADDCOM", NULL, cmd_addcom, CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_NOGAGGED, 0,
+   0},
   {"DELCOM", NULL, cmd_delcom, CMD_T_ANY | CMD_T_NOGAGGED, 0, 0},
   {"@CLIST", "FULL", cmd_clist, CMD_T_ANY | CMD_T_NOGAGGED, 0, 0},
-  {"COMTITLE", NULL, cmd_comtitle, CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_NOGAGGED, 0, 0},
+  {"COMTITLE", NULL, cmd_comtitle, CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_NOGAGGED,
+   0, 0},
   {"COMLIST", NULL, cmd_comlist, CMD_T_ANY | CMD_T_NOGAGGED, 0, 0},
 
   {NULL, NULL, NULL, 0, 0, 0}};
@@ -450,7 +451,8 @@ strccat(char *buff, char **bp, const char *from)
   safe_str(from, buff, bp);
 }
 
-TEST_GROUP(strccat) {
+TEST_GROUP(strccat)
+{
   char buff[BUFFER_LEN];
   char *bp = buff;
   *bp = '\0';
@@ -502,7 +504,8 @@ switch_find(COMMAND_INFO *cmd, const char *sw)
   return 0;
 }
 
-TEST_GROUP(switch_find) {
+TEST_GROUP(switch_find)
+{
   TEST("switch_find.1", switch_find(NULL, "LIST") > 0);
   TEST("switch_find.2", switch_find(NULL, "NOTASWITCHEVERTHISMEEANSYOU") == 0);
 }
@@ -521,7 +524,8 @@ SW_BY_NAME(switch_mask sw, const char *name)
     return false;
 }
 
-TEST_GROUP(SW_BY_NAME) {
+TEST_GROUP(SW_BY_NAME)
+{
   // TEST SW_BY_NAME REQUIRES switch_find switchmask
   switch_mask mask = switchmask("NOEVAL LIST");
   TEST("SW_BY_NAME.1", SW_BY_NAME(mask, "LIST"));
@@ -757,7 +761,8 @@ switchmask(const char *switches)
   return sw;
 }
 
-TEST_GROUP(switchmask) {
+TEST_GROUP(switchmask)
+{
   // TEST switchmask REQUIRES switch_find split_token
   switch_mask mask = switchmask("NOEVAL LIST");
   TEST("switchmask.1", mask != NULL);
@@ -1739,7 +1744,7 @@ restrict_command(dbref player, COMMAND_INFO *command, const char *xrestriction)
   rsave = restriction = mush_strdup(xrestriction, "rc.string");
   message = strchr(restriction, '"');
   if (message) {
-    // Clear old message if there was one.      
+    // Clear old message if there was one.
     if (command->restrict_message) {
       mush_free((void *) command->restrict_message, "cmd_restrict_message");
       command->restrict_message = NULL;

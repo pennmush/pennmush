@@ -48,7 +48,6 @@
 #include "strutil.h"
 
 bool inactivity_check(void);
-static void migrate_stuff(int amount);
 static struct squeue *sq_register(uint64_t w, sq_func f, void *d,
                                   const char *ev);
 
@@ -70,88 +69,6 @@ init_timer(void)
   install_sig_handler(SIGPROF, signal_cpu_limit);
 #endif
 #endif
-}
-
-/** Migrate some number of chunks.
- * The requested amount is only a guideline; the actual amount
- * migrated will be more or less due to always migrating all the
- * attributes, locks, and mail on any given object together.
- * \param amount the suggested number of attributes to migrate.
- */
-static void
-migrate_stuff(int amount)
-{
-  static int start_obj = 0;
-  static chunk_reference_t **refs = NULL;
-  static int refs_size = 0;
-  int end_obj;
-  int actual;
-  ATTR *aptr;
-  lock_list *lptr;
-  MAIL *mp;
-
-  if (db_top == 0)
-    return;
-
-  end_obj = start_obj;
-  actual = 0;
-  do {
-    ATTR_FOR_EACH (end_obj, aptr) {
-      if (aptr->data != NULL_CHUNK_REFERENCE)
-        actual++;
-    }
-    for (lptr = Locks(end_obj); lptr; lptr = L_NEXT(lptr))
-      if (L_KEY(lptr) != NULL_CHUNK_REFERENCE)
-        actual++;
-    if (IsPlayer(end_obj)) {
-      for (mp = find_exact_starting_point(end_obj); mp; mp = mp->next)
-        if (mp->msgid != NULL_CHUNK_REFERENCE)
-          actual++;
-    }
-    end_obj = (end_obj + 1) % db_top;
-  } while (actual < amount && end_obj != start_obj);
-
-  if (actual == 0)
-    return;
-
-  if (!refs || actual > refs_size) {
-    if (refs)
-      mush_free(refs, "migration reference array");
-    refs = mush_calloc(actual, sizeof(chunk_reference_t *),
-                       "migration reference array");
-    refs_size = actual;
-    if (!refs)
-      mush_panic("Could not allocate migration reference array");
-  }
-#ifdef DEBUG_MIGRATE
-  do_rawlog(LT_TRACE, "Migrate asked %d, actual objects #%d to #%d for %d",
-            amount, start_obj, (end_obj + db_top - 1) % db_top, actual);
-#endif
-
-  actual = 0;
-  do {
-    ATTR_FOR_EACH (start_obj, aptr) {
-      if (aptr->data != NULL_CHUNK_REFERENCE) {
-        refs[actual] = &(aptr->data);
-        actual++;
-      }
-    }
-    for (lptr = Locks(start_obj); lptr; lptr = L_NEXT(lptr))
-      if (L_KEY(lptr) != NULL_CHUNK_REFERENCE) {
-        refs[actual] = &(lptr->key);
-        actual++;
-      }
-    if (IsPlayer(start_obj)) {
-      for (mp = find_exact_starting_point(start_obj); mp; mp = mp->next)
-        if (mp->msgid != NULL_CHUNK_REFERENCE) {
-          refs[actual] = &(mp->msgid);
-          actual++;
-        }
-    }
-    start_obj = (start_obj + 1) % db_top;
-  } while (start_obj != end_obj);
-
-  chunk_migration(actual, refs);
 }
 
 static bool
@@ -243,13 +160,6 @@ dbsave_event(void *data __attribute__((__unused__)))
   return false;
 }
 
-static bool
-migrate_event(void *data __attribute__((__unused__)))
-{
-  migrate_stuff(CHUNK_MIGRATE_AMOUNT);
-  return false;
-}
-
 void
 init_sys_events(void)
 {
@@ -272,9 +182,6 @@ init_sys_events(void)
     sq_register_in(DUMP_INTERVAL, dbsave_event, NULL, NULL);
     options.dump_counter = mudtime + DUMP_INTERVAL;
   }
-  /* The chunk migration normally runs every 1 second. Slow it down a bit
-     to see what affect it has on CPU time */
-  sq_register_loop(20, migrate_event, NULL, NULL);
 }
 
 volatile sig_atomic_t cpu_time_limit_hit = 0; /** Was the cpu time limit hit? */

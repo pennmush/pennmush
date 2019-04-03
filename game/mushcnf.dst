@@ -159,47 +159,6 @@ access_file access.cnf
 names_file names.cnf
 
 ###
-### Attribute (chunk) cache
-###
-### PennMUSH can swap rarely-referenced attribute text out to a disk
-### file, and cache often-used attribute text in memory. This 
-### can result in substantial (typically 30-50%) savings
-### in process memory use, at the cost of a very small performance hit.
-### You can control the size of memory cache (or set it so large
-### that nothing is ever swapped to disk), as well as several less
-### important parameters here. 
-###
-
-# True to use the attribute cache
-use_chunk_system yes
-
-# The file to store the attribute data in, when not in memory.
-# This is relative to the game/ directory.
-chunk_swap_file data/chunkswap
-
-# The amount of memory allowed for the attribute cache, in bytes.
-# The actual amount used will be a multiple of 64K slightly less
-# the specified amount.  You must give it at least 132000 bytes.
-# If you want to use an 'infinite' cache, try setting this
-# to 2000000000; you'll lose the memory benefits, but you'll still
-# gain some locality benefits and overhead savings.
-chunk_cache_memory 1000000
-
-# The amount of space, in kibibytes, to initially allocate for the
-# swap file. The swap file may grow bigger than this figure, but won't
-# shrink to less. Only works on some OSes; ignored on those that don't
-# support the posix_fallocate() system call. 
-# For best results, set it to a larger value than the size of your
-# swap file is after the game has been running for a while. How much
-# larger depends on how fast the database is growing.
-chunk_swap_initial_size 2048
-
-# The number of attributes that may be moved at one time, once per
-# second.  The higher the value, the faster memory gets defragmented,
-# but at a greater CPU cost.
-chunk_migrate 150
-
-###
 ### In-memory attribute compression
 ###
 

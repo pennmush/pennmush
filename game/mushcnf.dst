@@ -550,6 +550,11 @@ full_html_file txt/full.html
 # OPTIONAL
 # who_html_file
 
+# Static HTML landing page to show when someone accesses the MUSH
+# port using a web browser and no http_handler is defined.
+# OPTIONAL
+# index_html_file txt/index.html
+
 # The big text files. New ones can be added by setting up
 # a new subdirectory of game/txt as described in game/txt/README,
 # and adding a new help_command line below, or uncommenting one of

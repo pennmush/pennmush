@@ -119,6 +119,8 @@ PENNCONF conftable[] = {
    sizeof options.guest_file[1], 0, "messages"},
   {"who_html_file", cf_str, options.who_file[1], sizeof options.who_file[1], 0,
    "messages"},
+  {"index_html_file", cf_str, options.index_html, sizeof options.index_html, 0,
+   "messages"},
 
   {"player_start", cf_dbref, &options.player_start, 100000, 0, "db"},
   {"master_room", cf_dbref, &options.master_room, 100000, 0, "db"},

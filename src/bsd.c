@@ -385,6 +385,7 @@ struct fcache_entries {
   FBLOCK full_fcache[2];     /**< full.txt and full.html */
   FBLOCK guest_fcache[2];    /**< guest.txt and guest.html */
   FBLOCK who_fcache[2];      /**< textfiles to override connect screen WHO */
+  FBLOCK index_fcache;         /**< default HTTP landing page */
 };
 
 static struct fcache_entries fcache;
@@ -2125,6 +2126,8 @@ fcache_read_one(const char *filename)
       hash_add(&lookup, options.guest_file[i], &fcache.guest_fcache[i]);
       hash_add(&lookup, options.who_file[i], &fcache.who_fcache[i]);
     }
+    
+    hash_add(&lookup, options.index_html, &fcache.index_fcache);
   }
 
   fb = hashfind(filename, &lookup);
@@ -2141,7 +2144,7 @@ fcache_read_one(const char *filename)
 void
 fcache_load(dbref player)
 {
-  int conn, motd, wiz, new, reg, quit, down, full;
+  int conn, motd, wiz, new, reg, quit, down, full, index;
   int guest, who;
   int i;
 
@@ -2156,14 +2159,18 @@ fcache_load(dbref player)
     full = fcache_read(&fcache.full_fcache[i], options.full_file[i]);
     guest = fcache_read(&fcache.guest_fcache[i], options.guest_file[i]);
     who = fcache_read(&fcache.who_fcache[i], options.who_file[i]);
+    
+    if (i == 0) {
+      index = fcache_read(&fcache.index_fcache, options.index_html);
+    }
 
     if (player != NOTHING) {
       notify_format(player,
-                    T("%s sizes:  NewUser...%d  Connect...%d  "
+                    T("%s sizes:  Index...%d  NewUser...%d  Connect...%d  "
                       "Guest...%d  Motd...%d  Wizmotd...%d  Quit...%d  "
                       "Register...%d  Down...%d  Full...%d  Who...%d"),
-                    i ? "HTMLFile" : "File", new, conn, guest, motd, wiz, quit,
-                    reg, down, full, who);
+                    i ? "HTMLFile" : "File", index, new, conn, guest, motd,
+                      wiz, quit, reg, down, full, who);
     }
   }
 }
@@ -3630,12 +3637,38 @@ http_bounce_mud_url(DESC *d)
   char buf[BUFFER_LEN];
   char *bp = buf;
   bool has_url = strncmp(MUDURL, "http", 4) == 0;
+  FBLOCK *index = &fcache.index_fcache;
+  
+  /* Setup the return headers. */
   safe_format(buf, &bp,
               "HTTP/1.1 200 OK\r\n"
               "Content-Type: text/html; charset:iso-8859-1\r\n"
               "Pragma: no-cache\r\n"
               "Connection: Close\r\n"
-              "\r\n"
+              "\r\n");
+  
+  /* See if we've got a cached index.html file and use that. */
+  if (index && index->buff) {
+    *bp = '\0';
+    
+    /* Check for an attribute override. */
+    if (index->thing != NOTHING) {
+      if (fcache_dump_attr(d, index->thing, (char *) index->buff, 1, buf, NULL) == 1) {
+        /* Attr successfully evaluated and displayed */
+        return;
+      }
+    } else {
+      /* Output static text from the cached file */
+      queue_newwrite(d, buf, strlen(buf));
+      queue_eol(d);
+      queue_write(d, index->buff, index->len);
+      return;
+    }
+    
+  }
+  
+  /* Show the default landing page with embedded MUDURL. */
+  safe_format(buf, &bp,
               "<!DOCTYPE html>\r\n"
               "<HTML><HEAD>"
               "<TITLE>Welcome to %s!</TITLE>",
@@ -7737,6 +7770,8 @@ watch_files_in(void)
     WATCH(options.guest_file[n]);
     WATCH(options.who_file[n]);
   }
+  
+  WATCH(options.index_html);
 
   for (h = hash_firstentry(&help_files); h; h = hash_nextentry(&help_files))
     WATCH(h->file);

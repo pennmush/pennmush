@@ -538,6 +538,7 @@ build_help_file(help_file *h)
       "suggest.addcat");
     sqlite3_bind_text(add_cat, 1, h->command, -1, SQLITE_STATIC);
     status = sqlite3_step(add_cat);
+    sqlite3_reset(add_cat);
     if (status != SQLITE_DONE) {
       do_rawlog(LT_ERR, "Unable to add %s to suggestions: %s", h->command,
                 sqlite3_errmsg(sqldb));
@@ -631,7 +632,7 @@ add_help_file(const char *command_name, const char *filename, int admin)
       "suggest.addcat");
     sqlite3_bind_text(add_suggest, 1, h->command, -1, SQLITE_STATIC);
     sqlite3_step(add_suggest);
-
+    sqlite3_reset(add_suggest);
     add_suggest =
       prepare_statement_cache(sqldb,
                               "INSERT INTO suggest(word, langid) VALUES "

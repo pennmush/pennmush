@@ -2027,6 +2027,97 @@ optimize_shared_db(void *data __attribute__((__unused__)))
   }
 }
 
+static void
+sqlite_logger(void *arg __attribute__((__unused__)), int errcode,
+              const char *errmsg)
+{
+  if (errcode == SQLITE_SCHEMA) {
+    /* Ignore messages we don't really care about. */
+    return;
+  }
+  if (strstr(errmsg, "UNIQUE constraint failed: players.name") ||
+      strstr(errmsg, "malformed JSON")) {
+    return;
+  }
+
+  /* Log the rest */
+  do_rawlog(LT_ERR, "SQLite error %d: %s", errcode, errmsg);
+}
+
+/** Set up error logging and other one-off sqlite stuff. Should only
+    be called once. */
+void
+initialize_sqlite(void)
+{
+  sqlite3_config(SQLITE_CONFIG_LOG, sqlite_logger, NULL);
+  sqlite3_initialize();
+}
+
+extern sqlite3 *help_db;
+extern sqlite3 *connlog_db;
+
+/** Clean up sqlite stuff right before mush shutdown. */
+void
+shutdown_sqlite(void)
+{
+  sqlite3_stmt *all_cached;
+  int rc;
+
+  /* Cleanly shut down any open databases */
+  close_shared_db();
+
+  if (help_db) {
+    close_sql_db(help_db);
+    help_db = NULL;
+  }
+
+  if (connlog_db) {
+    close_sql_db(connlog_db);
+    connlog_db = NULL;
+  }
+
+  /* Free any remaining cached prepared statements */
+  if (!statement_cache) {
+    return;
+  }
+  rc =
+    sqlite3_prepare_v2(statement_cache, "SELECT statement FROM prepared_cache",
+                       -1, &all_cached, NULL);
+  if (rc != SQLITE_OK) {
+    return;
+  }
+
+  while (sqlite3_step(all_cached) == SQLITE_ROW) {
+    sqlite3_stmt *cached =
+      (sqlite3_stmt *) ((intptr_t) sqlite3_column_int64(all_cached, 0));
+    sqlite3_finalize(cached);
+  }
+  sqlite3_finalize(all_cached);
+  if (find_stmt) {
+    sqlite3_finalize(find_stmt);
+    find_stmt = NULL;
+  }
+  if (insert_stmt) {
+    sqlite3_finalize(insert_stmt);
+    insert_stmt = NULL;
+  }
+  if (delete_stmt) {
+    sqlite3_finalize(delete_stmt);
+    delete_stmt = NULL;
+  }
+  if (delete_all_stmts) {
+    sqlite3_finalize(delete_all_stmts);
+    delete_all_stmts = NULL;
+  }
+  if (find_all_stmts) {
+    sqlite3_finalize(find_all_stmts);
+    find_all_stmts = NULL;
+  }
+
+  sqlite3_close_v2(statement_cache);
+  statement_cache = NULL;
+}
+
 /** Return a pointer to a global in-memory sql database. */
 sqlite3 *
 get_shared_db(void)

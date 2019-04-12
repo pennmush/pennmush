@@ -647,6 +647,9 @@ main(int argc, char **argv)
   /* initialize random number generator */
   initialize_rng();
 
+  /* initialize sqlite */
+  initialize_sqlite();
+
   options.mem_check = 1;
 
   init_game_config(confname);
@@ -840,7 +843,7 @@ main(int argc, char **argv)
 
   end_all_logs();
 
-  close_shared_db();
+  shutdown_sqlite();
 
   closesocket(sock);
 #ifdef WIN32
@@ -3022,7 +3025,7 @@ GMCP_HANDLER(gmcp_softcode_example)
   queue_attribute_base_priv(obj, attrname, d->player, 1, pe_regs, QUEUE_DEFAULT,
                             NOTHING, NULL, NULL);
   pe_regs_free(pe_regs);
-  
+
   return 1;
 }
 
@@ -3116,13 +3119,13 @@ FUNCTION(fun_oob)
       }
     }
   } while (l && *l && (p = next_in_list(&l)));
-  
+
   if (failed && i < 1) {
     safe_str("#-1 NO VALID PLAYERS", buff, bp);
   } else {
     safe_integer(i, buff, bp);
   }
-  
+
   cJSON_Delete(json);
 }
 
@@ -4921,8 +4924,8 @@ sockset(DESC *d, char *name, char *val)
       return T("Only Wizards can set this option.");
     }
     if (ival) {
-        d->conn_flags |= CONN_NOQUOTA;
-        return T("NOQUOTA turned on. Command quota is now ignored.");
+      d->conn_flags |= CONN_NOQUOTA;
+      return T("NOQUOTA turned on. Command quota is now ignored.");
     } else {
       d->conn_flags &= ~CONN_NOQUOTA;
       return T("NOQUOTA turned off. Command quota will be respected.");
@@ -7588,7 +7591,7 @@ do_reboot(dbref player, int flag)
       args[n++] = pidfile;
     }
     if (disable_socket_quota) {
-      args[n++] =  "--disable-socket-quota";
+      args[n++] = "--disable-socket-quota";
     }
     args[n++] = confname;
     args[n] = NULL;

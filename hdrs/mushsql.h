@@ -8,6 +8,8 @@
 #include "sqlite3.h"
 #include "compile.h"
 
+void initialize_sqlite(void);
+void shutdown_sqlite(void);
 sqlite3 *open_sql_db(const char *, bool);
 void close_sql_db(sqlite3 *);
 sqlite3 *get_shared_db(void);

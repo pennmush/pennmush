@@ -2245,7 +2245,8 @@ sql_from_hexstr_fun(sqlite3_context *ctx, int nargs __attribute__((unused)),
  *
  * \param name the database filename to open URI names are supported.
  * \param nocreate true if the database should not be created if not already
- * present. \return a handle to the database connection or NULL.
+ * present.
+ * \return a handle to the database connection or NULL.
  */
 sqlite3 *
 open_sql_db(const char *name, bool nocreate)
@@ -2299,7 +2300,8 @@ open_sql_db(const char *name, bool nocreate)
   sqlite3_remember_init(db, NULL, NULL);
   sqlite3_busy_timeout(db, 250);
 
-  sqlite3_exec(db, "PRAGMA foreign_keys = ON", NULL, NULL, NULL);
+  sqlite3_db_config(db, SQLITE_DBCONFIG_ENABLE_FKEY, 1, (int *) NULL);
+  sqlite3_db_config(db, SQLITE_DBCONFIG_DEFENSIVE, 1);
 
   return db;
 }

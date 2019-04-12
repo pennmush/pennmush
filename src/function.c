@@ -204,7 +204,7 @@ suggest_name(const char *badname, const char *category)
   finder = prepare_statement(
     sqldb,
     "SELECT upper(word) FROM suggest WHERE word MATCH ? AND top = 1 AND langid "
-    "= (SELECT id FROM suggest_keys WHERE cat = upper(?))",
+    "= (SELECT id FROM suggest_keys WHERE cat = upper(?)) AND scope = 5",
     "suggest.find1");
   if (!finder) {
     return NULL;

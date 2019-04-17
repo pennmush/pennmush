@@ -2304,7 +2304,7 @@ open_sql_db(const char *name, bool nocreate)
   sqlite3_busy_timeout(db, 250);
 
   sqlite3_db_config(db, SQLITE_DBCONFIG_ENABLE_FKEY, 1, (int *) NULL);
-  sqlite3_db_config(db, SQLITE_DBCONFIG_DEFENSIVE, 1);
+  sqlite3_db_config(db, SQLITE_DBCONFIG_DEFENSIVE, 1, (int *) NULL);
 
   return db;
 }

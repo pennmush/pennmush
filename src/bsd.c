@@ -652,9 +652,7 @@ main(int argc, char **argv)
 
   options.mem_check = 1;
 
-  fputs("init_game_config()\n", stderr);
   init_game_config(confname);
-  fputs("post init_game_config()\n", stderr);
 
 #ifdef HAVE_RAND_KEEP_RANDOM_DEVICES_OPEN
   /* OpenSSL leaks a couple of file descriptors on every reboot without this. */

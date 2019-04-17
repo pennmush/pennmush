@@ -6,8 +6,6 @@ before_script:
   - ./configure --disable-ssl_slave
   - yes "" | make update
   - make
-  - curl -L https://cpanmin.us/ -o cpanm && chmod +x cpanm
-  - ./cpanm IO::Socket::IP
 script: make test
 env:
   global:
@@ -17,3 +15,5 @@ addons:
   apt:
     packages:
       - gperf
+      - libwww-perl
+      - libio-socket-ip-perl

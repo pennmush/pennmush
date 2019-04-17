@@ -20,6 +20,8 @@ $SIG{"CHLD"} = sub  {
         $errmsg .= "Killed with signal " . WTERMSIG($status);
       }
       say $errmsg;
+      say "Last lines of log:";
+      say `tail testgame/log/netmush.log`
     }
   }
 };

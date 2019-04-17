@@ -6,13 +6,12 @@ use File::Path;
 use MUSHConnection;
 use POSIX qw/:sys_wait_h/;
 use feature qw/say/;
-use List::Util qw/any/;
-
+no if $] >= 5.017011, warnings => 'experimental::smartmatch'; # Don't blow up on Perls older than 5.18
 my @pids = ();
 
 $SIG{"CHLD"} = sub  {
   while ((my $child = waitpid(-1, WNOHANG))  > 0) {
-    if (any { $child == $_ } @pids) {
+    if ($child ~~ @pids) {
       my $status = ${^CHILD_ERROR_NATIVE};
       my $errmsg = "Child PennMUSH process $child exited: ";
       if (WIFEXITED($status)) {

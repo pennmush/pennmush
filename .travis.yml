@@ -17,3 +17,4 @@ addons:
       - gperf
       - libwww-perl
       - libio-socket-ip-perl
+      - valgrind

@@ -749,13 +749,14 @@ init_game_config(const char *conf)
   init_locks();
   init_names();
   init_pronouns();
-
+  fputs("after init_foo()\n", stderr);
   memset(&current_state, 0, sizeof current_state);
 
   /* Load all the config file stuff except restrict_* */
   local_configs();
   conf_default_set();
   config_file_startup(conf, 0);
+  fputs("start_all_logs()\n", stderr);
   start_all_logs();
   config_file_checks();
 

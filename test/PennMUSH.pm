@@ -21,7 +21,9 @@ $SIG{"CHLD"} = sub  {
       }
       say $errmsg;
       say "Last lines of log:";
-      say `tail testgame/log/netmush.log`
+      say `tail testgame/log/netmush.log`;
+      say "Valgrind:";
+      say `cat testgame/valgrind-*`;
     }
   }
 };

@@ -17,3 +17,4 @@ addons:
   apt:
     packages:
       - gperf
+      - libwww-perl

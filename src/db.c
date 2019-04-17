@@ -2031,9 +2031,12 @@ static void
 sqlite_logger(void *arg __attribute__((__unused__)), int errcode,
               const char *errmsg)
 {
+  /* Ignore messages we don't really care about. */
   if (errcode == SQLITE_SCHEMA) {
-    /* Ignore messages we don't really care about. */
     return;
+  }
+  if (!errmsg) {
+    errmsg = "UNKNOWN ERROR";
   }
   if (strstr(errmsg, "UNIQUE constraint failed: players.name") ||
       strstr(errmsg, "malformed JSON")) {

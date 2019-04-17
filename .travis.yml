@@ -6,8 +6,6 @@ before_script:
   - ./configure
   - yes "" | make update
   - make
-  - curl -L https://cpanmin.us/ -o cpanm && chmod +x cpanm
-  - ./cpanm IO::Socket::IP
 script: make test
 env:
   global:
@@ -18,3 +16,4 @@ addons:
     packages:
       - gperf
       - libwww-perl
+      - libio-socket-ip-perl

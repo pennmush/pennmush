@@ -2368,6 +2368,73 @@ optimize_db(sqlite3 *db)
   }
 }
 
+/** Check a database for corruption and consistency issues. Problems
+ * are logged to the error log.
+ *
+ * \param name Name of the database.
+ * \param db The database handle
+ * \param quick True for a quick check.
+ * \return true if no issues were found, false if there were.
+ */
+bool
+check_sql_db(const char *name, sqlite3 *db, bool quick)
+{
+  bool problems = false;
+  sqlite3_stmt *check;
+  int rc;
+
+  do_rawlog(LT_CHECK, "sqlite db %s: Checking database for issues.", name);
+
+  /* Check for foreign key constraint violations */
+  check =
+    prepare_statement_cache(db, "PRAGMA foreign_key_check", "pragma.fkc", 0);
+
+  if (!check) {
+    return false;
+  }
+
+  do {
+    rc = sqlite3_step(check);
+    if (rc == SQLITE_ROW) {
+      problems = true;
+      int64_t rowid = -1;
+      const char *table = (const char *) sqlite3_column_text(check, 0);
+      if (sqlite3_column_type(check, 1) == SQLITE_INTEGER) {
+        rowid = sqlite3_column_int64(check, 1);
+      }
+      do_rawlog(LT_ERR,
+                "sqlite db %s: Bad foreign key in table %s row %" PRIi64, name,
+                table, rowid);
+    }
+  } while (rc == SQLITE_ROW || is_busy_status(rc));
+  sqlite3_finalize(check);
+
+  /* And integrity check */
+  if (quick) {
+    check = prepare_statement_cache(db, "PRAGMA quick_check", "pragma.qc", 0);
+  } else {
+    check =
+      prepare_statement_cache(db, "PRAGMA integrity_check", "pragma.ic", 0);
+  }
+
+  if (!check) {
+    return false;
+  }
+
+  do {
+    rc = sqlite3_step(check);
+    if (rc == SQLITE_ROW) {
+      const char *msg = (const char *) sqlite3_column_text(check, 0);
+      if (strcmp(msg, "ok") != 0) {
+        problems = true;
+        do_rawlog(LT_ERR, "sqlite db %s: %s", name, msg);
+      }
+    }
+  } while (rc == SQLITE_ROW || is_busy_status(rc));
+  sqlite3_finalize(check);
+  return !problems;
+}
+
 /** Returns true if the sqlite status code indicates an operation is
     waiting on another process or thread to unlock a database. */
 bool

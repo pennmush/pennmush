@@ -34,3 +34,4 @@ bool is_busy_status(int);
 void free_string(void *);
 
 bool optimize_db(sqlite3 *);
+bool check_sql_db(const char *, sqlite3 *, bool);

@@ -48,7 +48,7 @@ static char *
 dummy_compress(char const *s, size_t *len)
 {
   if (len) {
-    *len = strlen(s);
+    *len = strlen(s) + 1;
   }
   return strdup(s);
 }

@@ -267,7 +267,7 @@ word_text_compress(char const *s, size_t *len)
 #endif
 
   if (len) {
-    *len = strlen(buf);
+    *len = strlen(buf) + 1;
   }
   return strdup(buf);
 } /* end of compress; */

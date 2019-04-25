@@ -184,7 +184,7 @@ get_message(MAIL *mp)
     return NULL;
 
   chunk_fetch(mp->msgid, tbuf, sizeof tbuf);
-  strcpy(text, uncompress(tbuf));
+  mush_strncpy(text, uncompress(tbuf), BUFFER_LEN);
   return text;
 }
 
@@ -208,7 +208,7 @@ get_subject(MAIL *mp)
   static char sbuf[SUBJECT_LEN + 1];
   char *p;
   if (mp->subject) {
-    strncpy(sbuf, uncompress(mp->subject), SUBJECT_LEN);
+    mush_strncpy(sbuf, uncompress(mp->subject), SUBJECT_LEN);
     sbuf[SUBJECT_LEN] = '\0';
     /* Stop at a return or a tab */
     for (p = sbuf; *p; p++) {

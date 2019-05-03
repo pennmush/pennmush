@@ -22,6 +22,7 @@
 #include "externs.h"
 #include "mushdb.h"
 #include "mymalloc.h"
+#include "strutil.h"
 
 typedef bool (*init_fn)(PENNFILE *);
 typedef char *(*comp_fn)(char const *);
@@ -52,7 +53,8 @@ dummy_compress(char const *s)
 static char *
 dummy_decompress(char const *s)
 {
-  return strcpy(dummy_buff, s);
+  mush_strncpy(dummy_buff, s, sizeof dummy_buff);
+  return dummy_buff;
 }
 
 struct compression_ops nocompression_ops = {dummy_init, dummy_compress,

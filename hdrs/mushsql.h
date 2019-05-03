@@ -8,6 +8,8 @@
 #include "sqlite3.h"
 #include "compile.h"
 
+void initialize_sqlite(void);
+void shutdown_sqlite(void);
 sqlite3 *open_sql_db(const char *, bool);
 void close_sql_db(sqlite3 *);
 sqlite3 *get_shared_db(void);
@@ -32,3 +34,4 @@ bool is_busy_status(int);
 void free_string(void *);
 
 bool optimize_db(sqlite3 *);
+bool check_sql_db(const char *, sqlite3 *, bool);

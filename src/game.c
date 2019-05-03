@@ -749,7 +749,6 @@ init_game_config(const char *conf)
   init_locks();
   init_names();
   init_pronouns();
-
   memset(&current_state, 0, sizeof current_state);
 
   /* Load all the config file stuff except restrict_* */

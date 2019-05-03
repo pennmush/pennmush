@@ -3,7 +3,7 @@ compiler: gcc
 before_install:
   - sudo localedef -f ISO-8859-1 -i en_US en_US.ISO88591
 before_script:
-  - ./configure
+  - ./configure --disable-ssl_slave
   - yes "" | make update
   - make
 script: make test
@@ -17,3 +17,4 @@ addons:
       - gperf
       - libwww-perl
       - libio-socket-ip-perl
+      - valgrind

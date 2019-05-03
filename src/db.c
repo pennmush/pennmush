@@ -2027,6 +2027,100 @@ optimize_shared_db(void *data __attribute__((__unused__)))
   }
 }
 
+static void
+sqlite_logger(void *arg __attribute__((__unused__)), int errcode,
+              const char *errmsg)
+{
+  /* Ignore messages we don't really care about. */
+  if (errcode == SQLITE_SCHEMA) {
+    return;
+  }
+  if (!errmsg) {
+    errmsg = "UNKNOWN ERROR";
+  }
+  if (strstr(errmsg, "UNIQUE constraint failed: players.name") ||
+      strstr(errmsg, "malformed JSON")) {
+    return;
+  }
+
+  /* Log the rest */
+  do_rawlog(LT_ERR, "SQLite error %d: %s", errcode, errmsg);
+}
+
+/** Set up error logging and other one-off sqlite stuff. Should only
+    be called once. */
+void
+initialize_sqlite(void)
+{
+  sqlite3_config(SQLITE_CONFIG_LOG, sqlite_logger, NULL);
+  sqlite3_initialize();
+}
+
+extern sqlite3 *help_db;
+extern sqlite3 *connlog_db;
+
+/** Clean up sqlite stuff right before mush shutdown. */
+void
+shutdown_sqlite(void)
+{
+  sqlite3_stmt *all_cached;
+  int rc;
+
+  /* Cleanly shut down any open databases */
+  close_shared_db();
+
+  if (help_db) {
+    close_sql_db(help_db);
+    help_db = NULL;
+  }
+
+  if (connlog_db) {
+    close_sql_db(connlog_db);
+    connlog_db = NULL;
+  }
+
+  /* Free any remaining cached prepared statements */
+  if (!statement_cache) {
+    return;
+  }
+  rc =
+    sqlite3_prepare_v2(statement_cache, "SELECT statement FROM prepared_cache",
+                       -1, &all_cached, NULL);
+  if (rc != SQLITE_OK) {
+    return;
+  }
+
+  while (sqlite3_step(all_cached) == SQLITE_ROW) {
+    sqlite3_stmt *cached =
+      (sqlite3_stmt *) ((intptr_t) sqlite3_column_int64(all_cached, 0));
+    sqlite3_finalize(cached);
+  }
+  sqlite3_finalize(all_cached);
+  if (find_stmt) {
+    sqlite3_finalize(find_stmt);
+    find_stmt = NULL;
+  }
+  if (insert_stmt) {
+    sqlite3_finalize(insert_stmt);
+    insert_stmt = NULL;
+  }
+  if (delete_stmt) {
+    sqlite3_finalize(delete_stmt);
+    delete_stmt = NULL;
+  }
+  if (delete_all_stmts) {
+    sqlite3_finalize(delete_all_stmts);
+    delete_all_stmts = NULL;
+  }
+  if (find_all_stmts) {
+    sqlite3_finalize(find_all_stmts);
+    find_all_stmts = NULL;
+  }
+
+  sqlite3_close_v2(statement_cache);
+  statement_cache = NULL;
+}
+
 /** Return a pointer to a global in-memory sql database. */
 sqlite3 *
 get_shared_db(void)
@@ -2154,7 +2248,8 @@ sql_from_hexstr_fun(sqlite3_context *ctx, int nargs __attribute__((unused)),
  *
  * \param name the database filename to open URI names are supported.
  * \param nocreate true if the database should not be created if not already
- * present. \return a handle to the database connection or NULL.
+ * present.
+ * \return a handle to the database connection or NULL.
  */
 sqlite3 *
 open_sql_db(const char *name, bool nocreate)
@@ -2208,7 +2303,8 @@ open_sql_db(const char *name, bool nocreate)
   sqlite3_remember_init(db, NULL, NULL);
   sqlite3_busy_timeout(db, 250);
 
-  sqlite3_exec(db, "PRAGMA foreign_keys = ON", NULL, NULL, NULL);
+  sqlite3_db_config(db, SQLITE_DBCONFIG_ENABLE_FKEY, 1, (int *) NULL);
+  sqlite3_db_config(db, SQLITE_DBCONFIG_DEFENSIVE, 1, (int *) NULL);
 
   return db;
 }
@@ -2270,6 +2366,73 @@ optimize_db(sqlite3 *db)
   } else {
     return true;
   }
+}
+
+/** Check a database for corruption and consistency issues. Problems
+ * are logged to the error log.
+ *
+ * \param name Name of the database.
+ * \param db The database handle
+ * \param quick True for a quick check.
+ * \return true if no issues were found, false if there were.
+ */
+bool
+check_sql_db(const char *name, sqlite3 *db, bool quick)
+{
+  bool problems = false;
+  sqlite3_stmt *check;
+  int rc;
+
+  do_rawlog(LT_CHECK, "sqlite db %s: Checking database for issues.", name);
+
+  /* Check for foreign key constraint violations */
+  check =
+    prepare_statement_cache(db, "PRAGMA foreign_key_check", "pragma.fkc", 0);
+
+  if (!check) {
+    return false;
+  }
+
+  do {
+    rc = sqlite3_step(check);
+    if (rc == SQLITE_ROW) {
+      problems = true;
+      int64_t rowid = -1;
+      const char *table = (const char *) sqlite3_column_text(check, 0);
+      if (sqlite3_column_type(check, 1) == SQLITE_INTEGER) {
+        rowid = sqlite3_column_int64(check, 1);
+      }
+      do_rawlog(LT_ERR,
+                "sqlite db %s: Bad foreign key in table %s row %" PRIi64, name,
+                table, rowid);
+    }
+  } while (rc == SQLITE_ROW || is_busy_status(rc));
+  sqlite3_finalize(check);
+
+  /* And integrity check */
+  if (quick) {
+    check = prepare_statement_cache(db, "PRAGMA quick_check", "pragma.qc", 0);
+  } else {
+    check =
+      prepare_statement_cache(db, "PRAGMA integrity_check", "pragma.ic", 0);
+  }
+
+  if (!check) {
+    return false;
+  }
+
+  do {
+    rc = sqlite3_step(check);
+    if (rc == SQLITE_ROW) {
+      const char *msg = (const char *) sqlite3_column_text(check, 0);
+      if (strcmp(msg, "ok") != 0) {
+        problems = true;
+        do_rawlog(LT_ERR, "sqlite db %s: %s", name, msg);
+      }
+    }
+  } while (rc == SQLITE_ROW || is_busy_status(rc));
+  sqlite3_finalize(check);
+  return !problems;
 }
 
 /** Returns true if the sqlite status code indicates an operation is

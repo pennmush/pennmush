@@ -495,11 +495,22 @@ init_help_files(void)
       do_rawlog(LT_ERR, "Unable to create help database: %s\n", errstr);
       sqlite3_free(errstr);
       sqlite3_exec(help_db, "ROLLBACK TRANSACTION", NULL, NULL, NULL);
+      close_sql_db(help_db);
+      help_db = NULL;
       return;
     }
   }
-  sq_register_loop(26 * 60 * 60 + 300, help_optimize, NULL, NULL);
+
+  if (!check_sql_db(options.help_db, help_db, 0)) {
+    do_rawlog(LT_ERR, "Unable to use help database.");
+    close_sql_db(help_db);
+    help_db = NULL;
+    return;
+  }
+
   init_private_vocab();
+
+  sq_register_loop(26 * 60 * 60 + 300, help_optimize, NULL, NULL);
   hashinit(&help_files, 8);
 #ifdef HAVE_PTHREAD_ATFORK
   pthread_atfork(helpdb_prefork, helpdb_postfork_parent, NULL);
@@ -538,6 +549,7 @@ build_help_file(help_file *h)
       "suggest.addcat");
     sqlite3_bind_text(add_cat, 1, h->command, -1, SQLITE_STATIC);
     status = sqlite3_step(add_cat);
+    sqlite3_reset(add_cat);
     if (status != SQLITE_DONE) {
       do_rawlog(LT_ERR, "Unable to add %s to suggestions: %s", h->command,
                 sqlite3_errmsg(sqldb));
@@ -631,7 +643,7 @@ add_help_file(const char *command_name, const char *filename, int admin)
       "suggest.addcat");
     sqlite3_bind_text(add_suggest, 1, h->command, -1, SQLITE_STATIC);
     sqlite3_step(add_suggest);
-
+    sqlite3_reset(add_suggest);
     add_suggest =
       prepare_statement_cache(sqldb,
                               "INSERT INTO suggest(word, langid) VALUES "

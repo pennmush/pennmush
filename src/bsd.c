@@ -710,6 +710,9 @@ main(int argc, char **argv)
   /* initialize random number generator */
   initialize_rng();
 
+  /* initialize sqlite */
+  initialize_sqlite();
+
   options.mem_check = 1;
 
   init_game_config(confname);
@@ -907,7 +910,7 @@ main(int argc, char **argv)
 
   end_all_logs();
 
-  close_shared_db();
+  shutdown_sqlite();
 
   closesocket(sock);
 #ifdef WIN32

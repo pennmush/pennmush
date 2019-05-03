@@ -1473,6 +1473,8 @@ penn_sqlite3_sql_init(void)
       atfork = 1;
     }
 #endif
+    sqlite3_db_config(sqlite3_connp, SQLITE_DBCONFIG_DEFENSIVE, 1,
+                      (int *) NULL);
     return 1;
   }
 }

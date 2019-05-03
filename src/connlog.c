@@ -266,6 +266,11 @@ init_conndb(bool rebooting)
     goto error_cleanup;
   }
 
+  if (!check_sql_db(options.connlog_db, connlog_db, 0)) {
+    do_rawlog(LT_ERR, "Disabling connlog due to consistency issues.");
+    goto error_cleanup;
+  }
+
   if (!rebooting) {
     /* Clean up connections without a logged disconnection time. */
     if (sqlite3_exec(

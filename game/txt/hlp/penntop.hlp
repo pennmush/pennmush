@@ -1368,10 +1368,10 @@ See also: string functions
     %? = The current function invocation and depth counts
     %= = The dbref/attribute currently being evaluated
     %+ = The number of arguments passed to the current ufun.
-    %qN = the equivalent of r(N), a register set by a setq() function.
-    %q<N> = the equivilent of r(N) for a named register
-    %iN = equivilent of itext(N), the list element for iter()/@dolist.
-    %$N = equivilent of stext(N), the <string> in switch()/@switch.
+    %qN = the equivalent of r(N) for registers 0-9 and A-Z set by the setq() function
+    %q<N> = the equivalent of r(N) for a named register set by the setq() function
+    %iN = equivalent of itext(N), the list element for iter()/@dolist.
+    %$N = equivalent of stext(N), the <string> in switch()/@switch.
  
   See 'help substitutions4' for examples.
 See also: EVALUATION, ENACTOR, EXECUTOR, DBREFS, REGISTERS, v()

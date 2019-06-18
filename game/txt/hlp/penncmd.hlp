@@ -51,13 +51,13 @@ These '@' commands are general utility and programming commands:
   @cemit         @command       @config        @decompile     @doing
   @dolist        @drain         @edit          @emit          @entrances
   @find          @force         @function      @gedit         @grep
-  @halt          @lemit         @listmotd      @mail          @notify
-  @nsemit        @nslemit       @nsoemit       @nspemit       @nsprompt      
-  @nsremit       @nszemit       @oemit         @password      @pemit         
-  @prompt        @ps            @remit         @restart       @scan          
-  @search        @select        @stats         @sweep         @switch        
-  @teleport      @trigger       @verb          @version       @wait          
-  @whereis       @zemit
+  @halt          @if            @lemit         @listmotd      @mail
+  @notify        @nsemit        @nslemit       @nsoemit       @nspemit
+  @nsprompt      @nsremit       @nszemit       @oemit         @password
+  @pemit         @prompt        @ps            @remit         @restart
+  @scan          @search        @select        @stats         @sweep
+  @switch        @teleport      @trigger       @verb          @version
+  @wait          @whereis       @zemit
 
 & @-WIZARD
 These '@' commands are only usable by wizards or privileged players:

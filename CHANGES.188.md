@@ -53,6 +53,7 @@ Minor Changes
 * @SOCKSET now has a NOQUOTA option which causes that socket to be given the max command input quota per refresh. [MT]
 * --disable-socket-quota is now preserved across reboots. [MT]
 * Improved detection of an already running game. [SW]
+* Support logging through the OS syslog facility. [SW]
 
 Softcode
 --------

@@ -296,12 +296,14 @@ del_check(const char *ref, const char *filename, int line)
   if (chk) {
     chk->ref_count -= 1;
     if (chk->ref_count < 0)
-      do_rawlog(LT_TRACE,
-                "ERROR: Deleting a check with a negative count: %s (At %s:%d)",
-                ref, filename, line);
+      do_rawlog_lvl(
+        LT_TRACE, MLOG_WARNING,
+        "ERROR: Deleting a check with a negative count: %s (At %s:%d)", ref,
+        filename, line);
   } else {
-    do_rawlog(LT_TRACE, "ERROR: Deleting a non-existant check: %s (At %s:%d)",
-              ref, filename, line);
+    do_rawlog_lvl(LT_TRACE, MLOG_WARNING,
+                  "ERROR: Deleting a non-existant check: %s (At %s:%d)", ref,
+                  filename, line);
   }
 }
 
@@ -333,11 +335,12 @@ log_mem_check(void)
 
   if (!options.mem_check)
     return;
-  do_rawlog(LT_TRACE, "MEMCHECK dump starts");
+  do_rawlog_lvl(LT_TRACE, MLOG_DEBUG, "MEMCHECK dump starts");
   for (chk = memcheck_head->links[0]; chk; chk = chk->links[0]) {
-    do_rawlog(LT_TRACE, "%s : %d", chk->ref_name, chk->ref_count);
+    do_rawlog_lvl(LT_TRACE, MLOG_DEBUG, "%s : %d", chk->ref_name,
+                  chk->ref_count);
   }
-  do_rawlog(LT_TRACE, "MEMCHECK dump ends");
+  do_rawlog_lvl(LT_TRACE, MLOG_DEBUG, "MEMCHECK dump ends");
 }
 
 /** Dump a representation of the memcheck skip list into a file, using the dot

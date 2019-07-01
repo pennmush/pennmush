@@ -600,6 +600,9 @@ colors_file txt/colors.json
 ### MUSH.
 ###
 
+# If true, also log messages to the system syslog service.
+use_syslog no
+
 # Filename to log important messages (startups, errors, shutdowns)
 error_log  log/netmush.log
 

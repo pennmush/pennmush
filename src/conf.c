@@ -243,6 +243,7 @@ PENNCONF conftable[] = {
   {"chan_cost", cf_int, &options.chan_cost, 10000, 0, "chat"},
   {"noisy_cemit", cf_bool, &options.noisy_cemit, 2, 0, "chat"},
   {"chan_title_len", cf_int, &options.chan_title_len, 250, 0, "chat"},
+  {"use_syslog", cf_bool, &options.use_syslog, 2, 0, "log"},
   {"log_commands", cf_bool, &options.log_commands, 2, 0, "log"},
   {"log_forces", cf_bool, &options.log_forces, 2, 0, "log"},
   {"error_log", cf_str, options.error_log, sizeof options.error_log, 0, "log"},
@@ -646,8 +647,9 @@ CONFIG_FUNC(cf_priv)
 
   if (is_strict_integer(val)) {
     if (!from_cmd) {
-      do_rawlog(LT_ERR, "CONFIG: Option '%s' set to an integer. Please update "
-                        "to a list of values.",
+      do_rawlog(LT_ERR,
+                "CONFIG: Option '%s' set to an integer. Please update "
+                "to a list of values.",
                 opt);
     }
     *((privbits *) loc) = parse_integer(val);
@@ -934,8 +936,9 @@ config_set(const char *opt, char *val, int source, int restrictions)
         return 0;
       }
     } else {
-      do_rawlog(LT_ERR, "CONFIG: restrict_attribute %s requires a restriction "
-                        "(use 'none' for none)",
+      do_rawlog(LT_ERR,
+                "CONFIG: restrict_attribute %s requires a restriction "
+                "(use 'none' for none)",
                 val);
       return 0;
     }
@@ -1241,6 +1244,7 @@ conf_default_set(void)
   strcpy(options.trace_log, "");
   strcpy(options.wizard_log, "");
   strcpy(options.checkpt_log, "");
+  options.use_syslog = 0;
   options.log_commands = 0;
   options.log_forces = 1;
   options.support_pueblo = 0;
@@ -1491,8 +1495,9 @@ config_file_checks(void)
   for (cp = hash_firstentry(&local_options); cp;
        cp = hash_nextentry(&local_options)) {
     if (!(cp->flags & (CP_OVERRIDDEN | CP_OPTIONAL))) {
-      do_rawlog(LT_ERR, "CONFIG: local directive '%s' missing from cnf file. "
-                        "Using default value.",
+      do_rawlog(LT_ERR,
+                "CONFIG: local directive '%s' missing from cnf file. "
+                "Using default value.",
                 cp->name);
     }
   }

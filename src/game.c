@@ -469,15 +469,15 @@ mush_panic(const char *message)
   static int already_panicking = 0;
 
   if (already_panicking) {
-    do_rawlog(LT_ERR,
-              "PANIC: Attempted to panic because of '%s' while already "
-              "panicking. Run in circles, scream and shout!",
-              message);
+    do_rawlog_lvl(LT_ERR, MLOG_CRIT,
+                  "PANIC: Attempted to panic because of '%s' while already "
+                  "panicking. Run in circles, scream and shout!",
+                  message);
     abort();
   }
 
   already_panicking = 1;
-  do_rawlog(LT_ERR, "PANIC: %s", message);
+  do_rawlog_lvl(LT_ERR, MLOG_EMERG, "PANIC: %s", message);
   report();
   flag_broadcast(0, 0, T("EMERGENCY SHUTDOWN: %s"), message);
 
@@ -491,11 +491,11 @@ mush_panic(const char *message)
   if (globals.database_loaded) {
     if (setjmp(db_err)) {
       /* Dump failed. We're in deep doo-doo */
-      do_rawlog(LT_ERR, "CANNOT DUMP PANIC DB. OOPS.");
+      do_rawlog_lvl(LT_ERR, MLOG_EMERG, "CANNOT DUMP PANIC DB. OOPS.");
       abort();
     } else {
       if ((f = penn_fopen(panicfile, FOPEN_WRITE)) == NULL) {
-        do_rawlog(LT_ERR, "CANNOT OPEN PANIC FILE, YOU LOSE");
+        do_rawlog_lvl(LT_ERR, MLOG_EMERG, "CANNOT OPEN PANIC FILE, YOU LOSE");
         _exit(135);
       } else {
         do_rawlog(LT_ERR, "DUMPING: %s", panicfile);
@@ -507,7 +507,8 @@ mush_panic(const char *message)
       }
     }
   } else {
-    do_rawlog(LT_ERR, "Skipping panic dump because database isn't loaded.");
+    do_rawlog_lvl(LT_ERR, MLOG_CRIT,
+                  "Skipping panic dump because database isn't loaded.");
   }
   abort();
 }
@@ -540,9 +541,11 @@ dump_database(void)
 {
   epoch++;
 
-  do_rawlog(LT_ERR, "DUMPING: %s.#%d#", globals.dumpfile, epoch);
-  if (dump_database_internal())
-    do_rawlog(LT_ERR, "DUMPING: %s.#%d# (done)", globals.dumpfile, epoch);
+  do_rawlog_lvl(LT_ERR, MLOG_INFO, "DUMPING: %s.#%d#", globals.dumpfile, epoch);
+  if (dump_database_internal()) {
+    do_rawlog_lvl(LT_ERR, MLOG_INFO, "DUMPING: %s.#%d# (done)",
+                  globals.dumpfile, epoch);
+  }
 }
 
 /** Dump a database, possibly by forking the process.
@@ -569,7 +572,8 @@ fork_and_dump(int forking)
   chunk_stats(NOTHING, 0);
   chunk_stats(NOTHING, 1);
 #endif
-  do_rawlog(LT_CHECK, "CHECKPOINTING: %s.#%d#", globals.dumpfile, epoch);
+  do_rawlog_lvl(LT_CHECK, MLOG_INFO, "CHECKPOINTING: %s.#%d#", globals.dumpfile,
+                epoch);
   if (NO_FORK)
     nofork = 1;
   else
@@ -586,9 +590,9 @@ fork_and_dump(int forking)
       split = 1;
     } else {
       /* Ack, can't fork, 'cause we have stuff on disk... */
-      do_log(LT_ERR, 0, 0,
-             "fork_and_dump: Data are swapped to disk, so "
-             "nonforking dumps will be used.");
+      do_rawlog_lvl(LT_ERR, MLOG_INFO,
+                    "fork_and_dump: Data are swapped to disk, so "
+                    "nonforking dumps will be used.");
       flag_broadcast(
         "WIZARD", 0,
         T("DUMP: Data are swapped to disk, so nonforking dumps will be used."));
@@ -607,8 +611,8 @@ fork_and_dump(int forking)
 #endif
     if (child < 0) {
       /* Oops, fork failed. Let's do a nofork dump */
-      do_log(LT_ERR, 0, 0,
-             "fork_and_dump: fork() failed! Dumping nofork instead.");
+      do_rawlog_lvl(LT_ERR, MLOG_WARNING,
+                    "fork_and_dump: fork() failed! Dumping nofork instead.");
       if (DUMP_NOFORK_MESSAGE && *DUMP_NOFORK_MESSAGE)
         flag_broadcast(0, 0, "%s", DUMP_NOFORK_MESSAGE);
       child = 0;
@@ -699,7 +703,7 @@ do_restart(void)
       if (IsGarbage(thing))
         set_name(thing, "Garbage");
       else {
-        do_log(LT_ERR, NOTHING, NOTHING, "Null name on object #%d", thing);
+        do_rawlog_lvl(LT_ERR, MLOG_ERR, "Null name on object #%d", thing);
         set_name(thing, "XXXX");
       }
     }
@@ -807,8 +811,9 @@ init_game_postdb(const char *conf)
 
 /* Set up ssl */
 #ifndef SSL_SLAVE
-  if (!ssl_init(options.ssl_private_key_file, options.ssl_certificate_file, options.ssl_ca_file,
-                options.ssl_ca_dir, options.ssl_require_client_cert)) {
+  if (!ssl_init(options.ssl_private_key_file, options.ssl_certificate_file,
+                options.ssl_ca_file, options.ssl_ca_dir,
+                options.ssl_require_client_cert)) {
     do_rawlog(LT_ERR, "SSL initialization failure");
     options.ssl_port = 0; /* Disable ssl */
   }
@@ -1070,7 +1075,7 @@ passwd_filter(const char *cmd)
     if (!pass_ptn) {
       char errstr[120];
       pcre2_get_error_message(errcode, (PCRE2_UCHAR *) errstr, sizeof errstr);
-      do_log(LT_ERR, GOD, GOD, "pcre_compile: %s", errstr);
+      do_rawlog_lvl(LT_ERR, MLOG_ERR, "pcre_compile: %s", errstr);
       return "";
     }
     pcre2_jit_compile(pass_ptn, PCRE2_JIT_COMPLETE);
@@ -1083,7 +1088,7 @@ passwd_filter(const char *cmd)
     if (!newpass_ptn) {
       char errstr[120];
       pcre2_get_error_message(errcode, (PCRE2_UCHAR *) errstr, sizeof errstr);
-      do_log(LT_ERR, GOD, GOD, "pcre_compile: %s", errstr);
+      do_rawlog_lvl(LT_ERR, MLOG_ERR, "pcre_compile: %s", errstr);
       return "";
     }
     pcre2_jit_compile(newpass_ptn, PCRE2_JIT_COMPLETE);
@@ -1162,13 +1167,12 @@ process_command(dbref executor, char *command, MQUE *queue_entry)
   errdbtail = errdblist;
   errdb = NOTHING;
   if (!command) {
-    do_log(LT_ERR, NOTHING, NOTHING, "ERROR: No command!!!");
+    do_rawlog_lvl(LT_ERR, MLOG_ERR, "ERROR: No command!!!");
     return;
   }
   /* robustify executor */
   if (!GoodObject(executor)) {
-    do_log(LT_ERR, NOTHING, NOTHING, "process_command bad player #%d",
-           executor);
+    do_rawlog_lvl(LT_ERR, MLOG_ERR, "process_command bad player #%d", executor);
     return;
   }
 
@@ -1193,9 +1197,9 @@ process_command(dbref executor, char *command, MQUE *queue_entry)
     notify_format(Owner(executor),
                   T("Invalid location on command execution: %s(#%d)"),
                   Name(executor), executor);
-    do_log(LT_ERR, NOTHING, NOTHING,
-           "Command attempted by %s(#%d) in invalid location #%d.",
-           Name(executor), executor, Location(executor));
+    do_rawlog_lvl(LT_ERR, MLOG_ERR,
+                  "Command attempted by %s(#%d) in invalid location #%d.",
+                  Name(executor), executor, Location(executor));
     if (Mobile(executor)) {
       moveto(executor, PLAYER_START, SYSEVENT,
              "dbck"); /* move it someplace valid */

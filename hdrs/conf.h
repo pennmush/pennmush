@@ -230,13 +230,14 @@ struct options_table {
                                         files */
   char guest_file[2][FILE_PATH_LEN]; /**< Names of text and html guest files */
   char who_file[2][FILE_PATH_LEN];   /**< Names of text and html who files */
-  char index_html[FILE_PATH_LEN];    /**< Name of the default HTTP landing page */
-  int log_commands;                  /**< Should we log all commands? */
-  int log_forces;                    /**< Should we log force commands? */
-  int support_pueblo;                /**< Should the MUSH send Pueblo tags? */
-  int login_allow;                   /**< Are mortals allowed to log in? */
-  int guest_allow;                   /**< Are guests allowed to log in? */
-  int create_allow;                  /**< Can new players be created? */
+  char index_html[FILE_PATH_LEN]; /**< Name of the default HTTP landing page */
+  int use_syslog;                 /**< Should we also log to syslog? */
+  int log_commands;               /**< Should we log all commands? */
+  int log_forces;                 /**< Should we log force commands? */
+  int support_pueblo;             /**< Should the MUSH send Pueblo tags? */
+  int login_allow;                /**< Are mortals allowed to log in? */
+  int guest_allow;                /**< Are guests allowed to log in? */
+  int create_allow;               /**< Can new players be created? */
   int reverse_shs; /**< Should the SHS routines assume little-endian byte order?
                     */
   char player_flags[BUFFER_LEN];  /**< Space-separated list of flags to set on

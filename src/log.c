@@ -28,6 +28,9 @@
 #ifdef HAVE_SYS_WAIT_H
 #include <sys/wait.h>
 #endif
+#ifdef HAVE_SYSLOG_H
+#include <syslog.h>
+#endif
 #include <string.h>
 #include <stdarg.h>
 #include <stdlib.h>
@@ -154,6 +157,10 @@ start_all_logs(void)
   FILE *fp;
   static bool once = 1;
 
+#ifdef HAVE_SYSLOG
+  openlog(options.mud_name, LOG_PID | LOG_NOWAIT, LOG_USER);
+#endif
+
   for (n = 0; n < NLOGS; n++)
     start_log(logs + n);
 
@@ -226,8 +233,12 @@ void
 end_all_logs(void)
 {
   int n;
-  for (n = 0; n < NLOGS; n++)
+  for (n = 0; n < NLOGS; n++) {
     end_log(logs + n, 0);
+  }
+#ifdef HAVE_SYSLOG
+  closelog();
+#endif
 }
 
 static void
@@ -401,24 +412,51 @@ check_log_size(struct log_stream *log)
   unlock_file(log->fp);
 }
 
+#ifdef HAVE_SYSLOG
+static int
+loglevel_to_syslog(enum log_level loglevel)
+{
+  switch (loglevel) {
+  case MLOG_EMERG:
+    return LOG_EMERG;
+  case MLOG_ALERT:
+    return LOG_ALERT;
+  case MLOG_CRIT:
+    return LOG_CRIT;
+  case MLOG_ERR:
+    return LOG_ERR;
+  case MLOG_WARNING:
+    return LOG_WARNING;
+  case MLOG_NOTICE:
+  default:
+    return LOG_NOTICE;
+  case MLOG_INFO:
+    return LOG_INFO;
+  case MLOG_DEBUG:
+    return LOG_DEBUG;
+  }
+}
+#endif
+
 /** Log a raw message.
  * take a log type and format list and args, write to appropriate logfile.
  * log types are defined in log.h
  * \param logtype type of log to print message to.
- * \param fmt format string for message.
+ * \param loglevel the priority level of the message.
+ * \param fmt format string for the message.
+ * \parm args The arg list for the message.
  */
-void WIN32_CDECL
-do_rawlog(enum log_type logtype, const char *fmt, ...)
+void
+do_rawlog_vlvl(enum log_type logtype,
+               enum log_level loglevel __attribute__((__unused__)),
+               const char *fmt, va_list args)
 {
   struct log_stream *log;
   struct tm *ttm;
   char timebuf[48];
   char tbuf1[BUFFER_LEN + 50];
-  va_list args;
 
-  va_start(args, fmt);
   mush_vsnprintf(tbuf1, sizeof tbuf1, fmt, args);
-  va_end(args);
 
   time(&mudtime);
   ttm = localtime(&mudtime);
@@ -439,13 +477,51 @@ do_rawlog(enum log_type logtype, const char *fmt, ...)
   unlock_file(log->fp);
   add_to_bufferq(log->buffer, logtype, GOD, tbuf1);
   queue_event(-1, log->event, "%s", tbuf1);
+#ifdef HAVE_SYSLOG
+  if (options.use_syslog) {
+    syslog(loglevel_to_syslog(loglevel), "%s", tbuf1);
+  }
+#endif
   check_log_size(log);
+}
+
+/** Log a raw message.
+ * take a log type and format list and args, write to appropriate logfile.
+ * log types are defined in log.h
+ * \param logtype type of log to print message to.
+ * \param loglevel the priority level of the message.
+ * \param fmt format string for the message.
+ */
+void WIN32_CDECL
+do_rawlog_lvl(enum log_type logtype, enum log_level loglevel, const char *fmt,
+              ...)
+{
+  va_list args;
+  va_start(args, fmt);
+  do_rawlog_vlvl(logtype, loglevel, fmt, args);
+  va_end(args);
+}
+
+/** Log a raw message.
+ * take a log type and format list and args, write to appropriate logfile at
+ * MLOG_NOTICE priority. log types are defined in log.h \param logtype type of
+ * log to print message to. \param fmt format string for the message.
+ */
+void WIN32_CDECL
+do_rawlog(enum log_type logtype, const char *fmt, ...)
+{
+  va_list args;
+  va_start(args, fmt);
+  do_rawlog_vlvl(logtype, MLOG_NOTICE, fmt, args);
+  va_end(args);
 }
 
 /** Log a message, with useful information.
  * take a log type and format list and args, write to appropriate logfile.
  * log types are defined in log.h. Unlike do_rawlog, this version
  * tags messages with prefixes, and uses dbref information passed to it.
+ * syslog priorities: CMD, CONN, WIZ messages are looged at MLOG_INFO.
+ * HUH at MLOG_DEBUG. Everything else at MLOG_NOTICE.
  * \param logtype type of log to print message to.
  * \param player dbref that generated the log message.
  * \param object second dbref involved in log message (e.g. force logs)
@@ -475,12 +551,12 @@ do_log(enum log_type logtype, dbref player, dbref object, const char *fmt, ...)
       strcpy(unp1, quick_unparse(player));
       if (GoodObject(object)) {
         strcpy(unp2, quick_unparse(object));
-        do_rawlog(logtype, "CMD: %s %s / %s: %s",
-                  (Suspect(player) ? "SUSPECT" : ""), unp1, unp2, tbuf1);
+        do_rawlog_lvl(logtype, MLOG_INFO, "CMD: %s %s / %s: %s",
+                      (Suspect(player) ? "SUSPECT" : ""), unp1, unp2, tbuf1);
       } else {
         strcpy(unp2, quick_unparse(Location(player)));
-        do_rawlog(logtype, "CMD: %s %s in %s: %s",
-                  (Suspect(player) ? "SUSPECT" : ""), unp1, unp2, tbuf1);
+        do_rawlog_lvl(logtype, MLOG_INFO, "CMD: %s %s in %s: %s",
+                      (Suspect(player) ? "SUSPECT" : ""), unp1, unp2, tbuf1);
       }
     }
     break;
@@ -488,16 +564,17 @@ do_log(enum log_type logtype, dbref player, dbref object, const char *fmt, ...)
     strcpy(unp1, quick_unparse(player));
     if (GoodObject(object)) {
       strcpy(unp2, quick_unparse(object));
-      do_rawlog(logtype, "WIZ: %s --> %s: %s", unp1, unp2, tbuf1);
+      do_rawlog_lvl(logtype, MLOG_INFO, "WIZ: %s --> %s: %s", unp1, unp2,
+                    tbuf1);
     } else {
-      do_rawlog(logtype, "WIZ: %s: %s", unp1, tbuf1);
+      do_rawlog_lvl(logtype, MLOG_INFO, "WIZ: %s: %s", unp1, tbuf1);
     }
     break;
   case LT_CONN:
-    do_rawlog(logtype, "NET: %s", tbuf1);
+    do_rawlog_lvl(logtype, MLOG_INFO, "NET: %s", tbuf1);
     break;
   case LT_TRACE:
-    do_rawlog(logtype, "TRC: %s", tbuf1);
+    do_rawlog_lvl(logtype, MLOG_DEBUG, "TRC: %s", tbuf1);
     break;
   case LT_CHECK:
     do_rawlog(logtype, "%s", tbuf1);
@@ -506,10 +583,11 @@ do_log(enum log_type logtype, dbref player, dbref object, const char *fmt, ...)
     if (!controls(player, Location(player))) {
       strcpy(unp1, quick_unparse(player));
       strcpy(unp2, quick_unparse(Location(player)));
-      do_rawlog(logtype, "HUH: %s in %s [%s]: %s", unp1, unp2,
-                (GoodObject(Location(player))) ? Name(Owner(Location(player)))
-                                               : T("bad object"),
-                tbuf1);
+      do_rawlog_lvl(logtype, MLOG_DEBUG, "HUH: %s in %s [%s]: %s", unp1, unp2,
+                    (GoodObject(Location(player)))
+                      ? Name(Owner(Location(player)))
+                      : T("bad object"),
+                    tbuf1);
     }
     break;
   default:

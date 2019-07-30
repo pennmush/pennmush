@@ -385,7 +385,7 @@ struct fcache_entries {
   FBLOCK full_fcache[2];     /**< full.txt and full.html */
   FBLOCK guest_fcache[2];    /**< guest.txt and guest.html */
   FBLOCK who_fcache[2];      /**< textfiles to override connect screen WHO */
-  FBLOCK index_fcache;         /**< default HTTP landing page */
+  FBLOCK index_fcache;       /**< default HTTP landing page */
 };
 
 static struct fcache_entries fcache;
@@ -2129,7 +2129,7 @@ fcache_read_one(const char *filename)
       hash_add(&lookup, options.guest_file[i], &fcache.guest_fcache[i]);
       hash_add(&lookup, options.who_file[i], &fcache.who_fcache[i]);
     }
-    
+
     hash_add(&lookup, options.index_html, &fcache.index_fcache);
   }
 
@@ -2162,7 +2162,7 @@ fcache_load(dbref player)
     full = fcache_read(&fcache.full_fcache[i], options.full_file[i]);
     guest = fcache_read(&fcache.guest_fcache[i], options.guest_file[i]);
     who = fcache_read(&fcache.who_fcache[i], options.who_file[i]);
-    
+
     if (i == 0) {
       index = fcache_read(&fcache.index_fcache, options.index_html);
     }
@@ -2172,8 +2172,8 @@ fcache_load(dbref player)
                     T("%s sizes:  Index...%d  NewUser...%d  Connect...%d  "
                       "Guest...%d  Motd...%d  Wizmotd...%d  Quit...%d  "
                       "Register...%d  Down...%d  Full...%d  Who...%d"),
-                    i ? "HTMLFile" : "File", index, new, conn, guest, motd,
-                      wiz, quit, reg, down, full, who);
+                    i ? "HTMLFile" : "File", index, new, conn, guest, motd, wiz,
+                    quit, reg, down, full, who);
     }
   }
 }
@@ -2192,12 +2192,13 @@ disconnect_player(DESC *d, enum disconn_reason reason)
   if (d->connected == CONN_PLAYER && IsPlayer(d->player)) {
     fcache_dump(d, fcache.quit_fcache, NULL, NULL);
     if (reason == DISCONNECT_LOGOUT) {
-      do_rawlog(LT_CONN,
-                "[%d/%s/%s] Logout by %s(#%d) <Connection not dropped>",
-                d->descriptor, d->addr, d->ip, Name(d->player), d->player);
+      do_rawlog_lvl(LT_CONN, MLOG_INFO,
+                    "[%d/%s/%s] Logout by %s(#%d) <Connection not dropped>",
+                    d->descriptor, d->addr, d->ip, Name(d->player), d->player);
     } else {
-      do_rawlog(LT_CONN, "[%d/%s/%s] Disconnect by %s(#%d) (%s)", d->descriptor,
-                d->addr, d->ip, Name(d->player), d->player, d->close_reason);
+      do_rawlog_lvl(LT_CONN, MLOG_INFO, "[%d/%s/%s] Disconnect by %s(#%d) (%s)",
+                    d->descriptor, d->addr, d->ip, Name(d->player), d->player,
+                    d->close_reason);
     }
     announce_disconnect(d, d->close_reason, d->closer);
     if (can_mail(d->player)) {
@@ -2224,9 +2225,10 @@ logout_sock(DESC *d)
   if (d->connected == CONN_PLAYER) {
     disconnect_player(d, DISCONNECT_LOGOUT);
   } else {
-    do_rawlog(LT_CONN,
-              "[%d/%s/%s] Logout, never connected. <Connection not dropped>",
-              d->descriptor, d->addr, d->ip);
+    do_rawlog_lvl(
+      LT_CONN, MLOG_INFO,
+      "[%d/%s/%s] Logout, never connected. <Connection not dropped>",
+      d->descriptor, d->addr, d->ip);
   }
   process_output(d); /* flush our old output */
   /* pretend we have a new connection */
@@ -2259,8 +2261,9 @@ disconnect_desc(DESC *d)
   if (d->connected == CONN_PLAYER) {
     disconnect_player(d, DISCONNECT_QUIT);
   } else {
-    do_rawlog(LT_CONN, "[%d/%s/%s] Connection closed, never connected (%s).",
-              d->descriptor, d->addr, d->ip, reason);
+    do_rawlog_lvl(LT_CONN, MLOG_INFO,
+                  "[%d/%s/%s] Connection closed, never connected (%s).",
+                  d->descriptor, d->addr, d->ip, reason);
   }
   /* (descriptor, ip, cause, recv/sent/cmds) */
   queue_event(SYSEVENT, "SOCKET`DISCONNECT", "%d,%s,%s,%lu/%lu/%d",
@@ -2388,8 +2391,8 @@ network_send_ssl(DESC *d)
     d->ssl_state = ssl_handshake(d->ssl);
     if (d->ssl_state < 0) {
       /* Fatal error */
-      do_rawlog(LT_CONN, "[%d/%s/%s] SSL handshake failure.\n", d->descriptor,
-                d->addr, d->ip);
+      do_rawlog_lvl(LT_CONN, MLOG_ERR, "[%d/%s/%s] SSL handshake failure.\n",
+                    d->descriptor, d->addr, d->ip);
       ssl_close_connection(d->ssl);
       d->ssl = NULL;
       d->ssl_state = 0;
@@ -2404,8 +2407,8 @@ network_send_ssl(DESC *d)
     d->ssl_state = ssl_accept(d->ssl);
     if (d->ssl_state < 0) {
       /* Fatal error */
-      do_rawlog(LT_CONN, "[%d/%s/%s] SSL accept failure.\n", d->descriptor,
-                d->addr, d->ip);
+      do_rawlog_lvl(LT_CONN, MLOG_ERR, "[%d/%s/%s] SSL accept failure.\n",
+                    d->descriptor, d->addr, d->ip);
       ssl_close_connection(d->ssl);
       d->ssl = NULL;
       d->ssl_state = 0;
@@ -2657,7 +2660,8 @@ save_command(DESC *d, char *command)
       const char errmsg[] =
         "ERROR: Unicode sanitization+normalization failed.\r\n";
       queue_newwrite(d, errmsg, sizeof(errmsg) - 1);
-      do_rawlog(LT_ERR, "Unable to sanitize+normalize input '%s'", command);
+      do_rawlog_lvl(LT_ERR, MLOG_WARNING,
+                    "Unable to sanitize+normalize input '%s'", command);
     }
   } else {
     char *c;
@@ -2708,8 +2712,8 @@ setup_telnet(DESC *d)
   if ((d->conn_flags & (CONN_TELNET_QUERY | CONN_AWAITING_FIRST_DATA)) &&
       starting_telnet_neg) {
     d->conn_flags &= ~CONN_TELNET_QUERY;
-    do_rawlog(LT_CONN, "[%d/%s/%s] Switching to Telnet mode.", d->descriptor,
-              d->addr, d->ip);
+    do_rawlog_lvl(LT_CONN, MLOG_DEBUG, "[%d/%s/%s] Switching to Telnet mode.",
+                  d->descriptor, d->addr, d->ip);
     queue_newwrite(d, starting_telnet_neg, starting_telnet_neg_len);
     process_output(d);
   }
@@ -2889,12 +2893,14 @@ TELNET_HANDLER(telnet_charset_sb)
   }
   if (!strcasecmp(cmd, "US-ASCII") || !strcasecmp(cmd, "ASCII")) {
     /* ascii requested; strip accents for the connection */
-    do_rawlog(LT_CONN, "Descriptor %d using charset ASCII.", d->descriptor);
+    do_rawlog_lvl(LT_CONN, MLOG_DEBUG, "Descriptor %d using charset ASCII.",
+                  d->descriptor);
     d->conn_flags |= CONN_STRIPACCENTS;
   }
   if (strcasecmp(cmd, "UTF-8") == 0) {
     /* Send and receive UTF-8, translate to latin-1 */
-    do_rawlog(LT_CONN, "Descriptor %d using charset UTF-8.", d->descriptor);
+    do_rawlog_lvl(LT_CONN, MLOG_DEBUG, "Descriptor %d using charset UTF-8.",
+                  d->descriptor);
     d->conn_flags |= CONN_UTF8;
   }
 }
@@ -3608,7 +3614,8 @@ process_commands(void)
           if (!cdesc->input.head)
             cdesc->input.tail = NULL;
 #ifdef DEBUG
-          do_rawlog(LT_TRACE, "free_text_block(%p) at 5.", (void *) t);
+          do_rawlog_lvl(LT_TRACE, MLOG_DEBUG, "free_text_block(%p) at 5.",
+                        (void *) t);
 #endif /* DEBUG */
           free_text_block(t);
           break;
@@ -3641,7 +3648,7 @@ http_bounce_mud_url(DESC *d)
   char *bp = buf;
   bool has_url = strncmp(MUDURL, "http", 4) == 0;
   FBLOCK *index = &fcache.index_fcache;
-  
+
   /* Setup the return headers. */
   safe_format(buf, &bp,
               "HTTP/1.1 200 OK\r\n"
@@ -3649,14 +3656,15 @@ http_bounce_mud_url(DESC *d)
               "Pragma: no-cache\r\n"
               "Connection: Close\r\n"
               "\r\n");
-  
+
   /* See if we've got a cached index.html file and use that. */
   if (index && index->buff) {
     *bp = '\0';
-    
+
     /* Check for an attribute override. */
     if (index->thing != NOTHING) {
-      if (fcache_dump_attr(d, index->thing, (char *) index->buff, 1, buf, NULL) == 1) {
+      if (fcache_dump_attr(d, index->thing, (char *) index->buff, 1, buf,
+                           NULL) == 1) {
         /* Attr successfully evaluated and displayed */
         return;
       }
@@ -3667,9 +3675,8 @@ http_bounce_mud_url(DESC *d)
       queue_write(d, index->buff, index->len);
       return;
     }
-    
   }
-  
+
   /* Show the default landing page with embedded MUDURL. */
   safe_format(buf, &bp,
               "<!DOCTYPE html>\r\n"
@@ -4171,8 +4178,8 @@ do_command(DESC *d, char *command)
     if (!(d->conn_flags & CONN_HTML)) {
       queue_newwrite(d, PUEBLO_SEND, strlen(PUEBLO_SEND));
       process_output(d);
-      do_rawlog(LT_CONN, "[%d/%s/%s] Switching to Pueblo mode.", d->descriptor,
-                d->addr, d->ip);
+      do_rawlog_lvl(LT_CONN, MLOG_INFO, "[%d/%s/%s] Switching to Pueblo mode.",
+                    d->descriptor, d->addr, d->ip);
       d->conn_flags |= CONN_HTML;
       if (!d->connected && !d->conn_timer)
         welcome_user(d, 1);
@@ -4296,8 +4303,9 @@ dump_messages(DESC *d, dbref player, int isnew)
     /* check for exceeding max player limit */
     if (under_limit && (login_number > MAX_LOGINS)) {
       under_limit = 0;
-      do_rawlog(LT_CONN, "Limit of %d players reached. Logins disabled.\n",
-                MAX_LOGINS);
+      do_rawlog_lvl(LT_CONN, MLOG_WARNING,
+                    "Limit of %d players reached. Logins disabled.\n",
+                    MAX_LOGINS);
     }
   }
   /* give players a message on connection */
@@ -4395,12 +4403,13 @@ check_connect(DESC *d, const char *msg)
     if ((player = connect_player(d, user, password, d->addr, d->ip, errbuf)) ==
         NOTHING) {
       queue_string_eol(d, "%s", errbuf);
-      do_rawlog(LT_CONN, "[%d/%s/%s] Failed connect to '%s'.", d->descriptor,
-                d->addr, d->ip, user);
+      do_rawlog_lvl(LT_CONN, MLOG_INFO, "[%d/%s/%s] Failed connect to '%s'.",
+                    d->descriptor, d->addr, d->ip, user);
     } else {
-      do_rawlog(LT_CONN, "[%d/%s/%s] Connected to %s(#%d) in %s(#%d)",
-                d->descriptor, d->addr, d->ip, Name(player), player,
-                Name(Location(player)), Location(player));
+      do_rawlog_lvl(LT_CONN, MLOG_INFO,
+                    "[%d/%s/%s] Connected to %s(#%d) in %s(#%d)", d->descriptor,
+                    d->addr, d->ip, Name(player), player,
+                    Name(Location(player)), Location(player));
       if ((dump_messages(d, player, 0)) == 0) {
         d->connected = CONN_DENIED;
         return 0;
@@ -4411,12 +4420,13 @@ check_connect(DESC *d, const char *msg)
     if ((player = connect_player(d, user, password, d->addr, d->ip, errbuf)) ==
         NOTHING) {
       queue_string_eol(d, "%s", errbuf);
-      do_rawlog(LT_CONN, "[%d/%s/%s] Failed connect to '%s'.", d->descriptor,
-                d->addr, d->ip, user);
+      do_rawlog_lvl(LT_CONN, MLOG_INFO, "[%d/%s/%s] Failed connect to '%s'.",
+                    d->descriptor, d->addr, d->ip, user);
     } else {
-      do_rawlog(LT_CONN, "[%d/%s/%s] Connected dark to %s(#%d) in %s(#%d)",
-                d->descriptor, d->addr, d->ip, Name(player), player,
-                Name(Location(player)), Location(player));
+      do_rawlog_lvl(LT_CONN, MLOG_INFO,
+                    "[%d/%s/%s] Connected dark to %s(#%d) in %s(#%d)",
+                    d->descriptor, d->addr, d->ip, Name(player), player,
+                    Name(Location(player)), Location(player));
       /* Set player dark */
       d->connected = CONN_PLAYER;
       if (Can_Hide(player))
@@ -4434,12 +4444,13 @@ check_connect(DESC *d, const char *msg)
     if ((player = connect_player(d, user, password, d->addr, d->ip, errbuf)) ==
         NOTHING) {
       queue_string_eol(d, "%s", errbuf);
-      do_rawlog(LT_CONN, "[%d/%s/%s] Failed connect to '%s'.", d->descriptor,
-                d->addr, d->ip, user);
+      do_rawlog_lvl(LT_CONN, MLOG_INFO, "[%d/%s/%s] Failed connect to '%s'.",
+                    d->descriptor, d->addr, d->ip, user);
     } else {
-      do_rawlog(LT_CONN, "[%d/%s/%s] Connected to %s(#%d) in %s(#%d)",
-                d->descriptor, d->addr, d->ip, Name(player), player,
-                Name(Location(player)), Location(player));
+      do_rawlog_lvl(LT_CONN, MLOG_INFO,
+                    "[%d/%s/%s] Connected to %s(#%d) in %s(#%d)", d->descriptor,
+                    d->addr, d->ip, Name(player), player,
+                    Name(Location(player)), Location(player));
       /* Set player !dark */
       d->connected = CONN_PLAYER;
       d->player = player;
@@ -4454,12 +4465,13 @@ check_connect(DESC *d, const char *msg)
     if ((player = connect_player(d, user, password, d->addr, d->ip, errbuf)) ==
         NOTHING) {
       queue_string_eol(d, "%s", errbuf);
-      do_rawlog(LT_CONN, "[%d/%s/%s] Failed connect to '%s'.", d->descriptor,
-                d->addr, d->ip, user);
+      do_rawlog_lvl(LT_CONN, MLOG_INFO, "[%d/%s/%s] Failed connect to '%s'.",
+                    d->descriptor, d->addr, d->ip, user);
     } else {
-      do_rawlog(LT_CONN, "[%d/%s/%s] Connected hidden to %s(#%d) in %s(#%d)",
-                d->descriptor, d->addr, d->ip, Name(player), player,
-                Name(Location(player)), Location(player));
+      do_rawlog_lvl(LT_CONN, MLOG_INFO,
+                    "[%d/%s/%s] Connected hidden to %s(#%d) in %s(#%d)",
+                    d->descriptor, d->addr, d->ip, Name(player), player,
+                    Name(Location(player)), Location(player));
       /* Set player hidden */
       d->connected = CONN_PLAYER;
       d->player = player;
@@ -4477,8 +4489,9 @@ check_connect(DESC *d, const char *msg)
       fcache_dump(d, fcache.register_fcache, NULL, NULL);
       if (!Deny_Silent_Site(d->addr, AMBIGUOUS) &&
           !Deny_Silent_Site(d->ip, AMBIGUOUS)) {
-        do_rawlog(LT_CONN, "[%d/%s/%s] Refused create for '%s'.", d->descriptor,
-                  d->addr, d->ip, user);
+        do_rawlog_lvl(LT_CONN, MLOG_NOTICE,
+                      "[%d/%s/%s] Refused create for '%s'.", d->descriptor,
+                      d->addr, d->ip, user);
         queue_event(SYSEVENT, "SOCKET`CREATEFAIL", "%d,%s,%d,%s,%s",
                     d->descriptor, d->ip, count_failed(d->ip),
                     "create: sitelocked !create", user);
@@ -4494,8 +4507,9 @@ check_connect(DESC *d, const char *msg)
         }
       } else
         fcache_dump(d, fcache.register_fcache, NULL, NULL);
-      do_rawlog(LT_CONN, "REFUSED CREATION for %s from %s on descriptor %d.\n",
-                user, d->addr, d->descriptor);
+      do_rawlog_lvl(LT_CONN, MLOG_NOTICE,
+                    "REFUSED CREATION for %s from %s on descriptor %d.\n", user,
+                    d->addr, d->descriptor);
       queue_event(SYSEVENT, "SOCKET`CREATEFAIL", "%d,%s,%d,%s,%s",
                   d->descriptor, d->ip, count_failed(d->ip),
                   "create: creation not allowed", user);
@@ -4506,8 +4520,9 @@ check_connect(DESC *d, const char *msg)
         queue_write(d, cf_fullmotd_msg, strlen(cf_fullmotd_msg));
         queue_eol(d);
       }
-      do_rawlog(LT_CONN, "REFUSED CREATION for %s from %s on descriptor %d.\n",
-                user, d->addr, d->descriptor);
+      do_rawlog_lvl(LT_CONN, MLOG_NOTICE,
+                    "REFUSED CREATION for %s from %s on descriptor %d.\n", user,
+                    d->addr, d->descriptor);
       queue_event(SYSEVENT, "SOCKET`CREATEFAIL", "%d,%s,%d,%s,%s",
                   d->descriptor, d->ip, count_failed(d->ip),
                   "create: max login count reached", user);
@@ -4520,8 +4535,9 @@ check_connect(DESC *d, const char *msg)
       queue_string_eol(
         d, "%s",
         T((player == NOTHING ? create_fail_bad : create_fail_preexisting)));
-      do_rawlog(LT_CONN, "[%d/%s/%s] Failed create for '%s' (bad name).",
-                d->descriptor, d->addr, d->ip, user);
+      do_rawlog_lvl(LT_CONN, MLOG_INFO,
+                    "[%d/%s/%s] Failed create for '%s' (bad name).",
+                    d->descriptor, d->addr, d->ip, user);
       break;
     case HOME:
       queue_string_eol(d, "%s", T(password_fail));
@@ -4531,8 +4547,8 @@ check_connect(DESC *d, const char *msg)
     default:
       queue_event(SYSEVENT, "PLAYER`CREATE", "%s,%s,%s,%d",
                   unparse_objid(player), Name(player), "create", d->descriptor);
-      do_rawlog(LT_CONN, "[%d/%s/%s] Created %s(#%d)", d->descriptor, d->addr,
-                d->ip, Name(player), player);
+      do_rawlog_lvl(LT_CONN, MLOG_INFO, "[%d/%s/%s] Created %s(#%d)",
+                    d->descriptor, d->addr, d->ip, Name(player), player);
       if ((dump_messages(d, player, 1)) == 0) {
         d->connected = CONN_DENIED;
         return 0;
@@ -4545,9 +4561,9 @@ check_connect(DESC *d, const char *msg)
       fcache_dump(d, fcache.register_fcache, NULL, NULL);
       if (!Deny_Silent_Site(d->addr, AMBIGUOUS) &&
           !Deny_Silent_Site(d->ip, AMBIGUOUS)) {
-        do_rawlog(LT_CONN,
-                  "[%d/%s/%s] Refused registration (bad site) for '%s'.",
-                  d->descriptor, d->addr, d->ip, user);
+        do_rawlog_lvl(LT_CONN, MLOG_NOTICE,
+                      "[%d/%s/%s] Refused registration (bad site) for '%s'.",
+                      d->descriptor, d->addr, d->ip, user);
         queue_event(SYSEVENT, "SOCKET`CREATEFAIL", "%d,%s,%d,%s,%s",
                     d->descriptor, d->ip, mark_failed(d->ip),
                     "register: sitelocked host or ip", user);
@@ -4556,10 +4572,10 @@ check_connect(DESC *d, const char *msg)
     }
     if (!options.create_allow) {
       fcache_dump(d, fcache.register_fcache, NULL, NULL);
-      do_rawlog(LT_CONN,
-                "Refused registration (creation disabled) for %s from "
-                "%s on descriptor %d.\n",
-                user, d->addr, d->descriptor);
+      do_rawlog_lvl(LT_CONN, MLOG_NOTICE,
+                    "Refused registration (creation disabled) for %s from "
+                    "%s on descriptor %d.\n",
+                    user, d->addr, d->descriptor);
       queue_event(SYSEVENT, "SOCKET`CREATEFAIL", "%d,%s,%d,%s,%s",
                   d->descriptor, d->ip, mark_failed(d->ip),
                   "register: registration disabled", user);
@@ -4568,12 +4584,14 @@ check_connect(DESC *d, const char *msg)
     if ((player = email_register_player(d, user, password, d->addr, d->ip)) ==
         NOTHING) {
       queue_string_eol(d, "%s", T(register_fail));
-      do_rawlog(LT_CONN, "[%d/%s/%s] Failed registration for '%s'.",
-                d->descriptor, d->addr, d->ip, user);
+      do_rawlog_lvl(LT_CONN, MLOG_INFO,
+                    "[%d/%s/%s] Failed registration for '%s'.", d->descriptor,
+                    d->addr, d->ip, user);
     } else {
       queue_string_eol(d, "%s", T(register_success));
-      do_rawlog(LT_CONN, "[%d/%s/%s] Registered %s(#%d) to %s", d->descriptor,
-                d->addr, d->ip, Name(player), player, password);
+      do_rawlog_lvl(LT_CONN, MLOG_INFO, "[%d/%s/%s] Registered %s(#%d) to %s",
+                    d->descriptor, d->addr, d->ip, Name(player), player,
+                    password);
     }
     /* Whether it succeeds or fails, leave them connected */
 
@@ -4910,9 +4928,9 @@ sockset(DESC *d, char *name, char *val)
       if (!(d->conn_flags & CONN_HTML)) {
         queue_newwrite(d, PUEBLO_SEND, strlen(PUEBLO_SEND));
         process_output(d);
-        do_rawlog(LT_CONN,
-                  "[%d/%s/%s] Switching to Pueblo mode (via @sockset).",
-                  d->descriptor, d->addr, d->ip);
+        do_rawlog_lvl(LT_CONN, MLOG_INFO,
+                      "[%d/%s/%s] Switching to Pueblo mode (via @sockset).",
+                      d->descriptor, d->addr, d->ip);
         d->conn_flags |= CONN_HTML;
       }
       return T("Pueblo flag set.");
@@ -5489,7 +5507,8 @@ guest_to_connect(dbref player)
   if (MAX_GUESTS < 0)
     return NOTHING;
 
-  do_rawlog(LT_CONN, "Multiple connection to Guest #%d", player);
+  do_rawlog_lvl(LT_CONN, MLOG_WARNING, "Multiple connection to Guest #%d",
+                player);
   return player;
 }
 
@@ -5973,8 +5992,9 @@ announce_connect(DESC *d, int isnew, int num)
       }
       break;
     default:
-      do_rawlog(LT_ERR, "Invalid zone #%d for %s(#%d) has bad type %d", zone,
-                Name(player), player, Typeof(zone));
+      do_rawlog_lvl(LT_ERR, MLOG_ERR,
+                    "Invalid zone #%d for %s(#%d) has bad type %d", zone,
+                    Name(player), player, Typeof(zone));
     }
   }
   /* now try the master room */
@@ -6077,8 +6097,9 @@ announce_disconnect(DESC *saved, const char *reason, dbref executor)
       }
       break;
     default:
-      do_rawlog(LT_ERR, "Invalid zone #%d for %s(#%d) has bad type %d", zone,
-                Name(player), player, Typeof(zone));
+      do_rawlog_lvl(LT_ERR, MLOG_ERR,
+                    "Invalid zone #%d for %s(#%d) has bad type %d", zone,
+                    Name(player), player, Typeof(zone));
     }
   }
   /* now try the master room */
@@ -7259,8 +7280,10 @@ inactivity_check(void)
       } else if (!Can_Idle(d->player)) {
 
         queue_string(d, T("\n*** Inactivity timeout ***\n"));
-        do_rawlog(LT_CONN, "[%d/%s/%s] Logout by %s(#%d) <Inactivity Timeout>",
-                  d->descriptor, d->addr, d->ip, Name(d->player), d->player);
+        do_rawlog_lvl(LT_CONN, MLOG_NOTICE,
+                      "[%d/%s/%s] Logout by %s(#%d) <Inactivity Timeout>",
+                      d->descriptor, d->addr, d->ip, Name(d->player),
+                      d->player);
         boot_desc(d, "idle", NOTHING);
         booted = true;
       } else if (Unfind(d->player)) {
@@ -7429,7 +7452,7 @@ load_reboot_db(void)
   restarting = 1;
 
   if (setjmp(db_err)) {
-    do_rawlog(LT_ERR, "GAME: Unable to read reboot database!");
+    do_rawlog_lvl(LT_ERR, MLOG_CRIT, "GAME: Unable to read reboot database!");
     penn_fclose(f);
     return;
   } else {
@@ -7581,19 +7604,23 @@ load_reboot_db(void)
 #ifdef SSL_SLAVE
     ssl_slave_pid = val;
 
-    if (flags & RDBF_SLAVE_FD)
+    if (flags & RDBF_SLAVE_FD) {
       ssl_slave_ctl_fd = getref(f);
-    else
+    } else {
       ssl_slave_ctl_fd = -1;
+    }
 
     if (SSLPORT && (ssl_slave_pid == -1 || kill(ssl_slave_pid, 0) != 0)) {
       /* Attempt to restart a missing ssl_slave on reboot */
-      do_rawlog(LT_ERR, "ssl_slave does not appear to be running on reboot. "
-                        "Restarting the slave.");
-      if (make_ssl_slave() < 0)
-        do_rawlog(LT_ERR, "Unable to start ssl_slave");
-    } else
+      do_rawlog_lvl(LT_ERR, MLOG_WARNING,
+                    "ssl_slave does not appear to be running on reboot. "
+                    "Restarting the slave.");
+      if (make_ssl_slave() < 0) {
+        do_rawlog_lvl(LT_ERR, MLOG_ERR, "Unable to start ssl_slave");
+      }
+    } else {
       ssl_slave_state = SSL_SLAVE_RUNNING;
+    }
 
 #endif
 
@@ -7707,8 +7734,8 @@ do_reboot(dbref player, int flag)
   execl("pennmush.exe", "pennmush.exe", "/run", NULL);
 #endif /* WIN32 */
   /* Shouldn't ever get here, but just in case... */
-  do_rawlog(LT_ERR, "Unable to restart game: exec: %s\nAborting.",
-            strerror(errno));
+  do_rawlog_lvl(LT_ERR, MLOG_EMERG,
+                "Unable to restart game: exec: %s\nAborting.", strerror(errno));
   exit(1);
 }
 
@@ -7738,12 +7765,14 @@ WATCH(const char *name)
     return;
 
   if (*name != NUMBER_TOKEN) {
-    if ((wd = inotify_add_watch(watch_fd, name,
-                                IN_MODIFY | IN_DELETE_SELF | IN_MOVE_SELF)) < 0)
-      do_rawlog(LT_TRACE, "file_watch_init:inotify_add_watch(\"%s\"): %s", name,
-                strerror(errno));
-    else
+    if ((wd = inotify_add_watch(
+           watch_fd, name, IN_MODIFY | IN_DELETE_SELF | IN_MOVE_SELF)) < 0) {
+      do_rawlog_lvl(LT_TRACE, MLOG_WARNING,
+                    "file_watch_init:inotify_add_watch(\"%s\"): %s", name,
+                    strerror(errno));
+    } else {
       im_insert(watchtable, wd, (void *) name);
+    }
   }
 }
 
@@ -7759,8 +7788,9 @@ watch_files_in(void)
   if (watch_fd < 0)
     return;
 
-  do_rawlog(LT_TRACE, "'No such file or directory' errors immediately "
-                      "following are probably harmless.");
+  do_rawlog_lvl(LT_TRACE, MLOG_WARNING,
+                "'No such file or directory' errors immediately "
+                "following are probably harmless.");
   for (n = 0; n < 2; n++) {
     WATCH(options.connect_file[n]);
     WATCH(options.motd_file[n]);
@@ -7773,7 +7803,7 @@ watch_files_in(void)
     WATCH(options.guest_file[n]);
     WATCH(options.who_file[n]);
   }
-  
+
   WATCH(options.index_html);
 
   for (h = hash_firstentry(&help_files); h; h = hash_nextentry(&help_files))
@@ -7830,16 +7860,17 @@ file_watch_event_in(int fd)
           if (lastwd == ev->wd)
             continue;
           if (fcache_read_one(file)) {
-            do_rawlog(LT_TRACE, "Updated cached copy of %s.", file);
+            do_rawlog_lvl(LT_TRACE, MLOG_INFO, "Updated cached copy of %s.",
+                          file);
             WATCH(file);
           } else if (help_rebuild_by_name(file)) {
             do_rawlog(LT_TRACE, "Reindexing help file %s.", file);
             WATCH(file);
           } else {
-            do_rawlog(LT_ERR,
-                      "Got status change for file '%s' but I don't "
-                      "know what to do with it! Mask 0x%x",
-                      file, ev->mask);
+            do_rawlog_lvl(LT_ERR, MLOG_WARNING,
+                          "Got status change for file '%s' but I don't "
+                          "know what to do with it! Mask 0x%x",
+                          file, ev->mask);
           }
           lastwd = ev->wd;
         }

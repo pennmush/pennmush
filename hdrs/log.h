@@ -8,6 +8,7 @@
 #define LOG_H
 
 #include <stdio.h>
+#include <stdarg.h>
 #include "bufferq.h"
 #include "mushtype.h"
 
@@ -20,6 +21,18 @@ enum log_type {
   LT_TRACE, /**< Debugging log */
   LT_CHECK, /**< No idea? */
   LT_HUH    /**< Logs of huh_command's */
+};
+
+/** Log levels. Used for syslog logging. */
+enum log_level {
+  MLOG_EMERG,   /**< MUSH is unusable */
+  MLOG_ALERT,   /**< action must be taken immediately */
+  MLOG_CRIT,    /**< critical conditions */
+  MLOG_ERR,     /**< error conditions */
+  MLOG_WARNING, /**< warning conditions */
+  MLOG_NOTICE,  /**< normal but significant condition */
+  MLOG_INFO,    /**< informational message */
+  MLOG_DEBUG    /**< debug-level message */
 };
 
 /** A logfile stream */
@@ -41,6 +54,11 @@ void reopen_logs(void);
 void WIN32_CDECL do_log(enum log_type logtype, dbref player, dbref object,
                         const char *fmt, ...)
   __attribute__((__format__(__printf__, 4, 5)));
+void do_rawlog_vlvl(enum log_type logtype, enum log_level loglevel,
+                    const char *fmt, va_list args);
+void WIN32_CDECL do_rawlog_lvl(enum log_type logtype, enum log_level loglevel,
+                               const char *fmt, ...)
+  __attribute__((__format__(__printf__, 3, 4)));
 void WIN32_CDECL do_rawlog(enum log_type logtype, const char *fmt, ...)
   __attribute__((__format__(__printf__, 2, 3)));
 

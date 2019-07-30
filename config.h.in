@@ -77,6 +77,8 @@
 
 #undef HAVE_FENV_H
 
+#undef HAVE_SYSLOG_H
+
 /* Libraries */
 
 #undef HAVE_MYSQL
@@ -335,6 +337,8 @@ typedef bool _Bool;
 #undef HAVE_ARC4RANDOM_BUF
 
 #undef HAVE_PTHREAD_ATFORK
+
+#undef HAVE_SYSLOG
 
 /* Bunch of sqlite3 stuff */
 

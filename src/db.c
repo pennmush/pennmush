@@ -2305,7 +2305,9 @@ open_sql_db(const char *name, bool nocreate)
 
   sqlite3_db_config(db, SQLITE_DBCONFIG_ENABLE_FKEY, 1, (int *) NULL);
   sqlite3_db_config(db, SQLITE_DBCONFIG_DEFENSIVE, 1, (int *) NULL);
-
+  sqlite3_db_config(db, SQLITE_DBCONFIG_DQS_DML, 0, (int *) NULL);
+  sqlite3_db_config(db, SQLITE_DBCONFIG_DQS_DDL, 0, (int *) NULL);
+  
   return db;
 }
 

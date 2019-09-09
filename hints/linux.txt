@@ -27,7 +27,7 @@ names are. Some common ones have dependencies described below.
 * Ubuntu Required packages:
 | build-essential libssl-dev libevent-dev zlib1g-dev 
 * Ubuntu Optional:
-libicu-dev libcurl4-openssl-dev
+libicu-dev libcurl4-openssl-dev gperf
 
 
 

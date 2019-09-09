@@ -24,6 +24,11 @@ names are. Some common ones have dependencies described below.
   installed, as their perl package does not actually provide all of a
   base perl environment.
 
+* Ubuntu Required packages:
+| build-essential libssl-dev libevent-dev zlib1g-dev 
+* Ubuntu Optional:
+libicu-dev libcurl4-openssl-dev
+
 
 
 

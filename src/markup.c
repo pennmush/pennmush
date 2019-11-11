@@ -16,10 +16,8 @@
 #include <stdlib.h>
 #include <stdarg.h>
 #include <limits.h>
-#ifdef HAVE_SSE2
-#include <emmintrin.h>
-#endif
 #ifdef HAVE_SSE41
+#include <emmintrin.h>
 #include <smmintrin.h>
 #endif
 
@@ -965,20 +963,15 @@ color_to_hex(const char *name, bool hilite)
 
 /* Color differences is the square of the individual color differences. */
 
-#ifdef HAVE_SSE2
+#ifdef HAVE_SSE41
 
-/* SSE2/SSE4.1 version */
+/* /SSE4.1 version */
 static uint32_t
 hex_difference(uint32_t a, uint32_t b)
 {
   __m128i av, bv;
-#ifdef HAVE_SSE41
   av = _mm_cvtepu8_epi32(_mm_cvtsi32_si128(a));
   bv = _mm_cvtepu8_epi32(_mm_cvtsi32_si128(b));
-#else
-  av = _mm_set_epi32(a & 0xFF, (a >> 8) & 0xFF, (a >> 16) & 0xFF, 0);
-  bv = _mm_set_epi32(b & 0xFF, (b >> 8) & 0xFF, (b >> 16) & 0xFF, 0);
-#endif
   __m128i cv = _mm_sub_epi32(av, bv);
   __m128i c2 = _mm_mullo_epi32(cv, cv);
   /* SSSE3 phaddd apparently sucks; shuffle-add instead */

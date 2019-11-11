@@ -16,6 +16,13 @@
 #include <stdlib.h>
 #include <stdarg.h>
 #include <limits.h>
+#ifdef HAVE_SSE2
+#include <emmintrin.h>
+#endif
+#ifdef HAVE_SSE41
+#include <smmintrin.h>
+#endif
+
 #include "ansi.h"
 #include "case.h"
 #include "conf.h"
@@ -957,12 +964,49 @@ color_to_hex(const char *name, bool hilite)
 }
 
 /* Color differences is the square of the individual color differences. */
-#define color_diff(a, b) (((a) - (b)) * ((a) - (b)))
 
-#define hex_difference(a, b)                                                   \
-  (color_diff(a & 0xFF, b & 0xFF) +                                            \
-   color_diff((a >> 8) & 0xFF, (b >> 8) & 0xFF) +                              \
-   color_diff((a >> 16) & 0xFF, (b >> 16) & 0xFF))
+#ifdef HAVE_SSE2
+
+/* SSE2/SSE4.1 version */
+static uint32_t
+hex_difference(uint32_t a, uint32_t b)
+{
+  __m128i av, bv;
+#ifdef HAVE_SSE41
+  av = _mm_cvtepu8_epi32(_mm_cvtsi32_si128(a));
+  bv = _mm_cvtepu8_epi32(_mm_cvtsi32_si128(b));
+#else
+  av = _mm_set_epi32(a & 0xFF, (a >> 8) & 0xFF, (a >> 16) & 0xFF, 0);
+  bv = _mm_set_epi32(b & 0xFF, (b >> 8) & 0xFF, (b >> 16) & 0xFF, 0);
+#endif
+  __m128i cv = _mm_sub_epi32(av, bv);
+  __m128i c2 = _mm_mullo_epi32(cv, cv);
+  /* SSSE3 phaddd apparently sucks; shuffle-add instead */
+  __m128i sum1 =
+    _mm_add_epi32(c2, _mm_shuffle_epi32(c2, _MM_SHUFFLE(1, 0, 3, 2)));
+  __m128i sum2 =
+    _mm_add_epi32(sum1, _mm_shuffle_epi32(sum1, _MM_SHUFFLE(2, 3, 0, 1)));
+  return _mm_cvtsi128_si32(sum2);
+}
+
+#else
+
+/* Scalar version */
+static inline uint32_t
+color_diff(uint32_t a, uint32_t b)
+{
+  uint32_t c = a - b;
+  return c * c;
+}
+
+static uint32_t
+hex_difference(uint32_t a, uint32_t b)
+{
+  return color_diff(a & 0xFF, b & 0xFF) +
+         color_diff((a >> 8) & 0xFF, (b >> 8) & 0xFF) +
+         color_diff((a >> 16) & 0xFF, (b >> 16) & 0xFF);
+}
+#endif
 
 #define ANSI_FG 0
 #define ANSI_BG 1

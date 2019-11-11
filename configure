@@ -752,6 +752,7 @@ enable_ssl_slave
 enable_sse2
 enable_sse3
 enable_ssse3
+enable_sse41
 enable_sse42
 enable_altivec
 '
@@ -1412,6 +1413,8 @@ Optional Features:
                           SSE3)
   --enable-ssse3          Use SSSE3 instructions (Requires a CPU that supports
                           SSSE3)
+  --enable-sse41          Use SSE4.1 instructions (Requires a CPU that
+                          supports SSE 4.1)
   --enable-sse42          Use SSE4.2 instructions (Requires a CPU that
                           supports SSE 4.2)
   --enable-altivec        Use PowerPC Altivec instructions (Requires a CPU
@@ -11390,6 +11393,11 @@ if test "${enable_ssse3+set}" = set; then :
   enableval=$enable_ssse3;
 fi
 
+# Check whether --enable-sse41 was given.
+if test "${enable_sse41+set}" = set; then :
+  enableval=$enable_sse41;
+fi
+
 # Check whether --enable-sse42 was given.
 if test "${enable_sse42+set}" = set; then :
   enableval=$enable_sse42;
@@ -11405,6 +11413,12 @@ if test "$enable_sse42" = yes; then
    $as_echo "#define HAVE_SSE42 1" >>confdefs.h
 
    CFLAGS="$CFLAGS -msse4.2"
+fi
+
+if test "$enable_sse41" = yes; then
+   $as_echo "#define HAVE_SSE41 1" >>confdefs.h
+
+   CFLAGS="$CFLAGS -msse4.1"
 fi
 
 if test "$enable_ssse3" = yes; then

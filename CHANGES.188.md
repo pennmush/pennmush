@@ -73,3 +73,4 @@ Fixes
 * Fix a file descriptor leak caused by recent OpenSSL versions. [SW]
 * Added GAGGED restrictions that were missing from a few commands, including `@message` and the MUXcomm aliases. [MG]
 * Minor help updates, including clarification of what GAGGED blocks, suggested by Merit. [#1262, MG, MT]
+* Some fixes to extmail.c and chunk.c to fix @mail going forward. [GM]

@@ -180,12 +180,18 @@ get_message(MAIL *mp)
 {
   static char text[BUFFER_LEN * 2];
   char tbuf[BUFFER_LEN * 2];
+  int len;
 
   if (!mp)
     return NULL;
 
-  chunk_fetch(mp->msgid, tbuf, sizeof tbuf);
-  strcpy(text, uncompress(tbuf));
+  len = chunk_fetch(mp->msgid, tbuf, sizeof tbuf);
+  if (len >= BUFFER_LEN * 2) {
+    len = (BUFFER_LEN * 2) - 1;
+  }
+  tbuf[len] = '\0';
+  strncpy(text, uncompress(tbuf), BUFFER_LEN * 2 - 1);
+  text[BUFFER_LEN * 2 - 1] = '\0';
   return text;
 }
 
@@ -222,7 +228,7 @@ get_subject(MAIL *mp)
       }
     }
   } else
-    strcpy(sbuf, T("(no subject)"));
+    mush_strncpy(sbuf, T("(no subject)"), SUBJECT_LEN + 1);
   return sbuf;
 }
 
@@ -698,7 +704,7 @@ do_mail_read(dbref player, char *msglist)
         } else
           mush_strncpy(folderheader, T("Folder:"), BUFFER_LEN);
         notify(player, DASH_LINE);
-        strcpy(tbuf1, get_sender(mp, 1, BUFFER_LEN, &isplayer));
+        mush_strncpy(tbuf1, get_sender(mp, 1, BUFFER_LEN, &isplayer), BUFFER_LEN);
         safe_fill_to(' ', 55, tbuf1);
         notify_format(
           player,
@@ -714,7 +720,7 @@ do_mail_read(dbref player, char *msglist)
         notify(player, DASH_LINE);
         if (SUPPORT_PUEBLO)
           notify_noenter(player, close_tag("SAMP"));
-        strcpy(tbuf1, get_message(mp));
+        mush_strncpy(tbuf1, get_message(mp), BUFFER_LEN);
         notify(player, tbuf1);
         if (SUPPORT_PUEBLO)
           notify(player, wrap_tag("SAMP", DASH_LINE));
@@ -775,8 +781,8 @@ do_mail_list(dbref player, const char *msglist)
                    i[Folder(mp)], (int) Folder(mp), TAG_END);
           notify_noenter(player, buff);
         }
-        strcpy(subj, chopstr(get_subject(mp), 28));
-        strcpy(sender, get_sender(mp, 0, 12, &isplayer));
+        mush_strncpy(subj, chopstr(get_subject(mp), 28), 30);
+        mush_strncpy(sender, get_sender(mp, 0, 12, &isplayer), BUFFER_LEN);
         safe_fill_to(' ', 12, sender);
         notify_format(player, "[%s] %2d:%-3d %c%-12s  %-*s %s",
                       status_chars(mp), (int) Folder(mp), i[Folder(mp)],
@@ -889,7 +895,7 @@ do_mail_reviewread(dbref player, dbref target, const char *msglist)
         /* Read it */
         j++;
         notify(player, DASH_LINE);
-        strcpy(tbuf1, get_sender(mp, 1, BUFFER_LEN, &isplayer));
+        mush_strncpy(tbuf1, get_sender(mp, 1, BUFFER_LEN, &isplayer), BUFFER_LEN);
         safe_fill_to(' ', 55, tbuf1);
         notify_format(
           player,
@@ -905,7 +911,7 @@ do_mail_reviewread(dbref player, dbref target, const char *msglist)
         if (SUPPORT_PUEBLO) {
           notify_noenter(player, close_tag("SAMP"));
         }
-        strcpy(tbuf1, get_message(mp));
+        mush_strncpy(tbuf1, get_message(mp), BUFFER_LEN);
         notify(player, tbuf1);
         if (SUPPORT_PUEBLO) {
           notify(player, wrap_tag("SAMP", DASH_LINE));
@@ -985,7 +991,7 @@ do_mail_reviewlist(dbref player, dbref target)
                  TAG_END);
         notify_noenter(player, buff);
       }
-      strcpy(subj, chopstr(get_subject(mp), 28));
+      mush_strncpy(subj, chopstr(get_subject(mp), 28), 30);
       if (!nbuff[0]) {
         np = nbuff;
         safe_str(AnsiNameWrapper(mp->to, 0, AN_SYS, NULL, 12), nbuff, &np);
@@ -1610,9 +1616,9 @@ real_send_mail(dbref player, dbref target, char *subject, char *message,
   /* Deal with the subject */
   cp = remove_markup(subject, NULL);
   if (subject && cp && *cp) {
-    strcpy(sbuf, cp);
+    mush_strncpy(sbuf, cp, BUFFER_LEN);
   } else {
-    strcpy(sbuf, T("(no subject)"));
+    mush_strncpy(sbuf, T("(no subject)"), BUFFER_LEN);
   }
   if ((flags & M_FORWARD) && !string_prefix(sbuf, "Fwd:")) {
     char buff[BUFFER_LEN];
@@ -1938,7 +1944,7 @@ do_mail_stats(dbref player, char *name, enum mail_stats_type full)
     }
     if (mp->to == target) {
       if (!tr && !tu)
-        strcpy(last, show_time(mp->time, 0));
+        mush_strncpy(last, show_time(mp->time, 0), 50);
       if (Cleared(mp))
         tc++;
       else if (Read(mp))
@@ -2328,7 +2334,7 @@ FUNCTION(fun_mailstats)
     }
     if (mp->to == target) {
       if (!tr && !tu)
-        strcpy(last, show_time(mp->time, 0));
+        mush_strncpy(last, show_time(mp->time, 0), 50);
       if (Cleared(mp))
         tc++;
       else if (Read(mp))
@@ -2592,7 +2598,7 @@ load_mail(PENNFILE *fp)
   if (mail_flags & MDBF_SUBJECT)
     mp->subject = tbuf;
   else {
-    strcpy(sbuf, get_message(mp));
+    mush_strncpy(sbuf, get_message(mp), BUFFER_LEN);
     mp->subject = compress(chopstr(sbuf, SUBJECT_LEN));
   }
   mp->read = getref(fp);
@@ -2722,10 +2728,10 @@ get_folder_name(dbref player, int fld)
   old = NULL;
   a = (ATTR *) atr_get_noparent(player, "MAILFOLDERS");
   if (!a) {
-    strcpy(str, "unnamed");
+    mush_strncpy(str, "unnamed", BUFFER_LEN);
     return str;
   }
-  strcpy(str, atr_value(a));
+  mush_strncpy(str, atr_value(a), BUFFER_LEN);
   old = (char *) string_match(str, pat);
   if (old) {
     r = old + strlen(pat);
@@ -2734,7 +2740,7 @@ get_folder_name(dbref player, int fld)
     *r = '\0';
     return old + strlen(pat);
   } else {
-    strcpy(str, "unnamed");
+    mush_strncpy(str, "unnamed", BUFFER_LEN);
     return str;
   }
 }
@@ -2765,13 +2771,13 @@ add_folder_name(dbref player, int fld, const char *name)
   if (name && *name)
     snprintf(new, BUFFER_LEN, "%d:%s:%d ", fld, strupper(name), fld);
   else
-    strcpy(new, " ");
+    mush_strncpy(new, " ", BUFFER_LEN);
   snprintf(pat, BUFFER_LEN, "%d:", fld);
   /* get the attrib and the old string, if any */
   old = NULL;
   a = (ATTR *) atr_get_noparent(player, "MAILFOLDERS");
   if (a) {
-    strcpy(str, atr_value(a));
+    mush_strncpy(str, atr_value(a), BUFFER_LEN);
     old = (char *) string_match(str, pat);
   }
   if (old && *old) {
@@ -3155,7 +3161,7 @@ parse_message_spec(dbref player, const char *s, int *msglow, int *msghigh,
   char *p, *q;
   if (!s || !*s)
     return 0;
-  strcpy(buf, s);
+  mush_strncpy(buf, s, BUFFER_LEN);
   if ((p = strchr(buf, ':'))) {
     *p++ = '\0';
     if (!is_integer(buf))

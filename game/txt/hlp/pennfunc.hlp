@@ -2396,7 +2396,10 @@ See also: lock(), lset(), lockflags(), llockflags(), lockowner()
     List all players with an IC age > 20.
     > think lockfilter(age:>20,lwho())
     #123 #456 #789
-
+    Note: You can escape the first character of <key> using double back slashes, for example, if you are checking for an attribute named +FOO to have the value of BAR on all connected players:
+    > think map(#apply/name,lockfilter(\\+FOO:BAR,lwho()))
+    Mike Walker Qon
+    
 See also: @lock, lock(), elock(), lockkeys, filter(), testlock()
 & LOCKFLAGS()
   lockflags(<object>[/<locktype>])
@@ -4758,6 +4761,10 @@ See also: json(), json_map()
     1
     > think testlock(TYPE^PLAYER&FLAG^WIZARD, *Bilbo)
     0
+  Note: You can escape the first character of <key> using double back slashes, for example, to check if a player has an attribute named +FOO with a value of BAR
+    > think testlock(\\+FOO:BAR,*Walker)
+    0
+    
 
 See also: @lock, lock(), elock(), lockfilter(), locktypes
 & TEXTFILE()

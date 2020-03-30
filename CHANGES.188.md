@@ -74,3 +74,4 @@ Fixes
 * Added GAGGED restrictions that were missing from a few commands, including `@message` and the MUXcomm aliases. [MG]
 * Minor help updates, including clarification of what GAGGED blocks, suggested by Merit. [#1262, MG, MT]
 * Some fixes to extmail.c and chunk.c to fix @mail going forward. [GM]
+* switch() and floating point numbers not working as intended. Reported by Mercutio [#1325, MT]

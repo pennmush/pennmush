@@ -1,6 +1,6 @@
 & changes
 & 1.8.8p0
-Version 1.8.8 patchlevel 0 ??? ?? 2018
+Version 1.8.8 patchlevel 0 Apr 20 2020
 
 This is a list of changes in this patchlevel which are probably of
 interest to players. More information about new commands and functions
@@ -39,12 +39,17 @@ Minor Changes:
 * Millisecond timing in bsd.c for polling waits in prep for subsecond @waits. [GM]
 * Sqlite3’s [1mREGEXP[0m operator is always available and uses pcre regular expressions (previously it depended on libicu and used java style REs). [SW]
 * Update [1mlocal.dst[0m to include example of millisecond callback loop. [MT]
-* Updated to use PCRE2 10.31 for regular expressions. [SW]
+* Updated to use PCRE2 10.33 for regular expressions. [SW]
 * Wildcard patterns are sometimes converted to regular expressions when matched against many strings. [SW]
 * Add ‘–disable-socket-quota’ option for our test suite. [GM]
 * The list of color definitions used with [1mansi()[0m, [1mcolors()[0m, etc. is now kept in game/txt/colors.json. [SW]
-* Sqlite3 updated to 3.25.1. Biggest user-visible change is support for window functions. [SW]
-* Added configuration option 'ssl_certificate_file' allowing SSL certificates and private keys to be split into separate files. [grapenut, 1291]
+* Sqlite3 updated to 3.29. Biggest user-visible change is support for window functions. [SW]
+* Update cJSON to 1.7.10 [SW]
+* @command/restrict will only clear the failure message if a new one is supplied. [MT]
+* @SOCKSET now has a NOQUOTA option which causes that socket to be given the max command input quota per refresh. [MT]
+* –disable-socket-quota is now preserved across reboots. [MT]
+* Improved detection of an already running game. [SW]
+* Support logging through the OS syslog facility. [SW]
 
 Softcode:
 
@@ -53,6 +58,7 @@ Softcode:
 * [1mformdecode()[0m for decoding HTTP paths and POST bodies. [GM]
 * [1m@respond[0m for manipulating HTTP response codes and headers. [GM]
 * [1mhmac()[0m for creating authentication fingerprints. [SW]
+* [1m@chatformat[0m and channel mogrifiers are told if [1m@cemit/silent[0m is being used. [1267, SW]
 
 Fixes:
 
@@ -61,3 +67,5 @@ Fixes:
 * Fix a file descriptor leak caused by recent OpenSSL versions. [SW]
 * Added GAGGED restrictions that were missing from a few commands, including [1m@message[0m and the MUXcomm aliases. [MG]
 * Minor help updates, including clarification of what GAGGED blocks, suggested by Merit. [#1262, MG, MT]
+* Some fixes to extmail.c and chunk.c to fix @mail going forward. [GM]
+* switch() and floating point numbers not working as intended. Reported by Mercutio [#1325, MT]

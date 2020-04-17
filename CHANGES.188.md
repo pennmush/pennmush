@@ -1,6 +1,6 @@
 % PennMUSH 1.8.8 Changes
 %
-% Last release: ??? ?? 2018
+% Last release: Apr 20 2020
 
 This is the most current changes file for PennMUSH. Please look it over; each version contains new things which might significantly affect the function of your server.  Changes are reported in reverse chronological order (most recent first)
 
@@ -17,7 +17,7 @@ Numbers next to the developer credit refer to Github issue numbers.
 
 -------------------------------------------------------------------------------
 
-Version 1.8.8 patchlevel 0 ??? ?? 2019
+Version 1.8.8 patchlevel 0 Apr 20 2020
 ======================================
 
 WARNING! With the removal of the object queue, please be careful when upgrading that you do not have any infinitely looping triggers without an @wait.

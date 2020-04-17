@@ -1,5 +1,5 @@
 /* ANSI-C code produced by gperf version 3.1 */
-/* Command-line: /usr/pkg/bin/gperf -C --output-file htmltab.c htmltab.gperf  */
+/* Command-line: /usr/bin/gperf -C --output-file htmltab.c htmltab.gperf  */
 /* Computed positions: -k'1-2,$' */
 
 #if !((' ' == 32) && ('!' == 33) && ('"' == 34) && ('#' == 35) \

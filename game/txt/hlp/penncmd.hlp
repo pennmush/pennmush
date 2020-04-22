@@ -650,7 +650,9 @@ See also: @chzone, ZONES
   To clone a room and all its exits, use code like:
     > @teleport setq(0,%L)[clone(here)]
     > @dolist lexits(%q0)=@clone ##
-
+    
+  Note: If @create is restricted or disabled, it will also restrict or disable this command.
+  
 See also: @create, clone(), create(), @cpattr
 & @command
   @command <command>

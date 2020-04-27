@@ -64,6 +64,7 @@ Softcode
 * `@respond` for manipulating HTTP response codes and headers. [GM]
 * `hmac()` for creating authentication fingerprints. [SW]
 * `@chatformat` and channel mogrifiers are told if `@cemit/silent` is being used. [1267, SW]
+* `cache()` for caching values onto attributes with an expiration based cache. Patch by Mercutio. [1326]
 
 Fixes
 -----

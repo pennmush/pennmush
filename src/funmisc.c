@@ -1476,6 +1476,103 @@ tsc_diff_to_microseconds(uint64_t start, uint64_t end)
 #endif
 }
 
+/*
+ * Like fun_default, but also sets the attribute, and has timeout logic
+ * around the timestamp it puts into the attribute.
+ */
+/* ARGSUSED */
+FUNCTION(fun_cache)
+{
+  if (!FUNCTION_SIDE_EFFECTS) {
+    safe_str(T(e_disabled), buff, bp);
+    return;
+  }
+
+  char ** xargs = mush_calloc(nargs, sizeof(char *), "fun_cache.xargs");
+  char * dp;
+  char const * sp;
+  for(int i = 0; i < nargs; i++) {
+      xargs[i] = mush_malloc(BUFFER_LEN, "fun_cache.xarg.item");
+      dp = xargs[i];
+      sp = args[i];
+      if(i != 2) {
+        if (process_expression(xargs[i], &dp, &sp, executor, caller, enactor,
+                             eflags, PT_DEFAULT, pe_info))
+          return;
+      }
+      *dp = '\0';
+  }
+  
+  dbref thing;
+  thing = match_thing(executor, xargs[0]);
+  if (!GoodObject(thing)) {
+    safe_str(T(e_notvis), buff, bp);
+    return;
+  }
+
+  bool slide = nargs >= 5 && is_boolean(xargs[4]) ? parse_boolean(xargs[4]) : false;
+  time_t exp_secs = mudtime - (nargs >= 4 && is_number(xargs[3]) ? (time_t)parse_number(xargs[3]) : (time_t)3600);
+  char * cache_entry = (char *) mush_malloc(BUFFER_LEN, "fun_cache.cache_entry");
+  char * cache_entry_bp = cache_entry;
+  safe_str(do_get_attrib(executor, thing, xargs[1]), cache_entry, &cache_entry_bp);
+  char * cache_result = strchr(cache_entry, ' ');
+  int cache_secs = -1;
+  
+  if(cache_result) {
+    *cache_result++ = '\0';
+    cache_secs = is_number(cache_entry) ? parse_number(cache_entry) : -1;
+    *cache_entry_bp = '\0';
+  }
+
+  if(cache_secs >= exp_secs) { // Cache Hit
+    char * new_cache_entry;
+    char * new_cache_entry_bp;
+
+    if(slide) {
+      new_cache_entry = (char *) mush_malloc(BUFFER_LEN, "fun_cache.renew_cache_entry");
+      new_cache_entry_bp = new_cache_entry;
+      
+      safe_time_t(mudtime, new_cache_entry, &new_cache_entry_bp);
+      safe_str(" ", new_cache_entry, &new_cache_entry_bp);
+      safe_str(cache_result, new_cache_entry, &new_cache_entry_bp);
+      *new_cache_entry_bp = '\0';
+
+      do_set_atr(thing, xargs[1], new_cache_entry, executor, 1);
+    }
+    safe_str(cache_result, buff, bp);
+    
+    if(slide) {
+      mush_free(new_cache_entry, "fun_cache.renew_cache_entry");
+    }
+  }
+  else {
+    char * new_cache_entry = (char *) mush_malloc(BUFFER_LEN, "fun_cache.new_cache_entry");
+    char * new_cache_entry_bp = new_cache_entry;
+    char const * p;
+    p = args[2];
+    process_expression(new_cache_entry, &new_cache_entry, &p, executor, caller, enactor, eflags, PT_DEFAULT, pe_info);
+                           
+    safe_time_t(mudtime, new_cache_entry, &new_cache_entry_bp);
+    safe_str(" ", new_cache_entry, &new_cache_entry_bp);
+    safe_str(p, new_cache_entry, &new_cache_entry_bp);
+    *new_cache_entry_bp = '\0';
+    
+    do_set_atr(thing, xargs[1], new_cache_entry, executor, 1);
+    
+    safe_str(p, buff, bp);
+    mush_free(new_cache_entry, "fun_cache.new_cache_entry");
+  }
+  
+  mush_free(cache_entry, "fun_cache.cache_entry");
+  
+  for(int i = 0; i < nargs; i++) {
+      if(i != 2) {
+        mush_free(xargs[i], "fun_cache.xarg.item");
+      }
+  }
+  mush_free(xargs, "fun_cache.xargs");
+}
+
 extern int global_fun_invocations; /* From parse.c */
 
 /* ARGSUSED */

@@ -49,14 +49,14 @@ See also: MUSHCODE, FUNCTION LIST
 & Attribute functions
   These functions can access or alter information stored in attributes on objects.
 
-  aposs()        attrib_set()   default()      edefault()     eval()
-  flags()        get()          grep()         grepi()        hasattr()
-  hasattrp()     hasattrval()   hasflag()      lattr()        lflags()
-  nattr()        obj()          pfun()         poss()         reglattr()
-  regrep()       regrepi()      regxattr()     set()          subj()
-  udefault()     ufun()         ulambda()      uldefault()    ulocal()
-  v()            wildgrep()     wildgrepi()    xattr()        xget()
-  zfun()
+  aposs()        attrib_set()   cache()        default()      edefault()     
+  eval()         flags()        get()          grep()         grepi()
+  hasattr()      hasattrp()     hasattrval()   hasflag()      lattr()
+  lflags()       nattr()        obj()          pfun()         poss()
+  reglattr()     regrep()       regrepi()      regxattr()     set()
+  subj()         udefault()     ufun()         ulambda()      uldefault()
+  ulocal()       v()            wildgrep()     wildgrepi()    xattr()
+  xget()         zfun()
 
 See also: ATTRIBUTES, NON-STANDARD ATTRIBUTES
 & Bitwise functions
@@ -1056,6 +1056,17 @@ See also: inc(), sub()
     This is \[a%b[ansi(y,test)]\] %b%b
 
 See also: @decompile2, escape(), secure(), ]
+& CACHE()
+  cache(<obj>, <attr>, <value>[, <window>[, <sliding?>]])
+
+  This function returns the value of <obj>/<attr>, as if retrieved via the get() function, if the attribute exists and is readable by you - and was set within the last 3600 seconds. Otherwise, it evaluates <value> and sets that to the attribute, and returns that. 
+
+  If <window> is passed, the time check is instead within <window> seconds. 
+  If <sliding?> evaluates to a true boolean, then the attribute value will be recalled, but the timer will be reset on the attribute as well. This can lead to a cache that doesn't expire, if the value is asked for often enough.
+
+  This is useful for code that needs to return a value that isn't likely to change on the short term, but does change over the long term, such as certain sql queries, of lsearch() calls for a fairly unchanging value. 
+
+See also: get(), edefault(), udefault(), uldefault(), default()
 & DEFAULT()
   default([<obj>/]<attr>[, ... ,[<objN>]/<attrN>], <default>)
 

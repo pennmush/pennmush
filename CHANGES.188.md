@@ -17,6 +17,13 @@ Numbers next to the developer credit refer to Github issue numbers.
 
 -------------------------------------------------------------------------------
 
+Version 1.8.8 patchlevel 1 ??? ?? 202?
+======================================
+
+Fixes
+-----
+* `udefault` only accepted 12 arguments, not the documented 32. [MG]
+
 Version 1.8.8 patchlevel 0 Apr 20 2020
 ======================================
 

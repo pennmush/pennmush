@@ -1496,9 +1496,9 @@ FUNCTION(fun_cache)
         xargs[i] = mush_malloc(BUFFER_LEN, "fun_cache.xarg.item");
         dp = xargs[i];
         sp = args[i];
-        if (process_expression(xargs[i], &dp, &sp, executor, caller, enactor,
-                             eflags, PT_DEFAULT, pe_info))
-          return;
+        if (process_expression(xargs[i], &dp, &sp, executor, caller, enactor, eflags, PT_DEFAULT, pe_info)) {
+          goto cleanup;
+        }
         *dp = '\0';
       }
   }
@@ -1528,7 +1528,7 @@ FUNCTION(fun_cache)
     if(slide) {
       char new_cache_entry[BUFFER_LEN];
       char *new_cache_entry_bp = new_cache_entry;
-      
+
       safe_time_t(mudtime, new_cache_entry, &new_cache_entry_bp);
       safe_str(" ", new_cache_entry, &new_cache_entry_bp);
       safe_str(cache_result, new_cache_entry, &new_cache_entry_bp);
@@ -1546,16 +1546,14 @@ FUNCTION(fun_cache)
 
     safe_time_t(mudtime, new_cache_entry, &new_cache_entry_bp);
     safe_str(" ", new_cache_entry, &new_cache_entry_bp);
-    if(process_expression(new_cache_entry, &new_cache_entry_bp, &p, executor, caller, enactor, eflags, PT_DEFAULT, pe_info))
-    {
+
+    char *new_cache_value_bp = new_cache_entry_bp;
+    if(process_expression(new_cache_entry, &new_cache_entry_bp, &p, executor, caller, enactor, eflags, PT_DEFAULT, pe_info)) {
       goto cleanup;
     }
-
     *new_cache_entry_bp = '\0';
-    
     do_set_atr(thing, xargs[1], new_cache_entry, executor, 1);
-    
-    safe_str(strchr(new_cache_entry, ' ') + 1, buff, bp);
+    safe_str(new_cache_value_bp, buff, bp);
   }
   
   cleanup: 

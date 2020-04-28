@@ -1098,12 +1098,13 @@ See also: get(), edefault(), udefault(), uldefault(), default()
     One/CACHE`RAND - Set.
     0.993514
 
-    > th cache(#1,cache`rawr,pemit(%#,rawr)6)
-    rawr
-    One/CACHE`RAWR - Set.
-    6
-    > th cache(#1,cache`rawr,pemit(%#,rawr)6)
-    6
+    > th cache(#1,cache`foo,pemit(%#,dog)5)
+    dog
+    One/CACHE`FOO - Set.
+    5
+    > th cache(#1,cache`foo,pemit(%#,dog)4)
+    5
+
 
 See also: get(), edefault(), udefault(), uldefault(), default()
 & DEFAULT()

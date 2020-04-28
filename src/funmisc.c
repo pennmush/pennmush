@@ -1510,6 +1510,11 @@ FUNCTION(fun_cache)
     goto cleanup;
   }
 
+  if(!( controls(executor, thing) && can_edit_attr(executor, thing, xargs[1]))) {
+    safe_str(T("#-1 That attribute cannot be changed by you."), buff, bp);
+    goto cleanup;
+  }
+
   bool slide = (nargs >= 5 && is_boolean(xargs[4])) ? parse_boolean(xargs[4]) : false;
   time_t exp_secs = mudtime - (nargs >= 4 && is_number(xargs[3]) ? (time_t)parse_number(xargs[3]) : (time_t)3600);
   char cache_entry[BUFFER_LEN];

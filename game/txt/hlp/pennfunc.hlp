@@ -1059,12 +1059,12 @@ See also: @decompile2, escape(), secure(), ]
 & CACHE()
   cache(<obj>, <attr>, <value>[, <window>[, <sliding?>]])
 
-  This function returns the value of <obj>/<attr>, as if retrieved via the get() function, if the attribute exists and is readable by you - and was set within the last 3600 seconds. Otherwise, it evaluates <value> and sets that to the attribute, and returns that. 
+  This function writes the current UTC timestamp and the result of evaluating <value> to <obj>/<attr> and returns the <value>. Howver, if the <attribute> already exists with an existing timestamp of less than 3600 seconds ago, it will return the <value> piece of <obj>/<attr> as if retrieved via the get() function.
 
-  If <window> is passed, the time check is instead within <window> seconds. 
-  If <sliding?> evaluates to a true boolean, then the attribute value will be recalled, but the timer will be reset on the attribute as well. This can lead to a cache that doesn't expire, if the value is asked for often enough.
+  If <window> is passed, the time check is within <window> seconds, instead of the default 3600 seconds. If an invalid number is given, it will assume the time is lapsed. 
+  If <sliding?> evaluates to a true boolean, then the timestamp will be reset on the attribute if it was recent. This can lead to a cache that doesn't expire, if the value is retrieved through cache() often enough.
 
-  This is useful for code that needs to return a value that isn't likely to change on the short term, but does change over the long term, such as certain sql queries, of lsearch() calls for a fairly unchanging value. 
+  This is useful for reducing the impact of longer running functions on PennMUSH performance. It's intended for code that needs to return a value that isn't likely to change on the short term, but does change over the long term, such as sql queries, or lsearch() calls for a fairly unchanging value. 
 
   This function requires you control the object you are trying to write to, and are able to write to the attribute. Otherwise, it will return a #-1 error.
 

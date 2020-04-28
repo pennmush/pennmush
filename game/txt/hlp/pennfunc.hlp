@@ -1066,6 +1066,45 @@ See also: @decompile2, escape(), secure(), ]
 
   This is useful for code that needs to return a value that isn't likely to change on the short term, but does change over the long term, such as certain sql queries, of lsearch() calls for a fairly unchanging value. 
 
+  This function requires you control the object you are trying to write to, and are able to write to the attribute. Otherwise, it will return a #-1 error.
+
+  See 'help cache2' for examples.
+
+See also: get(), edefault(), udefault(), uldefault(), default()
+& CACHE2
+
+  Examples:
+    > @dol lnum(1,6)=@wait ##=th cache(%!,cache`rand,rand(),2)
+    One/CACHE`RAND - Set.
+    0.859889
+    0.859889
+    0.859889
+    One/CACHE`RAND - Set.
+    0.341317
+    0.341317
+    0.341317
+
+    > @dol lnum(1,6)=@wait ##=th cache(%!,cache`rand,rand(),2,1)
+    One/CACHE`RAND - Set.
+    0.993514
+    One/CACHE`RAND - Set.
+    0.993514
+    One/CACHE`RAND - Set.
+    0.993514
+    One/CACHE`RAND - Set.
+    0.993514
+    One/CACHE`RAND - Set.
+    0.993514
+    One/CACHE`RAND - Set.
+    0.993514
+
+    > th cache(#1,cache`rawr,pemit(%#,rawr)6)
+    rawr
+    One/CACHE`RAWR - Set.
+    6
+    > th cache(#1,cache`rawr,pemit(%#,rawr)6)
+    6
+
 See also: get(), edefault(), udefault(), uldefault(), default()
 & DEFAULT()
   default([<obj>/]<attr>[, ... ,[<objN>]/<attrN>], <default>)

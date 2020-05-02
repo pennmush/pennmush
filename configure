@@ -10863,7 +10863,7 @@ done
 
 CC="${SAVED_CC}"
 CFLAGS="${SAVED_CFLAGS}"
-LIBS="${SAVED_LIBS}"
+LIBS="${SAVED_LIBS} -ldl"
 
 
 
@@ -11298,7 +11298,7 @@ if test -d pcre2 ; then
    rm -rf pcre2/
 fi
 CPPFLAGS="${CPPFLAGS} -I../pcre2/include"
-LDFLAGS="${LDFLAGS} ../pcre2/lib/libpcre2-8.a"
+LDFLAGS="${LDFLAGS} ../pcre2/lib/libpcre2-8.a -rdynamic -Wl,--unresolved-symbols=ignore-in-object-files"
 $as_echo "#define HAVE_PCRE 1" >>confdefs.h
 
 

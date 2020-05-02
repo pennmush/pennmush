@@ -569,6 +569,7 @@ struct globals_table {
 
 extern GLOBALTAB globals;
 
-void *plugins[100];
+void **plugins;
+int plugin_count;
 
 #endif /* __PENN_CONF_H */

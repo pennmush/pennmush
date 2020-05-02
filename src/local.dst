@@ -110,10 +110,12 @@ local_dump_database(void)
 void
 local_shutdown(void)
 {
-  for (int i = 0; i < 10; i++) {
+  for (int i = 0; i < plugin_count; i++) {
     if (plugins[i] == NULL) break;
     dlclose(plugins[i]);
   }
+
+  free(plugins);
 }
 
 /* Called when the MUSH is performing a dbck database check,
@@ -134,7 +136,8 @@ local_timer(void *data __attribute__((__unused__)))
 {
   typedef int plugin_timer();
 
-  for (int i = 0; i < 10; i++) {
+  for (int i = 0; i < plugin_count; i++) {
+    if (plugins[i] == NULL) break;
     plugin_timer* f = dlsym(plugins[i], "plugin_timer");
     if (f == NULL) continue;
     f();

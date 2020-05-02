@@ -937,6 +937,12 @@ void load_plugins() {
   char plugin_name[256];
   int i = 0;
 
+  plugins = (void*)calloc(1, sizeof(void*));
+  if(plugins == NULL) {
+    do_rawlog(LT_ERR, "Could not allocate memory for plugins");
+    return;
+  }
+
   if (NULL != (pluginsDir = opendir("../plugins"))) {
     while ((in_file = readdir(pluginsDir)))
     {
@@ -953,9 +959,15 @@ void load_plugins() {
 
       plugin_init* f = dlsym(testPlugin, "plugin_init");
       if (f == NULL) continue;
+   
+      plugins = realloc(plugins, 1 * sizeof(void*));
+      if(plugins == NULL) {
+        do_rawlog(LT_ERR, "Could not increase amount of allocated memory for more plugins!");
+        break;
+      }
 
       plugins[i] = testPlugin;
-      i++;
+      plugin_count++;
       
       f();
     }
@@ -963,7 +975,7 @@ void load_plugins() {
 }
 
 void close_plugins() {
-  for ( int i = 0; i < 10; i++ ) {
+  for ( int i = 0; i < plugin_count; i++ ) {
     dlclose(plugins[i]);
     plugins[i] = NULL;
   }

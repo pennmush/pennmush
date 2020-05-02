@@ -121,6 +121,8 @@
 
 #ifndef WIN32
 #include "wait.h"
+#include <dlfcn.h>
+#include <dirent.h>
 #ifdef INFO_SLAVE
 #include "lookup.h"
 #endif
@@ -836,6 +838,8 @@ main(int argc, char **argv)
   /* start up anything 'external' */
   ext_startup();
 
+  load_plugins();
+
   /* Enter the main game loop */
   gameloop();
 
@@ -922,6 +926,48 @@ main(int argc, char **argv)
   exit(0);
 }
 #endif /* BOOLEXP_DEBUGGING */
+
+void load_plugins() {
+  typedef int plugin_init();
+
+  DIR* pluginsDir;
+  struct dirent* in_file;
+  FILE    *entry_file;
+  void* testPlugin;
+  char plugin_name[256];
+  int i = 0;
+
+  if (NULL != (pluginsDir = opendir("../plugins"))) {
+    while ((in_file = readdir(pluginsDir)))
+    {
+      if (!strcmp(in_file->d_name, ".")) continue;
+      if (!strcmp(in_file->d_name, "..")) continue;
+      if (!strstr(in_file->d_name, ".so")) continue;
+
+      do_rawlog(LT_ERR, in_file->d_name);
+
+      snprintf(plugin_name, sizeof(plugin_name), "../plugins/%s", in_file->d_name);
+
+      testPlugin = dlopen(plugin_name, RTLD_LAZY);
+      if (testPlugin == NULL) continue;
+
+      plugin_init* f = dlsym(testPlugin, "plugin_init");
+      if (f == NULL) continue;
+
+      plugins[i] = testPlugin;
+      i++;
+      
+      f();
+    }
+  }
+}
+
+void close_plugins() {
+  for ( int i = 0; i < 10; i++ ) {
+    dlclose(plugins[i]);
+    plugins[i] = NULL;
+  }
+}
 
 /** Install our default signal handlers. */
 void

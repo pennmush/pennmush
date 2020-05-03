@@ -885,6 +885,7 @@ main(int argc, char **argv)
   dump_database();
 
   local_shutdown();
+  unload_plugins();
 
 #ifdef HAVE_LIBCURL
   curl_global_cleanup();
@@ -987,6 +988,14 @@ void load_plugins() {
 
       f();
     }
+  }
+}
+
+void unload_plugins() {
+  while(plugin_head != NULL) {
+    dlclose(plugin_head->handle);
+    if (plugin_head->prev != NULL) { free(plugin_head->prev); }
+    plugin_head = plugin_head->next;
   }
 }
 
@@ -7769,6 +7778,7 @@ do_reboot(dbref player, int flag)
   kill_info_slave();
 #endif
   local_shutdown();
+  unload_plugins();
   shutdown_conndb(1);
   close_help_files();
   end_all_logs();

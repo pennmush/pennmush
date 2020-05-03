@@ -936,7 +936,7 @@ void load_plugins() {
   void* testPlugin;
   char plugin_name[256];
   int i = 0;
-
+/**
   plugins = (void*)calloc(1, sizeof(void*));
   if(plugins == NULL) {
     do_rawlog(LT_ERR, "Could not allocate memory for plugins");
@@ -972,12 +972,60 @@ void load_plugins() {
       f();
     }
   }
-}
+**/
 
-void close_plugins() {
-  for ( int i = 0; i < plugin_count; i++ ) {
-    dlclose(plugins[i]);
-    plugins[i] = NULL;
+  plugin_head = NULL;
+  plugin_last = NULL;
+  plugin_curr = NULL;
+
+  if (NULL != (pluginsDir = opendir("../plugins"))) {
+    while ((in_file = readdir(pluginsDir)))
+    {
+      if (!strcmp(in_file->d_name, ".")) continue;
+      if (!strcmp(in_file->d_name, "..")) continue;
+      if (!strstr(in_file->d_name, ".so")) continue;
+
+      memset(plugin_name, 0, strlen(plugin_name));
+      snprintf(plugin_name, sizeof(plugin_name), "../plugins/%s", in_file->d_name);
+
+      do_rawlog(LT_ERR, "Found: %s ", plugin_name);
+
+      testPlugin = dlopen(plugin_name, RTLD_LAZY);
+      if (testPlugin == NULL) continue;
+
+      do_rawlog(LT_ERR, "Opened: %s", plugin_name);
+
+      plugin_init* f = dlsym(testPlugin, "plugin_init");
+      if (f == NULL) {
+        do_rawlog(LT_ERR, "Missing plugin_init: %s", plugin_name);
+        dlclose(testPlugin);
+        continue;
+      }
+
+      struct penn_plugins* test = plugin_head;
+      struct penn_plugins* newPlugin = (struct penn_plugins*) malloc(sizeof(struct penn_plugins));
+      newPlugin->handle = testPlugin;
+      newPlugin->name = in_file->d_name;
+      newPlugin->prev = NULL;
+      newPlugin->next = NULL;
+
+      if ( plugin_head == NULL ) {
+        plugin_head = newPlugin;
+
+        do_rawlog(LT_ERR, "Running plugin_init: %s", newPlugin->name);
+
+        f();
+        continue;
+      }
+
+      while(test->next != NULL) test = test->next;
+      test->next = newPlugin;
+      newPlugin->prev = test;
+
+      do_rawlog(LT_ERR, "Running plugin_init: %s", newPlugin->name);
+
+      f();
+    }
   }
 }
 

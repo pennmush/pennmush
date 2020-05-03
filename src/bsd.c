@@ -932,47 +932,8 @@ void load_plugins() {
 
   DIR* pluginsDir;
   struct dirent* in_file;
-  FILE    *entry_file;
   void* testPlugin;
   char plugin_name[256];
-  int i = 0;
-/**
-  plugins = (void*)calloc(1, sizeof(void*));
-  if(plugins == NULL) {
-    do_rawlog(LT_ERR, "Could not allocate memory for plugins");
-    return;
-  }
-
-  if (NULL != (pluginsDir = opendir("../plugins"))) {
-    while ((in_file = readdir(pluginsDir)))
-    {
-      if (!strcmp(in_file->d_name, ".")) continue;
-      if (!strcmp(in_file->d_name, "..")) continue;
-      if (!strstr(in_file->d_name, ".so")) continue;
-
-      do_rawlog(LT_ERR, in_file->d_name);
-
-      snprintf(plugin_name, sizeof(plugin_name), "../plugins/%s", in_file->d_name);
-
-      testPlugin = dlopen(plugin_name, RTLD_LAZY);
-      if (testPlugin == NULL) continue;
-
-      plugin_init* f = dlsym(testPlugin, "plugin_init");
-      if (f == NULL) continue;
-   
-      plugins = realloc(plugins, 1 * sizeof(void*));
-      if(plugins == NULL) {
-        do_rawlog(LT_ERR, "Could not increase amount of allocated memory for more plugins!");
-        break;
-      }
-
-      plugins[i] = testPlugin;
-      plugin_count++;
-      
-      f();
-    }
-  }
-**/
 
   plugin_head = NULL;
   plugin_last = NULL;

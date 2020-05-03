@@ -110,12 +110,11 @@ local_dump_database(void)
 void
 local_shutdown(void)
 {
-  for (int i = 0; i < plugin_count; i++) {
-    if (plugins[i] == NULL) break;
-    dlclose(plugins[i]);
+  while(plugin_head != NULL) {
+    dlclose(plugin_head->handle);
+    if (plugin_head->prev != NULL) { free(plugin_head->prev); }
+    plugin_head = plugin_head->next;
   }
-
-  free(plugins);
 }
 
 /* Called when the MUSH is performing a dbck database check,
@@ -136,12 +135,19 @@ local_timer(void *data __attribute__((__unused__)))
 {
   typedef int plugin_timer();
 
-  for (int i = 0; i < plugin_count; i++) {
-    if (plugins[i] == NULL) break;
-    plugin_timer* f = dlsym(plugins[i], "plugin_timer");
-    if (f == NULL) continue;
+  struct penn_plugins* temp = plugin_head;
+
+  while(temp->next != NULL) {
+    plugin_timer* f = dlsym(temp->handle, "plugin_timer");
+    if (f == NULL) {
+      temp = temp->next;
+      continue;
+    }
+    do_rawlog(LT_ERR, "Running timer for %s", temp->name);
     f();
+    temp = temp->next;
   }
+  
   /* The callback has to be set back up or it'll only run once. */
   return false;
 }

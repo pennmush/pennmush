@@ -131,9 +131,9 @@ build_rgb_map(void)
   }
 
   if (sqlite3_exec(sqldb,
-                   "CREATE TABLE colors(name TEXT NOT NULL PRIMARY KEY COLLATE "
-                   "TRAILNUMBERS, rgb INTEGER NOT NULL, xterm INTEGER NOT "
-                   "NULL, ansi INTEGER NOT NULL) WITHOUT ROWID;"
+                   "CREATE TABLE colors(name TEXT NOT NULL PRIMARY KEY COLLATE UINT,"
+                   "rgb INTEGER NOT NULL, xterm INTEGER NOT NULL,"
+                   "ansi INTEGER NOT NULL) WITHOUT ROWID;"
                    "CREATE INDEX rgb_idx ON colors(rgb);"
                    "CREATE VIEW named_colors AS SELECT * FROM colors WHERE "
                    "name NOT LIKE 'xterm%'",

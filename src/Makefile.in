@@ -30,8 +30,8 @@ C_FILES=access.c atr_tab.c attrib.c boolexp.c bsd.c bufferq.c		\
 	info_master.c ptab.c remember.c rob.c services.c set.c sig.c	\
 	sort.c speech.c spellfix.c sql.c sqlite3.c ssl_master.c		\
 	strdup.c strtree.c strutil.c tables.c testframework.c timer.c	\
-	tz.c unparse.c utf_impl.c utils.c version.c wait.c warnings.c	\
-	websock.c wild.c wiz.c
+	tz.c uint.c unparse.c utf_impl.c utils.c version.c wait.c	\
+	warnings.c websock.c wild.c wiz.c
 
 
 # .o versions of above - these are used in the build
@@ -48,8 +48,8 @@ O_FILES=access.o atr_tab.o attrib.o boolexp.o bsd.o bufferq.o		\
 	info_master.o ptab.o remember.o rob.o services.o set.o sig.o	\
 	sort.o speech.o spellfix.o sql.o sqlite3.o ssl_master.o		\
 	strdup.o strtree.o strutil.o tables.o testframework.o timer.o	\
-	tz.o unparse.o utf_impl.o utils.o version.o wait.o warnings.o	\
-	websock.o wild.o wiz.o
+	tz.o uint.o unparse.o utf_impl.o utils.o version.o wait.o	\
+	warnings.o websock.o wild.o wiz.o
 
 # This is a dummy target, in case you type 'make' in the source
 # directory (likely for emacs users who M-x compile.)

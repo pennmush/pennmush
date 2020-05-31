@@ -20,6 +20,11 @@ Numbers next to the developer credit refer to Github issue numbers.
 Version 1.8.8 patchlevel 1 ??? ?? 202?
 ======================================
 
+Minor changes
+-------------
+
+* Sqlite updated to 3.32.1. [SW]
+
 Fixes
 -----
 * `udefault` only accepted 12 arguments, not the documented 32. [MG]

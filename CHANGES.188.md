@@ -24,6 +24,7 @@ Minor changes
 -------------
 
 * Sqlite updated to 3.32.1. [SW]
+* cJSON updated to 1.7.13 [SW]
 
 Fixes
 -----

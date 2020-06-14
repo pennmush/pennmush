@@ -34,7 +34,7 @@ SHELL=/bin/sh
 # Where to install with 'make globalinstall'
 GLOBAL_INSTALL=@libexecdir@
 
-PCRE2_DIR=pcre2-10.33
+PCRE2_DIR=pcre2-10.35
 
 
 all: config.h autogen game/mush.cnf

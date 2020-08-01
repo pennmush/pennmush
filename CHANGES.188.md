@@ -25,6 +25,7 @@ Minor changes
 
 * Sqlite updated to 3.32.1. [SW]
 * cJSON updated to 1.7.13 [SW]
+* New `--version` option to the netmush binary to display the version and exit.
 
 Fixes
 -----

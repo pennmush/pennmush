@@ -11263,7 +11263,7 @@ else
 fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: Configuring PCRE2" >&5
 $as_echo "$as_me: Configuring PCRE2" >&6;}
-PCRE2_VERSION="pcre2-10.33"
+PCRE2_VERSION="pcre2-10.35"
 PCRE2_TARBALL="${PCRE2_VERSION}.tar.gz"
 PCRE2_URL="http://ftp.pcre.org/pub/pcre/${PCRE2_TARBALL}"
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking for ${PCRE2_VERSION}" >&5

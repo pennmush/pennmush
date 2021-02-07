@@ -1,9 +1,6 @@
 --- src/Makefile.in	2020-04-23 22:40:39.000000000 +0200
 +++ src/Makefile.in	2021-02-06 17:20:42.256590466 +0100
-@@ -57,12 +57,14 @@
- first:
- 	(cd ..; @MAKE@)
-
+@@ -60,7 +60,13 @@
 -all: $(OUTFILES)
 +all: buildinf depend app $(OUTFILES)
 
@@ -22,11 +19,8 @@
 -	$(CC) $(CCFLAGS) -o netmud $(O_FILES) $(LDFLAGS) $(SQL_LDFLAGS) $(LIBS)
 +	$(CC) $(CCFLAGS) -o netmud $(O_FILES) $(LDFLAGS) $(SQL_LDFLAGS) $(LIBS)
 
- # We recompile mysocket.c instead of reusing mysocket.o because we
- # want to do some error handing differently for info_slave.
-@@ -80,15 +82,22 @@
+@@ -82,7 +88,11 @@
 
- # It should always be out of date.
  buildinf:
 -	-rm -f ../hdrs/buildinf.h
 +
@@ -34,126 +28,8 @@
 +	  -rm -f ../hdrs/buildinf.h
 +	fi
 +
- 	@echo "/* This file generated automatically from Makefile */" >> ../hdrs/buildinf.h
- 	@echo "#define BUILDDATE \"`date`\"" >> ../hdrs/buildinf.h
- 	@echo "#define COMPILER \"$(CC)\"" >> ../hdrs/buildinf.h
- 	@echo "#define CCFLAGS \"$(CFLAGS)\"" >> ../hdrs/buildinf.h
 
--# If funlocal.c doesn't exist, we want to build it from
--# funlocal.dst.
--funlocal.c: funlocal.dst
+@@ -88,1 +98,3 @@
 +
 +mksrc: funlocal flaglocal cmdlocal local patches potfile bflags htmltab lmathtab jsontypes
 +
-+
-+# If funlocal.c doesn't exist, we want to build it from funlocal.dst.
-+funlocal: funlocal.dst
- 	@if [ ! -f funlocal.c ]; then \
- 	  cp funlocal.dst funlocal.c; \
- 	else \
-@@ -98,7 +107,7 @@
- 	  echo "********************************************************"; \
- 	fi
-
--flaglocal.c: flaglocal.dst
-+flaglocal: flaglocal.dst
- 	@if [ ! -f flaglocal.c ]; then \
- 	  cp flaglocal.dst flaglocal.c; \
- 	else \
-@@ -108,7 +117,7 @@
- 	  echo "********************************************************"; \
- 	fi
-
--cmdlocal.c: cmdlocal.dst
-+cmdlocal: cmdlocal.dst
- 	@if [ ! -f cmdlocal.c ]; then \
- 	  cp cmdlocal.dst cmdlocal.c; \
- 	else \
-@@ -118,7 +127,7 @@
- 	  echo "********************************************************"; \
- 	fi
-
--local.c: local.dst
-+local: local.dst
- 	@if [ ! -f local.c ]; then \
- 	  cp local.dst local.c; \
- 	else \
-@@ -128,16 +137,16 @@
- 	  echo "********************************************************"; \
- 	fi
-
--../hdrs/patches.h:
-+patches:
- 	if [ ! -f ../hdrs/patches.h ]; then \
- 	(cd ..; @PERL@ utils/mkcmds.pl patches); \
- 	fi
-
--../po/pennmush.pot: $(C_FILES)
-+potfile: $(C_FILES)
- 	xgettext -d pennmush -kT -o ../po/pennmush.pot $(C_FILES)
-
- # The following source files are auto-generated with gperf, if it's present.
--bflags.c: bflags.gperf
-+bflags: bflags.gperf
- 	@if [ -n "@GPERF@" ]; then \
- 		echo "Rebuilding bflags.c from bflags.gperf"; \
- 		@GPERF@ -C --output-file bflags.c bflags.gperf; \
-@@ -145,7 +154,7 @@
- 		echo "*** NOTE ***: src/bflags.c appears to be out of date, but you don't have gperf installed. Install gperf or touch src/bflags.c to suppress this message."; \
- 	fi
-
--htmltab.c: htmltab.gperf
-+htmltab: htmltab.gperf
- 	@if [ -n "@GPERF@" ]; then \
- 		echo "Rebuilding htmltab.c from htmltab.gperf"; \
- 		@GPERF@ -C --output-file htmltab.c htmltab.gperf; \
-@@ -153,7 +162,7 @@
- 		echo "*** NOTE ***: src/htmltab.c appears to be out of date, but you don't have gperf installed. Install gperf or touch src/htmltab.c to suppress this message."; \
- 	fi
-
--lmathtab.c: lmathtab.gperf
-+lmathtab: lmathtab.gperf
- 	@if [ -n "@GPERF@" ]; then \
- 		echo "Rebuilding lmathtab.c from lmathtab.gperf"; \
- 		@GPERF@ -C --output-file lmathtab.c lmathtab.gperf; \
-@@ -161,7 +170,7 @@
- 		echo "*** NOTE ***: src/lmathtab.c appears to be out of date, but you don't have gperf installed. Install gperf or touch src/lmathtab.c to suppress this message."; \
- 	fi
-
--jsontypes.c: jsontypes.gperf
-+jsontypes: jsontypes.gperf
- 	@if [ -n "@GPERF@" ]; then \
- 		echo "Rebuilding jsontypes.c from jsontypes.gperf"; \
- 		@GPERF@ -C --output-file jsontypes.c jsontypes.gperf; \
-@@ -169,10 +178,10 @@
- 		echo "*** NOTE ***: src/jsontypes.c appears to be out of date, but you don't have gperf installed. Install gperf or touch src/jsontypes.c to suppress this message."; \
- 	fi
-
--etags:
-+etags:
- 	@ETAGS@ *.c ../hdrs/*.h
-
--ctags:
-+ctags:
- 	@CTAGS@ *.c ../hdrs/*.h
-
- depend: $(C_FILES) info_slave.c ssl_slave.c
-@@ -187,8 +196,8 @@
- 	ssl_slave.c info_slave.c
-
- clean:
--	-rm -f *.o
--	-rm -f a.out core gmon.out $(OUTFILES)
-+	-rm -f *.o
-+	-rm -f a.out core gmon.out $(OUTFILES)
-
- distclean: clean
- 	-rm -f *~ *.orig *.rej *.bak funlocal.c cmdlocal.c flaglocal.c local.c \#*
-@@ -196,7 +205,7 @@
- test_compress: comp_h.c
- 	$(CC) $(CFLAGS) -o test_compress -DSTANDALONE comp_h.c
-
--portmsg: portmsg.c mysocket.c sig.o wait.o
-+portmsg: portmsg.c mysocket.c sig.o wait.o
- 	$(CC) $(CCFLAGS) -DSLAVE -o portmsg portmsg.c mysocket.c sig.o \
- 	wait.o $(LDFLAGS) $(LIBS)

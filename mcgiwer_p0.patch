@@ -19,7 +19,7 @@
 -	$(CC) $(CCFLAGS) -o netmud $(O_FILES) $(LDFLAGS) $(SQL_LDFLAGS) $(LIBS)
 +	$(CC) $(CCFLAGS) -o netmud $(O_FILES) $(LDFLAGS) $(SQL_LDFLAGS) $(LIBS)
 
-@@ -82,7 +88,11 @@
+@@ -83,6 +89,10 @@
 
  buildinf:
 -	-rm -f ../hdrs/buildinf.h

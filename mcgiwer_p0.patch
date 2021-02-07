@@ -12,7 +12,13 @@
 +
 +netmud: $(O_FILES)
  	@echo "Making netmud."
- 	-mv -f netmud netmud~
+  
+-	-mv -f netmud netmud~
++
++ @if [ -f ${GAMEDIR}/netmud ]; then \
++  	-mv -f netmud netmud~
++		fi
++
 -	$(CC) $(CCFLAGS) -o netmud $(O_FILES) $(LDFLAGS) $(SQL_LDFLAGS) $(LIBS)
 +	$(CC) $(CCFLAGS) -o netmud $(O_FILES) $(LDFLAGS) $(SQL_LDFLAGS) $(LIBS)
 

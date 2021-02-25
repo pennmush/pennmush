@@ -25,6 +25,7 @@ test('json.string.4', $mortal, 'think json(string, foo\\\\bar\\\\baz)', '^"foo\\
 test('json.string.5', $mortal, 'think json(string, accent(foo, f:o))', '^"f\\\\u00F6o"');
 # Also tests unescape
 test('json.string.6', $mortal, 'think json_query(json(string,accent(foo,f:o)), unescape)', '^f\xF6o');
+test('json.string.7', $god, 'think json_query(json(string,render(ansi(Yr,foo[ansi(gh,bar)]baz),ansi)),unescape)', 'foobarbaz');
 
 test('json.number.1', $mortal, 'think json(number, 5)', '5');
 test('json.number.2', $mortal, 'think json(number, 5.555)', '5.555');

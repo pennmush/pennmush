@@ -169,7 +169,7 @@ FUNCTION(fun_json_query)
     latin1 =
       utf8_to_latin1(cJSON_GetStringValue(json), -1, &len, 0, "json.string");
     for (c = latin1; *c; c += 1) {
-      if (!isprint(*c) && !isspace(*c) && !(*c == 0x1B)) {
+      if (!isprint(*c) && !isspace(*c) && !(*c == ESC_CHAR)) {
         *c = '?';
       }
     }

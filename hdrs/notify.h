@@ -75,6 +75,7 @@ char *WIN32_CDECL tprintf(const char *fmt, ...)
 #define MSG_ANSI2 0x20    /**< Ansi-highlight only */
 #define MSG_ANSI16 0x40   /**< 16 bit Color */
 #define MSG_XTERM256 0x80 /**< XTERM 256 Color */
+#define MSG_LATIN1 0x160 /**< Downgrade to Latin1 */
 #define MSG_WEBSOCKETS 0x10000000
 
 /**

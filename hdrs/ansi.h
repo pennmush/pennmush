@@ -37,6 +37,7 @@
 #define ESC_CHAR '\x1B'
 
 #define ANSI_RAW_NORMAL "\x1B[0m"
+#define ANSI_TAG "\x1B"
 
 #define TAG_START '\002'
 #define TAG_END '\003'

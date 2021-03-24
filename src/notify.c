@@ -760,6 +760,14 @@ render_string(const char *message, int output_type)
     strcpy(buff, message);
     return buff;
   }
+  if(output_type == MSG_LATIN1) {
+    int len;
+    char* latin1;
+    /* This is dangerous, as is can allow for unicode characters to be turned into raw ansi or markup */
+    latin1 = utf8_to_latin1(p, 0, &len, 0, "utf8.to-latin1");
+    safe_strl(latin1,len,buff,&buff);
+    return buff;
+  }
 
   /* Everything is explicitly off by default */
   memset(&states[0], 0, sizeof(ansi_data));

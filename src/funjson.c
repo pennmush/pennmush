@@ -26,6 +26,7 @@
 #include "charclass.h"
 #include "cJSON.h"
 #include "ansi.h"
+#include "log.h"
 
 char *json_vals[3] = {"false", "true", "null"};
 int json_val_lens[3] = {5, 4, 4};
@@ -160,21 +161,39 @@ FUNCTION(fun_json_query)
     }
     break;
   case JSON_QUERY_UNESCAPE: {
-    char *latin1, *c;
-    int len;
+    char *latin1, *c, *partialbuf;
+    int len, pblen;
     if (!cJSON_IsString(json)) {
       safe_str("#-1", buff, bp);
       break;
     }
-    latin1 =
-      utf8_to_latin1(cJSON_GetStringValue(json), -1, &len, 0, "json.string");
+    latin1 = utf8_to_latin1(cJSON_GetStringValue(json), -1, &len, 0, "json.string");
+
+    partialbuf = mush_calloc(len*6,sizeof(char),"json.string.partialbuf");
+    char *bpp = partialbuf;
+    pblen = 0;
     for (c = latin1; *c; c += 1) {
-      if (!isprint(*c) && !isspace(*c) && !(*c == ESC_CHAR)) {
-        *c = '?';
+      if(*c == TAG_START) {
+        safe_strl(MARKUP_START, strlen(MARKUP_START), partialbuf, &bpp);
+        pblen += strlen(MARKUP_START);
+      }
+      else if(*c == TAG_END) {
+        safe_strl(MARKUP_END, strlen(MARKUP_END), partialbuf, &bpp);
+        pblen += strlen(MARKUP_END);
+      }
+      else if (!isprint(*c) && !isspace(*c)) {
+        safe_chr('?', partialbuf,&bpp);
+        pblen++;
+      }
+      else {
+        safe_chr(*c,partialbuf,&bpp);
+        pblen++;
       }
     }
-    safe_strl(latin1, len, buff, bp);
+    
+    safe_strl(partialbuf, pblen, buff, bp);
     mush_free(latin1, "json.string");
+    mush_free(partialbuf, "json.string.partialbuf");
   } break;
   case JSON_QUERY_EXISTS:
   case JSON_QUERY_GET:
@@ -556,6 +575,10 @@ FUNCTION(fun_json)
     type = JSON_STR;
   } else if (strcasecmp("string", args[0]) == 0) {
     type = JSON_STR;
+  } else if (strcasecmp("markupstring", args[0]) == 0) {
+    type = JSON_MKSTR;
+  } else if (strcasecmp("internalstring", args[0]) == 0) {
+    type = JSON_ISTR;
   } else if (strcasecmp("boolean", args[0]) == 0) {
     type = JSON_BOOL;
   } else if (strcasecmp("array", args[0]) == 0) {
@@ -572,7 +595,7 @@ FUNCTION(fun_json)
   }
 
   if ((type == JSON_NULL && nargs > 2) ||
-      ((type == JSON_STR || type == JSON_NUMBER || type == JSON_BOOL) &&
+      ((type == JSON_STR || type == JSON_MKSTR || type == JSON_ISTR || type == JSON_NUMBER || type == JSON_BOOL) &&
        nargs != 2) ||
       (type == JSON_OBJECT && (nargs % 2) != 1)) {
     safe_str(T("#-1 WRONG NUMBER OF ARGUMENTS"), buff, bp);
@@ -580,11 +603,15 @@ FUNCTION(fun_json)
   }
 
   /* strip ansi markup from non-string types */
-  if (type != JSON_STR) {
+  if (type != JSON_STR && type != JSON_MKSTR && type != JSON_ISTR) {
     for (i = 1; i < nargs; i++) {
       strcpy(args[i], remove_markup(args[i], NULL));
     }
   }
+
+  /* 
+    ADD A REQUIREMENT TO BE WIZ OR ABLE TO RENDER MARKUP IF JSON_MKSTR!
+  */
 
   switch (type) {
   case JSON_NULL:
@@ -613,6 +640,14 @@ FUNCTION(fun_json)
     return;
   case JSON_STR:
     strcpy(tmp, render_string(args[1], MSG_XTERM256));
+    safe_format(buff, bp, "\"%s\"", json_escape_string(tmp));
+    return;
+  case JSON_MKSTR:
+    strcpy(tmp, render_string(args[1], MSG_MARKUP));
+    safe_format(buff, bp, "\"%s\"", json_escape_string(tmp));
+    return;
+  case JSON_ISTR:
+    strcpy(tmp, render_string(args[1], MSG_INTERNAL));
     safe_format(buff, bp, "\"%s\"", json_escape_string(tmp));
     return;
   case JSON_ARRAY: {

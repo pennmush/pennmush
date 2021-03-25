@@ -27,6 +27,9 @@ test('json.string.5', $mortal, 'think json(string, accent(foo, f:o))', '^"f\\\\u
 test('json.string.6', $mortal, 'think json_query(json(string,accent(foo,f:o)), unescape)', '^f\xF6o');
 test('json.string.7', $god, 'think json_query(json(string,render(ansi(Yr,foo[ansi(gh,bar)]baz),ansi)),unescape)', 'foobarbaz');
 
+# Markup string tests.
+test('json.markupstring.1', $mortal, 'think json(markupstring,ansi(hr,foo))','\\\\u0002chr\\\\u0003rawr\\\\u0002c/\\\\u0003')
+
 test('json.number.1', $mortal, 'think json(number, 5)', '5');
 test('json.number.2', $mortal, 'think json(number, 5.555)', '5.555');
 test('json.number.3', $mortal, 'think json(number, foo)', '#-1');

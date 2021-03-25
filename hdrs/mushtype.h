@@ -373,8 +373,7 @@ enum json_type {
   JSON_NULL,
   JSON_ARRAY,
   JSON_OBJECT,
-  JSON_MKSTR,
-  JSON_ISTR
+  JSON_MKSTR
 };
 
 typedef int (*gmcp_handler_func)(char *package, cJSON *data, char *msg,

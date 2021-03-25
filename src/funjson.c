@@ -72,13 +72,7 @@ char * json_unescape_latin1string(char *latin1, int len)
   char *partialbuf = mush_calloc(len*6,sizeof(char),"json.string.partialbuf");
   char *bpp = partialbuf;
   for (c = latin1; *c; c += 1) {
-    if(*c == TAG_START && UNSAFE_UNESCAPE) {
-      safe_strl(MARKUP_START, strlen(MARKUP_START), partialbuf, &bpp);
-    }
-    else if(*c == TAG_END && UNSAFE_UNESCAPE) {
-      safe_strl(MARKUP_END, strlen(MARKUP_END), partialbuf, &bpp);
-    }
-    else if(*c == ESC_CHAR && UNSAFE_UNESCAPE) {
+    if(UNSAFE_UNESCAPE && (*c == ESC_CHAR || *c == TAG_END || *c == TAG_START )) {
       safe_chr(*c,partialbuf,&bpp);
     }
     else if (!isprint(*c) && !isspace(*c)) {

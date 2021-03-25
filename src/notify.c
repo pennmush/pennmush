@@ -769,7 +769,7 @@ render_string(const char *message, int output_type)
     do_log(LT_WIZ, GOD,GOD,"MSG: %s",message);
     do_log(LT_WIZ, GOD,GOD,"P: %s",p);
     latin1 = utf8_to_latin1(p, -1, &len, 0, "utf8.to-latin1");
-    do_log(LT_WIZ, GOD,GOD,"LATIN1: %s",p);
+    do_log(LT_WIZ, GOD,GOD,"LATIN1: %s",latin1);
     bp = buff;
     safe_strl(latin1,len,buff,&bp);
     mush_free(latin1,"utf8.to-latin1");

@@ -2401,8 +2401,6 @@ FUNCTION(fun_render)
       flags |= MSG_MARKUP;
     else if (strcasecmp("html", word) == 0)
       flags |= MSG_PUEBLO;
-    else if (strcasecmp("latin1", word) == 0)
-      flags |= MSG_LATIN1;
     else {
       safe_str(T("#-1 INVALID SECOND ARGUMENT"), buff, bp);
       return;

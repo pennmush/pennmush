@@ -573,7 +573,7 @@ translit_to_latin1(UChar32 c, char rep[4])
  *
  * \param utf8 a utf-8 string. It should be normalized in NFC/NFKC for best
  * results. \param len the length of the string in bytes \param outlen set to
- * the length of the returned string NOT including trailing nul \bool translit
+ * the length of the returned string NOT including trailing nul \param translit
  * true to try to transliterate characters to latin-1 equivalents. \param name
  * memcheck tag \return a newly allocated latin-1 string
  */

@@ -160,6 +160,7 @@ PENNCONF conftable[] = {
    CP_GODONLY, "net"},
   {"sql_database", cf_str, options.sql_database, sizeof options.sql_database,
    CP_GODONLY, "net"},
+  {"unsafe_unescape", cf_bool, &options.unsafe_unescape, 2, 0, "net"},
   {"forking_dump", cf_bool, &options.forking_dump, 2, 0, "dump"},
   {"dump_message", cf_str, options.dump_message, sizeof options.dump_message,
    CP_OPTIONAL, "dump"},

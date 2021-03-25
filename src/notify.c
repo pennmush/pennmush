@@ -763,8 +763,13 @@ render_string(const char *message, int output_type)
   if(output_type == MSG_LATIN1) {
     int len;
     char* latin1;
-    /* This is dangerous, as is can allow for unicode characters to be turned into raw ansi or markup */
-    latin1 = utf8_to_latin1(p, 0, &len, 0, "utf8.to-latin1");
+    p = message;
+    /* This is dangerous, as is can allow for unicode characters to be turned into raw ansi or markup
+       which is why we require render permissions. */
+    do_log(LT_WIZ, GOD,GOD,"MSG: %s",message);
+    do_log(LT_WIZ, GOD,GOD,"P: %s",p);
+    latin1 = utf8_to_latin1(p, -1, &len, 0, "utf8.to-latin1");
+    do_log(LT_WIZ, GOD,GOD,"LATIN1: %s",p);
     safe_strl(latin1,len,buff,&buff);
     mush_free(latin1,"utf8.to-latin1");
     return buff;

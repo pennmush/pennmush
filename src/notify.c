@@ -766,6 +766,7 @@ render_string(const char *message, int output_type)
     /* This is dangerous, as is can allow for unicode characters to be turned into raw ansi or markup */
     latin1 = utf8_to_latin1(p, 0, &len, 0, "utf8.to-latin1");
     safe_strl(latin1,len,buff,&buff);
+    mush_free(latin1,"utf8.to-latin1");
     return buff;
   }
 

@@ -1023,4 +1023,4 @@ include restrict.cnf
 # it is possible for a player to cause ansi to bleed etc. We recommend to 
 # keep this off unless you know what you are doing. If you set this to 1, 
 # we recommend making all json functions Roy or Wiz based using @function/restrict
-unsafe_unescape 0
+json_unsafe_unescape 0

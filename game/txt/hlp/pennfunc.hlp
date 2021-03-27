@@ -4580,8 +4580,8 @@ See also: json()
   For <type>...   <data> should be...
   null            not given
   boolean         one arg, either "true", "1", "false" or "0"
-  string          one arg, any string, including an empty string - downgrades to ansi markup
-  markupstring    one arg, any string, including an empty string - retains full internal markup
+  string          one arg, any string, including an empty string - escapes but converts to ansi markup only
+  markupstring    one arg, any string, including an empty string - escapes and retains full internal markup
   number          one arg, a valid number
   array           zero or more args, each themselves valid JSON
   object          zero or more pairs of arguments, the first a plain string (NOT a quoted JSON string), the second valid JSON of any type

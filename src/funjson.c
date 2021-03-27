@@ -26,7 +26,6 @@
 #include "charclass.h"
 #include "cJSON.h"
 #include "ansi.h"
-#include "log.h"
 
 char *json_vals[3] = {"false", "true", "null"};
 int json_val_lens[3] = {5, 4, 4};
@@ -65,11 +64,17 @@ json_escape_string(char *input)
   return buff;
 }
 
-/** Unescape a string for use as a JSON string. Returns a calloced buffer under 'json.string.partialbuf'. **/
+/** Returns a buffer containing the string after removing unprintable characters.
+ * In the case that the json_unsafe_unescape option is set to 1, it will leave 
+ * ANSI and internal markup characters.
+ * \param latin1 the input string
+ * \param len length of the input string
+ * \return pointer to a char array under 'json.string.partialbuf', which must be freed after use. 
+ */
 char * json_unescape_latin1string(char *latin1, int len)
 {
   char *c;
-  char *partialbuf = mush_calloc(len*6,sizeof(char),"json.string.partialbuf");
+  char *partialbuf = mush_calloc(len,sizeof(char),"json.string.partialbuf");
   char *bpp = partialbuf;
   for (c = latin1; *c; c += 1) {
     if(UNSAFE_UNESCAPE && (*c == ESC_CHAR || *c == TAG_END || *c == TAG_START )) {
@@ -191,7 +196,7 @@ FUNCTION(fun_json_query)
 
     latin1 = utf8_to_latin1(cJSON_GetStringValue(json), -1, &len, 0, "json.string");
     partialbuf = json_unescape_latin1string(latin1,len);
-    safe_strl(partialbuf, strlen(partialbuf), buff, bp);
+    safe_strl(partialbuf, len, buff, bp);
     mush_free(partialbuf, "json.string.partialbuf");
     mush_free(latin1, "json.string");
   } break;
@@ -232,7 +237,7 @@ FUNCTION(fun_json_query)
         char *latin1 = utf8_to_latin1(jstr, -1, &len, 0, "json.string");
             
         partialbuf = json_unescape_latin1string(latin1,len);
-        safe_strl(partialbuf, strlen(partialbuf), buff, bp);
+        safe_strl(partialbuf, len, buff, bp);
         mush_free(partialbuf, "json.string.partialbuf");
         mush_free(latin1, "json.string");
         free(jstr);
@@ -267,7 +272,7 @@ FUNCTION(fun_json_query)
         int plen = sqlite3_column_bytes(op, 0);
         latin1 = utf8_to_latin1_us(p, plen, &len, 0, "json.string");
         partialbuf = json_unescape_latin1string(latin1,len);
-        safe_strl(partialbuf, strlen(partialbuf), buff, bp);
+        safe_strl(partialbuf, len, buff, bp);
         mush_free(partialbuf, "json.string.partialbuf");
         mush_free(latin1, "json.string");
       }
@@ -404,7 +409,7 @@ FUNCTION(fun_json_mod)
       int plen = sqlite3_column_bytes(op, 0);
       latin1 = utf8_to_latin1_us(p, plen, &len, 0, "string");
         partialbuf = json_unescape_latin1string(latin1,len);
-        safe_strl(partialbuf, strlen(partialbuf), buff, bp);
+        safe_strl(partialbuf, len, buff, bp);
         mush_free(partialbuf, "json.string.partialbuf");
         mush_free(latin1, "json.string");
     }
@@ -584,10 +589,6 @@ FUNCTION(fun_json)
     }
   }
 
-  /* 
-    ADD A REQUIREMENT TO BE WIZ OR ABLE TO RENDER MARKUP IF JSON_MKSTR!
-  */
-
   switch (type) {
   case JSON_NULL:
     if (nargs == 2 && strcmp(args[1], json_vals[2])) {
@@ -643,7 +644,7 @@ FUNCTION(fun_json)
     latin1 = utf8_to_latin1(jstr, -1, &len, 0, "json.string");
 
     partialbuf = json_unescape_latin1string(latin1,len);
-    safe_strl(partialbuf, strlen(partialbuf), buff, bp);
+    safe_strl(partialbuf, len, buff, bp);
     mush_free(partialbuf, "json.string.partialbuf");
     mush_free(latin1, "json.string");
     free(jstr);
@@ -671,7 +672,7 @@ FUNCTION(fun_json)
     cJSON_Delete(obj);
     latin1 = utf8_to_latin1(jstr, -1, &len, 0, "json.string");
     partialbuf = json_unescape_latin1string(latin1,len);
-    safe_strl(partialbuf, strlen(partialbuf), buff, bp);
+    safe_strl(partialbuf, len, buff, bp);
     mush_free(partialbuf, "json.string.partialbuf");
     mush_free(latin1, "json.string");
     free(jstr);

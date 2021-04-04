@@ -1204,9 +1204,11 @@ handle_curl_msg(CURLMsg *msg)
       if (resp->too_big) {
         notify(resp->thing, "Too much HTTP data received; excess truncated.");
       }
+
       queue_attribute_base_priv(resp->thing, resp->attrname, resp->enactor, 0,
                                 resp->pe_regs, resp->queue_type, resp->thing,
                                 NULL, NULL);
+
     } else {
       notify_format(resp->thing, "Request failed: %s",
                     curl_easy_strerror(msg->data.result));
@@ -1517,8 +1519,7 @@ check_sockets(uint32_t msec_timeout)
   }
 
 #ifdef HAVE_LIBCURL
-  curl_status =
-    curl_multi_wait(curl_handle, fds, fds_used, msec_timeout, &found);
+  curl_status = curl_multi_wait(curl_handle, fds, fds_used, msec_timeout, &found);
 
   if (curl_status != CURLM_OK) {
     do_rawlog(LT_ERR, "curl_multi_wait: %s", curl_multi_strerror(curl_status));

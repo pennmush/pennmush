@@ -12,6 +12,11 @@
 #include <string.h>
 #include <ctype.h>
 
+#ifdef HAVE_LIBCURL
+#include <mysocket.h>
+#include <curl/curl.h>
+#endif
+
 #include "ansi.h"
 #include "attrib.h"
 #include "case.h"
@@ -1561,4 +1566,274 @@ FUNCTION(fun_benchmark)
   }
 
   return;
+}
+
+#ifdef HAVE_LIBCURL
+static size_t
+req_write_callback(void *contents, size_t size, size_t nmemb, void *userp)
+{
+  struct urlreq *req = userp;
+  size_t realsize = size * nmemb;
+  sqlite3_str_append(req->body, contents, realsize);
+  if (sqlite3_str_length(req->body) >= BUFFER_LEN) {
+    /* Raise an error and abort request. */
+    req->too_big = 1;
+    return 0;
+  } else {
+    return realsize;
+  }
+}
+
+static int
+req_set_cloexec(void *clientp __attribute__((__unused__)), curl_socket_t fd,
+                curlsocktype purpose __attribute__((__unused__)))
+{
+  set_close_exec(fd);
+  return CURL_SOCKOPT_OK;
+}
+
+static void
+free_urlreq(struct urlreq *req)
+{
+  pe_regs_free(req->pe_regs);
+  if (req->body) {
+    sqlite3_str_reset(req->body);
+    sqlite3_str_finish(req->body);
+  }
+  mush_free(req->attrname, "urlreq.attrname");
+  curl_slist_free_all(req->header_slist);
+  mush_free(req, "urlreq");
+}
+#endif
+
+/* ARGSUSED */
+FUNCTION(fun_http)
+{
+  #ifdef HAVE_LIBCURL
+  ufun_attrib ufun;
+  extern int ncurl_queries;
+  CURLcode curl_status;
+  struct urlreq *req;
+  CURL *handle;
+  struct curl_slist *headers = NULL;
+  dbref thing;
+  char *s;
+  const char *userpass;
+  char tbuf[BUFFER_LEN];
+  // int queue_type = QUEUE_DEFAULT | (queue_entry->queue_type & QUEUE_EVENT);
+  bool post = false;
+  bool del = false;
+  bool put = false;
+
+  if (!Wizard(executor) && !has_power_by_name(executor, "Can_HTTP", NOTYPE)) {
+    safe_strl("#-1 Permission Denied.", 22, buff, bp);
+    return;
+  }
+  
+  if(nargs < 3) {
+    safe_str("#-1 FUNCTION EXPECTS AT LEAST 3 ARGUMENTS", buff, bp);
+    return;
+  }
+  
+  if(nargs > 4) {
+    safe_str("#-1 FUNCTION EXPECTS AT MOST 4 ARGUMENTS", buff, bp);
+    return;
+  }
+
+  if (!*args[2]) {
+    safe_strl("#-1 Missing URL.", 16, buff, bp);
+    return;
+  }
+
+  if (strcasecmp(args[1], "POST") == 0) {
+    post = true;
+  }
+
+  if (strcasecmp(args[1], "PUT") == 0) {
+    put = true;
+  }
+
+  if (strcasecmp(args[1], "DELETE") == 0) {
+    del = true;
+  }
+
+  if(!(post||put||del) && nargs > 3) {
+    safe_strl("#-1 A GET request does not support a body argument.", 51, buff, bp);
+    return;
+  }
+
+  mush_strncpy(tbuf, args[0], sizeof tbuf);
+  s = strchr(tbuf, '/');
+  if (!s) {
+    safe_strl("#-1 I need to know what attribute to trigger.", 45, buff, bp);
+    return;
+  }
+  *(s++) = '\0';
+  upcasestr(s);
+
+  thing = noisy_match_result(executor, tbuf, NOTYPE, MAT_EVERYTHING);
+
+  if (thing == NOTHING) {
+    return;
+  }
+
+  if (!controls(executor, thing)) {
+    safe_strl("#-1 PERMISSION DENIED", 21, buff, bp);
+    return;
+  }
+  
+  if (!fetch_ufun_attrib(args[0], executor, &ufun, UFUN_DEFAULT))
+  {
+    safe_strl("#-1 Invalid attribute to call", 29, buff, bp);
+    return;
+  }
+
+  req = mush_malloc(sizeof *req, "urlreq");
+  req->enactor = enactor;
+  req->thing = thing;
+  req->attrname = mush_strdup(s, "urlreq.attrname");
+  req->body = sqlite3_str_new(NULL);
+  req->too_big = 0;
+  req->pe_regs = pe_regs_create(PE_REGS_ARG | PE_REGS_Q, "fun_http");
+  pe_regs_qcopy(req->pe_regs, pe_info->regvals);
+
+  handle = curl_easy_init();
+  curl_easy_setopt(handle, CURLOPT_PROTOCOLS,
+                   CURLPROTO_HTTP | CURLPROTO_HTTPS | CURLPROTO_DICT);
+  curl_easy_setopt(handle, CURLOPT_URL, args[2]);
+  curl_easy_setopt(handle, CURLOPT_VERBOSE, 0);
+  curl_easy_setopt(handle, CURLOPT_NOPROGRESS, 1);
+  curl_easy_setopt(handle, CURLOPT_NOSIGNAL, 1);
+  curl_easy_setopt(handle, CURLOPT_SOCKOPTFUNCTION, req_set_cloexec);
+  /* We use half the queue entry timer to ensure we set reasonable duration expectations, and deal with rounding. */
+  curl_easy_setopt(handle, CURLOPT_CONNECTTIMEOUT, (int)round((float)options.queue_entry_cpu_time / 2000.0));
+  curl_easy_setopt(handle, CURLOPT_TIMEOUT, (int)round((float)options.queue_entry_cpu_time / 2000.0));
+  curl_easy_setopt(handle, CURLOPT_USERAGENT, "PennMUSH/1.8");
+  curl_easy_setopt(handle, CURLOPT_WRITEFUNCTION, req_write_callback);
+  curl_easy_setopt(handle, CURLOPT_WRITEDATA, req);
+  curl_easy_setopt(handle, CURLOPT_FOLLOWLOCATION, 1);
+  curl_easy_setopt(handle, CURLOPT_MAXREDIRS, 5);
+
+  userpass = pe_regs_get(req->pe_regs, PE_REGS_Q, "userpass");
+  if (userpass) {
+    curl_easy_setopt(handle, CURLOPT_USERPWD, userpass);
+    curl_easy_setopt(handle, CURLOPT_HTTPAUTH, CURLAUTH_ANY);
+  }
+
+  if (post || put || del) {
+    bool postdata;
+    const char *contenttype;
+
+    if (post) {
+      curl_easy_setopt(handle, CURLOPT_POST, 1);
+    } else if (put) {
+      curl_easy_setopt(handle, CURLOPT_CUSTOMREQUEST, "PUT");
+    } else {
+      curl_easy_setopt(handle, CURLOPT_CUSTOMREQUEST, "DELETE");
+    }
+
+    postdata = (bool)*args[3];
+
+    contenttype = pe_regs_get(req->pe_regs, PE_REGS_Q, "content-type");
+    if (contenttype) {
+      char ct_header[BUFFER_LEN];
+      snprintf(ct_header, sizeof ct_header, "Content-Type: %s", contenttype);
+      headers = curl_slist_append(headers, ct_header);
+    }
+    if (contenttype && postdata &&
+        (strstr(contenttype, "charset=utf-8") ||
+         strstr(contenttype, "charset=UTF-8"))) {
+      int ulen;
+      char *utf8 = latin1_to_utf8(args[3], strlen(args[3]), &ulen, 0);
+      curl_easy_setopt(handle, CURLOPT_COPYPOSTFIELDS, utf8);
+      mush_free(utf8, "string");
+    } else if (postdata) {
+      curl_easy_setopt(handle, CURLOPT_COPYPOSTFIELDS, args[3]);
+    }
+  }
+
+  curl_easy_setopt(handle, CURLOPT_PRIVATE, req);
+
+  headers = curl_slist_append(headers, "Accept-Charset: iso-8859-1, utf-8, us-ascii");
+  req->header_slist = headers;
+  curl_easy_setopt(handle, CURLOPT_HTTPHEADER, headers);
+
+  ncurl_queries += 1;
+
+  curl_status = curl_easy_perform(handle);
+  
+  if (curl_status == CURLM_OK) {
+    long respcode;
+    char *contenttype;
+    struct urlreq *resp;
+    bool is_utf8 = 0;
+
+    curl_easy_getinfo(handle, CURLINFO_PRIVATE, &resp);
+
+    if (curl_status == CURLE_OK || resp->too_big) {
+      if (curl_easy_getinfo(handle, CURLINFO_RESPONSE_CODE, &respcode) ==
+          CURLE_OK) {
+        if (respcode) {
+          pe_regs_set_int(resp->pe_regs, PE_REGS_Q, "status", respcode);
+        }
+      }
+      if (curl_easy_getinfo(handle, CURLINFO_CONTENT_TYPE, &contenttype) ==
+          CURLE_OK) {
+        if (contenttype) {
+          pe_regs_set(resp->pe_regs, PE_REGS_Q, "content-type", contenttype);
+          if (strstr(contenttype, "charset=utf-8") ||
+              strstr(contenttype, "charset=UTF-8")) {
+            is_utf8 = 1;
+          }
+        }
+      }
+      if (resp->body && sqlite3_str_length(resp->body) > 0) {
+        char rbuff[BUFFER_LEN];
+        char *body = NULL;
+        char *latin1 = NULL;
+        int len;
+        int body_size = sqlite3_str_length(resp->body);
+        body = sqlite3_str_finish(resp->body);
+        resp->body = NULL;
+        if (is_utf8) {
+          latin1 = utf8_to_latin1(body, body_size, &len, 1, "string");
+          if (len >= BUFFER_LEN) {
+            resp->too_big = 1;
+            latin1[BUFFER_LEN - 1] = '\0';
+          }
+        } else {
+          latin1 = body;
+          if (body_size >= BUFFER_LEN) {
+            resp->too_big = 1;
+            body[BUFFER_LEN - 1] = '\0';
+          }
+        }
+        pe_regs_setenv(resp->pe_regs, 0, latin1);
+
+        call_ufun(&ufun, rbuff, executor, enactor, pe_info, resp->pe_regs);
+        safe_str(rbuff, buff, bp);
+        
+        if (is_utf8) {
+          mush_free(latin1, "string");
+        }
+        if (body) {
+          sqlite3_free(body);
+        }
+      }
+      if (resp->too_big) {
+        notify(resp->thing, "Too much HTTP data received; excess truncated.");
+      }
+    } else {
+      pe_regs_set(pe_info->regvals, PE_REGS_Q, "http-error", curl_easy_strerror(curl_status));
+    }
+    free_urlreq(resp);
+  }
+  else {
+    pe_regs_set(pe_info->regvals, PE_REGS_Q, "http-error", curl_easy_strerror(curl_status));
+  }
+
+  curl_easy_cleanup(handle);
+#else
+  safe_strl("#-1 Function Disabled.", 22, buff, bp);
+#endif
 }

@@ -495,6 +495,7 @@ FUNTAB flist[] = {
   {"HASTYPE", fun_hastype, 2, 2, FN_REG | FN_STRIPANSI},
   {"HEIGHT", fun_height, 1, 2, FN_REG | FN_STRIPANSI},
   {"HIDDEN", fun_hidden, 1, 1, FN_REG | FN_STRIPANSI},
+  {"HTTP", fun_http, 3, 4, FN_REG | FN_STRIPANSI},
   {"HMAC", fun_hmac, 3, 4, FN_REG},
   {"HOME", fun_home, 1, 1, FN_REG | FN_STRIPANSI},
   {"HOST", fun_hostname, 1, 1, FN_REG | FN_STRIPANSI},

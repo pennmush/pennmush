@@ -1982,8 +1982,7 @@ COMMAND(cmd_fetch)
 
   curl_easy_setopt(handle, CURLOPT_PRIVATE, req);
 
-  headers =
-    curl_slist_append(headers, "Accept-Charset: iso-8859-1, utf-8, us-ascii");
+  headers = curl_slist_append(headers, "Accept-Charset: iso-8859-1, utf-8, us-ascii");
   req->header_slist = headers;
   curl_easy_setopt(handle, CURLOPT_HTTPHEADER, headers);
 

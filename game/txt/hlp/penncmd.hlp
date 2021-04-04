@@ -1272,7 +1272,7 @@ See also: TRANSPARENT, @conformat, @nameformat, @descformat
 
   Note: The response body has the same 8k limit as other MUSH strings. Anything longer is truncated; this command is best used with APIs that provide short responses.
 
-See also: urlencode(), urldecode()
+See also: urlencode(), urldecode(), http()
 & @firstexit
   @firstexit <exit1>[, ... , <exitN>]
   

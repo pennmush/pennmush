@@ -26,7 +26,7 @@
 #endif
 
 #ifdef HAVE_LIBCURL
-#include <curl/curl.h>
+#include "http.h"
 #endif
 
 #include "access.h"
@@ -1823,32 +1823,6 @@ COMMAND(cmd_who)
     do_who_mortal(executor, arg_left);
 }
 
-#ifdef HAVE_LIBCURL
-static size_t
-req_write_callback(void *contents, size_t size, size_t nmemb, void *userp)
-{
-  struct urlreq *req = userp;
-  size_t realsize = size * nmemb;
-  sqlite3_str_append(req->body, contents, realsize);
-  if (sqlite3_str_length(req->body) >= BUFFER_LEN) {
-    /* Raise an error and abort request. */
-    req->too_big = 1;
-    return 0;
-  } else {
-    return realsize;
-  }
-}
-
-static int
-req_set_cloexec(void *clientp __attribute__((__unused__)), curl_socket_t fd,
-                curlsocktype purpose __attribute__((__unused__)))
-{
-  set_close_exec(fd);
-  return CURL_SOCKOPT_OK;
-}
-
-#endif
-
 COMMAND(cmd_fetch)
 {
   /* Move this to a more appropriate file? */
@@ -1863,9 +1837,8 @@ COMMAND(cmd_fetch)
   const char *userpass;
   char tbuf[BUFFER_LEN];
   int queue_type = QUEUE_DEFAULT | (queue_entry->queue_type & QUEUE_EVENT);
-  bool post = false;
-  bool del = false;
-  bool put = false;
+  enum http_verb verb = HTTP_GET;
+  int switchCnt = 0;
 
   if (!Wizard(executor) && !has_power_by_name(executor, "Can_HTTP", NOTYPE)) {
     notify(executor, T("Permission denied."));
@@ -1878,19 +1851,20 @@ COMMAND(cmd_fetch)
   }
 
   if (SW_ISSET(sw, SWITCH_POST)) {
-    post = true;
+    verb = HTTP_POST;
+    switchCnt++;
   }
-
   if (SW_ISSET(sw, SWITCH_PUT)) {
-    put = true;
+    verb = HTTP_PUT;
+    switchCnt++;
   }
-
   if (SW_ISSET(sw, SWITCH_DELETE)) {
-    del = true;
+    verb = HTTP_DELETE;
+    switchCnt++;
   }
 
-  if ((post && put) || (post && del) || (put && del)) {
-    notify(executor, "You can't make multiple requests at the same time!");
+  if (switchCnt > 1) {
+    notify(executor, T("You can't indicate multiple http verbs at the same time!"));
     return;
   }
 
@@ -1947,15 +1921,15 @@ COMMAND(cmd_fetch)
     curl_easy_setopt(handle, CURLOPT_HTTPAUTH, CURLAUTH_ANY);
   }
 
-  if (post || put || del) {
+  if (verb != HTTP_GET) {
     bool postdata;
     const char *contenttype;
 
-    if (post) {
+    if (verb == HTTP_POST) {
       curl_easy_setopt(handle, CURLOPT_POST, 1);
-    } else if (put) {
+    } else if (verb == HTTP_PUT) {
       curl_easy_setopt(handle, CURLOPT_CUSTOMREQUEST, "PUT");
-    } else {
+    } else if (verb == HTTP_DELETE ){
       curl_easy_setopt(handle, CURLOPT_CUSTOMREQUEST, "DELETE");
     }
 
@@ -1968,13 +1942,11 @@ COMMAND(cmd_fetch)
       headers = curl_slist_append(headers, ct_header);
     }
     if (contenttype && postdata &&
-        (strstr(contenttype, "charset=utf-8") ||
-         strstr(contenttype, "charset=UTF-8"))) {
+        (strcasecmp(contenttype, "charset=utf-8") == 0)) {
       int ulen;
-      char *utf8 =
-        latin1_to_utf8(args_right[2], strlen(args_right[2]), &ulen, 0);
+      char *utf8 = latin1_to_utf8(args_right[2], strlen(args_right[2]), &ulen, "string.httpcmd");
       curl_easy_setopt(handle, CURLOPT_COPYPOSTFIELDS, utf8);
-      mush_free(utf8, "string");
+      mush_free(utf8, "string.httpcmd");
     } else if (postdata) {
       curl_easy_setopt(handle, CURLOPT_COPYPOSTFIELDS, args_right[2]);
     }

@@ -6049,7 +6049,7 @@ See also: digest()
 
   Restricted to objects set Wizard or with the Can_HTTP @Power.
 
-  Note: The response body has the same 8k limit as other MUSH strings. Anything longer is truncated; this command is best used with APIs that provide short responses.
+  Note: The response body has the same 8k limit as other MUSH strings. Anything longer is truncated; this command is best used with APIs that provide short responses. The register 'http-overflow' will be set to 1 if the response is too large.
 
 See also: urlencode(), urldecode(), @http
 

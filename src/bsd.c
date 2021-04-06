@@ -74,7 +74,7 @@
 #include <poll.h>
 #endif
 #ifdef HAVE_LIBCURL
-#include <curl/curl.h>
+#include "http.h"
 #endif
 #include <openssl/rand.h>
 
@@ -1126,19 +1126,6 @@ int ncurl_queries = 0;
 CURLM *curl_handle = NULL;
 
 static void
-free_urlreq(struct urlreq *req)
-{
-  pe_regs_free(req->pe_regs);
-  if (req->body) {
-    sqlite3_str_reset(req->body);
-    sqlite3_str_finish(req->body);
-  }
-  mush_free(req->attrname, "urlreq.attrname");
-  curl_slist_free_all(req->header_slist);
-  mush_free(req, "urlreq");
-}
-
-static void
 handle_curl_msg(CURLMsg *msg)
 {
   if (!msg) {
@@ -1202,6 +1189,7 @@ handle_curl_msg(CURLMsg *msg)
         }
       }
       if (resp->too_big) {
+        pe_regs_set_int(resp->pe_regs, PE_REGS_Q, "content-type", 1);
         notify(resp->thing, "Too much HTTP data received; excess truncated.");
       }
 

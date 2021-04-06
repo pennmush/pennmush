@@ -13,8 +13,8 @@
 #include <ctype.h>
 
 #ifdef HAVE_LIBCURL
+#include "http.h"
 #include <mysocket.h>
-#include <curl/curl.h>
 #endif
 
 #include "ansi.h"
@@ -1568,44 +1568,6 @@ FUNCTION(fun_benchmark)
   return;
 }
 
-#ifdef HAVE_LIBCURL
-static size_t
-req_write_callback(void *contents, size_t size, size_t nmemb, void *userp)
-{
-  struct urlreq *req = userp;
-  size_t realsize = size * nmemb;
-  sqlite3_str_append(req->body, contents, realsize);
-  if (sqlite3_str_length(req->body) >= BUFFER_LEN) {
-    /* Raise an error and abort request. */
-    req->too_big = 1;
-    return 0;
-  } else {
-    return realsize;
-  }
-}
-
-static int
-req_set_cloexec(void *clientp __attribute__((__unused__)), curl_socket_t fd,
-                curlsocktype purpose __attribute__((__unused__)))
-{
-  set_close_exec(fd);
-  return CURL_SOCKOPT_OK;
-}
-
-static void
-free_urlreq(struct urlreq *req)
-{
-  pe_regs_free(req->pe_regs);
-  if (req->body) {
-    sqlite3_str_reset(req->body);
-    sqlite3_str_finish(req->body);
-  }
-  mush_free(req->attrname, "urlreq.attrname");
-  curl_slist_free_all(req->header_slist);
-  mush_free(req, "urlreq");
-}
-#endif
-
 /* ARGSUSED */
 FUNCTION(fun_http)
 {
@@ -1620,52 +1582,47 @@ FUNCTION(fun_http)
   char *s;
   const char *userpass;
   char tbuf[BUFFER_LEN];
-  // int queue_type = QUEUE_DEFAULT | (queue_entry->queue_type & QUEUE_EVENT);
-  bool post = false;
-  bool del = false;
-  bool put = false;
+  enum http_verb verb = HTTP_GET;
 
   if (!Wizard(executor) && !has_power_by_name(executor, "Can_HTTP", NOTYPE)) {
-    safe_strl("#-1 Permission Denied.", 22, buff, bp);
+    safe_str(T("#-1 PERMISSION DENIED."), buff, bp);
     return;
   }
   
   if(nargs < 3) {
-    safe_str("#-1 FUNCTION EXPECTS AT LEAST 3 ARGUMENTS", buff, bp);
+    safe_str(T("#-1 FUNCTION EXPECTS AT LEAST 3 ARGUMENTS"), buff, bp);
     return;
   }
   
   if(nargs > 4) {
-    safe_str("#-1 FUNCTION EXPECTS AT MOST 4 ARGUMENTS", buff, bp);
+    safe_str(T("#-1 FUNCTION EXPECTS AT MOST 4 ARGUMENTS"), buff, bp);
     return;
   }
 
   if (!*args[2]) {
-    safe_strl("#-1 Missing URL.", 16, buff, bp);
+    safe_str(T("#-1 MISSING URL."), buff, bp);
     return;
   }
 
   if (strcasecmp(args[1], "POST") == 0) {
-    post = true;
+    verb = HTTP_POST;
   }
-
   if (strcasecmp(args[1], "PUT") == 0) {
-    put = true;
+    verb = HTTP_PUT;
   }
-
   if (strcasecmp(args[1], "DELETE") == 0) {
-    del = true;
+    verb = HTTP_DELETE;
   }
 
-  if(!(post||put||del) && nargs > 3) {
-    safe_strl("#-1 A GET request does not support a body argument.", 51, buff, bp);
+  if(verb == HTTP_GET && nargs > 3) {
+    safe_str(T("#-1 A GET REQUEST DOES NOT SUPPORT A BODY ARGUMENT."), buff, bp);
     return;
   }
 
   mush_strncpy(tbuf, args[0], sizeof tbuf);
   s = strchr(tbuf, '/');
   if (!s) {
-    safe_strl("#-1 I need to know what attribute to trigger.", 45, buff, bp);
+    safe_str(T("#-1 I NEED TO KNOW WHAT ATTRIBUTE TO TRIGGER"), buff, bp);
     return;
   }
   *(s++) = '\0';
@@ -1678,13 +1635,13 @@ FUNCTION(fun_http)
   }
 
   if (!controls(executor, thing)) {
-    safe_strl("#-1 PERMISSION DENIED", 21, buff, bp);
+    safe_str(T("#-1 PERMISSION DENIED"), buff, bp);
     return;
   }
   
   if (!fetch_ufun_attrib(args[0], executor, &ufun, UFUN_DEFAULT))
   {
-    safe_strl("#-1 Invalid attribute to call", 29, buff, bp);
+    safe_str(T("#-1 Invalid attribute to call"), buff, bp);
     return;
   }
 
@@ -1720,19 +1677,19 @@ FUNCTION(fun_http)
     curl_easy_setopt(handle, CURLOPT_HTTPAUTH, CURLAUTH_ANY);
   }
 
-  if (post || put || del) {
+  if (verb != HTTP_GET) {
     bool postdata;
     const char *contenttype;
 
-    if (post) {
+    if (verb == HTTP_POST) {
       curl_easy_setopt(handle, CURLOPT_POST, 1);
-    } else if (put) {
+    } else if (verb == HTTP_PUT) {
       curl_easy_setopt(handle, CURLOPT_CUSTOMREQUEST, "PUT");
-    } else {
+    } else if (verb == HTTP_DELETE ) {
       curl_easy_setopt(handle, CURLOPT_CUSTOMREQUEST, "DELETE");
     }
 
-    postdata = (bool)*args[3];
+    postdata = nargs > 3 && (bool)*args[3];
 
     contenttype = pe_regs_get(req->pe_regs, PE_REGS_Q, "content-type");
     if (contenttype) {
@@ -1741,12 +1698,11 @@ FUNCTION(fun_http)
       headers = curl_slist_append(headers, ct_header);
     }
     if (contenttype && postdata &&
-        (strstr(contenttype, "charset=utf-8") ||
-         strstr(contenttype, "charset=UTF-8"))) {
+        (strcasecmp(contenttype, "charset=utf-8") == 0)) {
       int ulen;
-      char *utf8 = latin1_to_utf8(args[3], strlen(args[3]), &ulen, 0);
+      char *utf8 = latin1_to_utf8(args[3], strlen(args[3]), &ulen, "string.httpfun.send");
       curl_easy_setopt(handle, CURLOPT_COPYPOSTFIELDS, utf8);
-      mush_free(utf8, "string");
+      mush_free(utf8, "string.httpfun.send");
     } else if (postdata) {
       curl_easy_setopt(handle, CURLOPT_COPYPOSTFIELDS, args[3]);
     }
@@ -1781,8 +1737,7 @@ FUNCTION(fun_http)
           CURLE_OK) {
         if (contenttype) {
           pe_regs_set(resp->pe_regs, PE_REGS_Q, "content-type", contenttype);
-          if (strstr(contenttype, "charset=utf-8") ||
-              strstr(contenttype, "charset=UTF-8")) {
+          if (strcasecmp(contenttype, "charset=utf-8") == 0) {
             is_utf8 = 1;
           }
         }
@@ -1796,7 +1751,7 @@ FUNCTION(fun_http)
         body = sqlite3_str_finish(resp->body);
         resp->body = NULL;
         if (is_utf8) {
-          latin1 = utf8_to_latin1(body, body_size, &len, 1, "string");
+          latin1 = utf8_to_latin1(body, body_size, &len, 1, "string.httpfun.received");
           if (len >= BUFFER_LEN) {
             resp->too_big = 1;
             latin1[BUFFER_LEN - 1] = '\0';
@@ -1814,14 +1769,15 @@ FUNCTION(fun_http)
         safe_str(rbuff, buff, bp);
         
         if (is_utf8) {
-          mush_free(latin1, "string");
+          mush_free(latin1, "string.httpfun.received");
         }
         if (body) {
           sqlite3_free(body);
         }
       }
       if (resp->too_big) {
-        notify(resp->thing, "Too much HTTP data received; excess truncated.");
+        pe_regs_set_int(pe_info->regvals, PE_REGS_Q, "http-overflow", 1);
+        notify(resp->thing, T("Too much HTTP data received; excess truncated."));
       }
     } else {
       pe_regs_set(pe_info->regvals, PE_REGS_Q, "http-error", curl_easy_strerror(curl_status));
@@ -1833,7 +1789,7 @@ FUNCTION(fun_http)
   }
 
   curl_easy_cleanup(handle);
-#else
+#else 
   safe_strl("#-1 Function Disabled.", 22, buff, bp);
-#endif
+#endif /* HAVE_LIBCURL */
 }

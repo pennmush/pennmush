@@ -23,7 +23,7 @@ Version 1.8.8 patchlevel 1 ??? ?? 202?
 Minor changes
 -------------
 
-* Sqlite updated to 3.32.3. [SW]
+* Sqlite updated to 3.34.1. [SW]
 * cJSON updated to 1.7.13 [SW]
 * PCRE updated to 10.35 [SW]
 * New `--version` option to the netmush binary to display the version and exit. [SW]
@@ -31,7 +31,7 @@ Minor changes
 Fixes
 -----
 * `udefault` only accepted 12 arguments, not the documented 32. [MG]
-* MOGRIFY`FORMAT was not being passed the mogrified channel name from MOGRIFY`CHANNAME as it should. Reported by Xperta [MT]
+* ``MOGRIFY`FORMAT`` was not being passed the mogrified channel name from ``MOGRIFY`CHANNAME`` as it should. Reported by Xperta [MT]
 * Allow all json functions to translate markup characters during unescape sequences, if json_unsafe_unescape is set to 1. Patch by Mercutio.
 
 Version 1.8.8 patchlevel 0 Apr 20 2020

@@ -1,12 +1,42 @@
-<This is where you announce that they've connected to your MUSH>
-<It's a good idea to include the version/patchlevel of MUSH you're running>
-<It's a good idea to include an email address for questions about the MUSH>
------------------------------------------------------------------------------
-Use create <name> <password> to create a character.
-Use connect <name> <password> to connect to your existing character.
-Use 'ch <name> <pass>' to connect hidden, and cd to connect DARK (admin)
-Use QUIT to logout.
-Use the WHO command to find out who is online currently.
------------------------------------------------------------------------------
-Yell at your local god to personalize this file!
+\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\
+Welcome to:
 
+TTTTTTTTTT FFFFFFFFF    GGGGG
+    TT      FF    FF   GG   GG
+    TT      FF  F     GG
+    TT      FFFFF     GG  GGGG
+    TT      FF  F     GG    GG
+    TT      FF         GG   GG
+   TTTT he FFFF airy    GGGGG arden
+/|/||\\\|////\\|\|\|||////|/||/|\|/|\|/|\/|\/|//\|\/||//||/\\/|\|\/\///|//|\/\/\
+
+PennMUSH 1.8.8p0 59cb199c04e83e5f04bd5bb7da2902d62356ef29
+In-game Contact: Alara
+-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-
+
+Currently we only support registration by email or guest-based request to 
+reduce spam. 
+
+If you would like your own character, please log in as one of our five guest 
+accounts and contact Alara or any of the other online admins listed via the 
+WIZARDS command. 
+
+If no wizard is available, you may also use the Registry in the guest housing. 
+Please read these instructions fully to request a character. Note: a player 
+name and valid email will be required. The password will be generated for you 
+if you choose to utilize the Registry.
+
+You may also register by email. Just send your requested username and a 
+temporary password to samakhulis@hotmail.com. 
+
+Our website with wiki can be found at https://tfgmush.org.
+
+CONNECT <name> <password> - Connect to your character
+CONNECT GUEST - Connect as a guest
+LOGOUT - Logout and return to this screen
+QUIT - Logout and close the connection
+
+If for any reason you fail to log in as your character, please log in as a 
+Guest and request a password reset for your character.
+
+/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/

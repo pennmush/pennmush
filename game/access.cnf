@@ -1,0 +1,7 @@
+@sitelock
+185.202.0.* -2 NONE 
+194.61.54.* -2 NONE 
+94.232.40.* -2 NONE # Russian spambot
+94.232.43.* -2 NONE # Russian spambot 
+94.232.42.* -2 NONE # Russian spambot
+185.176.26.106 -2 NONE 

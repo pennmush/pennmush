@@ -1,2 +1,7 @@
-The maximum number of players this game can support are currently
-logged in. Please try back in a few minutes.
+========================================
+| |                                  | |
+| | The server is currently hosting  | |
+| | the maximum amount of players    | |
+| | possible. Please try later.      | |
+| |                                  | |
+----------------------------------------

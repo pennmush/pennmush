@@ -74,10 +74,10 @@ json_escape_string(char *input)
 char * json_unescape_latin1string(char *latin1, int len)
 {
   char *c;
-  char *partialbuf = mush_calloc(len,sizeof(char),"json.string.partialbuf");
+  char *partialbuf = mush_calloc(len+1,sizeof(char),"json.string.partialbuf");
   char *bpp = partialbuf;
   for (c = latin1; *c; c += 1) {
-    if(UNSAFE_UNESCAPE && (*c == ESC_CHAR || *c == TAG_END || *c == TAG_START )) {
+    if(UNSAFE_UNESCAPE) {
       safe_chr(*c,partialbuf,&bpp);
     }
     else if (!isprint(*c) && !isspace(*c)) {

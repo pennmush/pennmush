@@ -1862,6 +1862,26 @@ COMMAND(cmd_fetch)
     verb = HTTP_DELETE;
     switchCnt++;
   }
+  if (SW_ISSET(sw, SWITCH_PATCH)) {
+    verb = HTTP_PATCH;
+    switchCnt++;
+  }
+  if (SW_ISSET(sw, SWITCH_HEAD)) {
+    verb = HTTP_HEAD;
+    switchCnt++;
+  }
+  if (SW_ISSET(sw, SWITCH_OPTIONS)) {
+    verb = HTTP_OPTIONS;
+    switchCnt++;
+  }
+  if (SW_ISSET(sw, SWITCH_TRACE)) {
+    verb = HTTP_TRACE;
+    switchCnt++;
+  }
+  if (SW_ISSET(sw, SWITCH_CONNECT)) {
+    verb = HTTP_CONNECT;
+    switchCnt++;
+  }
 
   if (switchCnt > 1) {
     notify(executor, T("You can't indicate multiple http verbs at the same time!"));
@@ -1927,10 +1947,8 @@ COMMAND(cmd_fetch)
 
     if (verb == HTTP_POST) {
       curl_easy_setopt(handle, CURLOPT_POST, 1);
-    } else if (verb == HTTP_PUT) {
-      curl_easy_setopt(handle, CURLOPT_CUSTOMREQUEST, "PUT");
-    } else if (verb == HTTP_DELETE ){
-      curl_easy_setopt(handle, CURLOPT_CUSTOMREQUEST, "DELETE");
+    } else {
+      curl_easy_setopt(handle, CURLOPT_CUSTOMREQUEST, http_verb_name[verb]);
     }
 
     postdata = args_right[2] && *args_right[2];

@@ -1261,6 +1261,11 @@ See also: TRANSPARENT, @conformat, @nameformat, @descformat
   @http/delete <obj>/<att>=<URL>[,<data>]
   @http/post <obj>/<att>=<URL>[,<data>]
   @http/put <obj>/<att>=<URL>[,<data>]
+  @http/patch <obj>/<att>=<URL>[,<data>]
+  @http/trace <obj>/<att>=<URL>[,<data>]
+  @http/options <obj>/<att>=<URL>[,<data>]
+  @http/head <obj>/<att>=<URL>[,<data>]
+  @http/connect <obj>/<att>=<URL>[,<data>]
 
   Attempts to retrieve URL with a HTTP GET request, and upon doing so, queues the action list in <obj>/<attr>. The body of the reply from the remote web server is passed as %0, with the HTTP status in %q<status> and the Content-Type header in %q<content-type>. Any commas in the URL need to be escaped.
 

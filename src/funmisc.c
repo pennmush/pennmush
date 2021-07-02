@@ -1604,14 +1604,12 @@ FUNCTION(fun_http)
     return;
   }
 
-  if (strcasecmp(args[1], "POST") == 0) {
-    verb = HTTP_POST;
-  }
-  if (strcasecmp(args[1], "PUT") == 0) {
-    verb = HTTP_PUT;
-  }
-  if (strcasecmp(args[1], "DELETE") == 0) {
-    verb = HTTP_DELETE;
+  for(int i = 0; i < sizeof(http_verb_name); i++)
+  {
+    if(strcasecmp(args[1], http_verb_name[i]) == 0) {
+      verb = i;
+      break;
+    }
   }
 
   if(verb == HTTP_GET && nargs > 3) {

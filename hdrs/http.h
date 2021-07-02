@@ -19,8 +19,16 @@ enum http_verb {
   HTTP_GET = 0,
   HTTP_POST = 1,
   HTTP_DELETE = 2,
-  HTTP_PUT = 3
+  HTTP_PUT = 3,
+  HTTP_PATCH = 4,
+  HTTP_HEAD = 5,
+  HTTP_OPTIONS = 6,
+  HTTP_TRACE = 7,
+  HTTP_CONNECT = 8
 };
+
+/* Data for translating http_verb to a string that CURL can use */
+static char* http_verb_name[9] = {"GET","POST","DELETE","PUT","PATCH","HEAD","OPTIONS","TRACE","CONNECT"};
 
 /* Data for successfull @fetch commands */
 struct urlreq {

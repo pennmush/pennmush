@@ -1604,7 +1604,7 @@ FUNCTION(fun_http)
     return;
   }
 
-  for(int i = 0; i < sizeof(http_verb_name); i++)
+  for(unsigned int i = 0; i < sizeof(http_verb_name); i++)
   {
     if(strcasecmp(args[1], http_verb_name[i]) == 0) {
       verb = i;

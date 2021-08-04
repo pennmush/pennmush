@@ -2097,8 +2097,6 @@ close_shared_db(void)
 
 int sqlite3_spellfix_init(sqlite3 *db, char **pzErrMsg,
                           const sqlite3_api_routines *pApi);
-int sqlite3_remember_init(sqlite3 *db, char **pzErrMsg,
-                          const sqlite3_api_routines *pApi);
 int sqlite3_uint_init(sqlite3 *db, char **pzErrMsg,
                           const sqlite3_api_routines *pApi);
 
@@ -2229,7 +2227,6 @@ open_sql_db(const char *name, bool nocreate)
               sqlite3_errmsg(db));
   }
   sqlite3_spellfix_init(db, NULL, NULL);
-  sqlite3_remember_init(db, NULL, NULL);
   sqlite3_uint_init(db, NULL, NULL);
   sqlite3_busy_timeout(db, 250);
 
@@ -2237,7 +2234,7 @@ open_sql_db(const char *name, bool nocreate)
   sqlite3_db_config(db, SQLITE_DBCONFIG_DEFENSIVE, 1, (int *) NULL);
   sqlite3_db_config(db, SQLITE_DBCONFIG_DQS_DML, 0, (int *) NULL);
   sqlite3_db_config(db, SQLITE_DBCONFIG_DQS_DDL, 0, (int *) NULL);
-  
+
   return db;
 }
 

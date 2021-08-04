@@ -2849,8 +2849,10 @@ TELNET_HANDLER(telnet_charset)
   }
 #endif /* HAVE_NL_LANGINFO */
   queue_newwrite(d, delim, 1);
-  queue_newwrite(d, "UTF-8", 5);
-  queue_newwrite(d, delim, 1);
+  /* Temporary removal until UTF-8 support is implemented.
+     This is currently causing problems with clients. */
+  // queue_newwrite(d, "UTF-8", 5);
+  //queue_newwrite(d, delim, 1);
   if (curr_locale && strlen(curr_locale)) {
     queue_newwrite(d, curr_locale, strlen(curr_locale));
     queue_newwrite(d, delim, 1);

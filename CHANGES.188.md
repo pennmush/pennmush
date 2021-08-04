@@ -91,3 +91,4 @@ Fixes
 * Minor help updates, including clarification of what GAGGED blocks, suggested by Merit. [#1262, MG, MT]
 * Some fixes to extmail.c and chunk.c to fix @mail going forward. [GM]
 * switch() and floating point numbers not working as intended. Reported by Mercutio [#1325, MT]
+* Remove declaration of UTF-8 support. Patch by Mercutio. [#1352]

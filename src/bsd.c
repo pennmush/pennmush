@@ -2897,12 +2897,6 @@ TELNET_HANDLER(telnet_charset_sb)
                   d->descriptor);
     d->conn_flags |= CONN_STRIPACCENTS;
   }
-  // if (strcasecmp(cmd, "UTF-8") == 0) {
-  //   /* Send and receive UTF-8, translate to latin-1 */
-  //  do_rawlog_lvl(LT_CONN, MLOG_DEBUG, "Descriptor %d using charset UTF-8.",
-  //                d->descriptor);
-  //  d->conn_flags |= CONN_UTF8;
-  // }
 }
 
 /* Set our preferred line mods */

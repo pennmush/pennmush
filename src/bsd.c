@@ -2835,8 +2835,8 @@ TELNET_HANDLER(telnet_charset)
   queue_newwrite(d, reply_prefix, 4);
 #ifdef HAVE_NL_LANGINFO
   curr_locale = nl_langinfo(CODESET);
-  if (curr_locale && *curr_locale && strcmp(curr_locale, "C") &&
-      strncasecmp(curr_locale, "UTF-", 4)) {
+  if (curr_locale && *curr_locale && strcmp(curr_locale, "C")
+       && strncasecmp(curr_locale, "UTF-", 4) ) {
     for (delim_curr = delim_list; *delim_curr; delim_curr++) {
       if (strchr(curr_locale, *delim_curr) == NULL)
         break;
@@ -2849,10 +2849,6 @@ TELNET_HANDLER(telnet_charset)
   }
 #endif /* HAVE_NL_LANGINFO */
   queue_newwrite(d, delim, 1);
-  /* Temporary removal until UTF-8 support is implemented.
-     This is currently causing problems with clients. */
-  // queue_newwrite(d, "UTF-8", 5);
-  // queue_newwrite(d, delim, 1);
   if (curr_locale && strlen(curr_locale)) {
     queue_newwrite(d, curr_locale, strlen(curr_locale));
     queue_newwrite(d, delim, 1);
@@ -2875,7 +2871,6 @@ TELNET_HANDLER(telnet_charset)
     return;
 
   queue_newwrite(d, reply_prefix, 4);
-  queue_newwrite(d, ";UTF-8", 6);
   queue_newwrite(d, ";ISO-8859-1", 11);
   queue_newwrite(d, ";US-ASCII;ASCII;x-win-def", 25);
   queue_newwrite(d, reply_suffix, 2);
@@ -2902,12 +2897,12 @@ TELNET_HANDLER(telnet_charset_sb)
                   d->descriptor);
     d->conn_flags |= CONN_STRIPACCENTS;
   }
-  if (strcasecmp(cmd, "UTF-8") == 0) {
-    /* Send and receive UTF-8, translate to latin-1 */
-    do_rawlog_lvl(LT_CONN, MLOG_DEBUG, "Descriptor %d using charset UTF-8.",
-                  d->descriptor);
-    d->conn_flags |= CONN_UTF8;
-  }
+  // if (strcasecmp(cmd, "UTF-8") == 0) {
+  //   /* Send and receive UTF-8, translate to latin-1 */
+  //  do_rawlog_lvl(LT_CONN, MLOG_DEBUG, "Descriptor %d using charset UTF-8.",
+  //                d->descriptor);
+  //  d->conn_flags |= CONN_UTF8;
+  // }
 }
 
 /* Set our preferred line mods */

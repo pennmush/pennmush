@@ -567,13 +567,23 @@ See also: obj(), poss(), subj()
   The result of each evaluation is passed to the next attribute, serving a similar purpose as fold().
 
   Examples:
-    > &JSON`ADDNAME me=json_mod(%0,set,$.name,%1)
-    > &JSON`SETATTACK me=json_mod(%0,set,$.attack,%2)
-    > &JSON`ADDMODIFIER me=if(%3,json_mod(%0,set,$.attack,add(json_query(%0,get,$.attack),%3)),%0)
-    > say arrow(lattr(me/JSON`),json(object),%N)
+    > &JSON`ADDNAME me=json_mod(%0,set,$.name,json(string,%1))
+    > &JSON`SET_CHA me=json_mod(%0,set,$.stats.charisma.val,%2)
+    > &JSON`SET_CHA_MODIFIER me=json_mod(%0,set,$.stats.charisma.mod,div(sub(%2,10),2))
+    > say arrow(JSON`ADDNAME JSON`SET_CHA JSON`SET_CHA_MODIFIER,json(object),%N,13)
+    You say, "{"name":"One","stats":{"charisma":{"val":13,"mod":1}}}"
+
+    > &type me=farmer
+    > &FUN`HERO`GOLD me=json_mod(%0,set,$.gold,5)
+    > &FUN`HERO`SKILL`SWORD me=json_mod(%0,set,$.skill.sword,2)
+    > &FUN`HERO`SKILL me=%0
+    > &FUN`FARMER`GOLD me=json_mod(%0,set,$.gold,1)
+    > &FUN`FARMER`SKILL`FARM me=json_mod(%0,set,$.skill.farming,10)
+    > &FUN`FARMER`SKILL me=%0
+    > say arrow(lattr(me/FUN`[v(type)]`**),json(object))
+    You say, "{"gold":1,"skill":{"farming":10}}"
 
 See also: fold(), map(), iter()
-
 & ART()
   art(<string>)
 

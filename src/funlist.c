@@ -21,7 +21,6 @@
 #include "flags.h"
 #include "function.h"
 #include "lock.h"
-#include "log.h" // REMOVE ME
 #include "match.h"
 #include "memcheck.h"
 #include "mushdb.h"
@@ -483,13 +482,15 @@ FUNCTION(fun_arrow)
   ufun_attrib *ufunList;
   int n;
 
-  n = list2arr(list, MAX_SORTSIZE, args[0], ' ', 0);
+  n = list2arr_ansi(list, MAX_SORTSIZE, args[0], ' ', 0);
   ufunList = mush_calloc(n, sizeof(ufun_attrib), "fun_arrow_array");
 
   for(int i = 0; i < n; i++) {
     if (!fetch_ufun_attrib(list[i], executor, &ufunList[i], UFUN_OBJECT))
       return;
   }
+
+  freearr(list, n);
 
   mush_strncpy(result, args[1], sizeof result);
 
@@ -512,10 +513,7 @@ FUNCTION(fun_arrow)
     funccount = pe_info->fun_invocations;
   }
 
-  do_rawlog(LT_TRACE, "arrow: cleanup");
-
   pe_regs_free(pe_regs);
-  freearr(list, n);
   mush_free(ufunList, "fun_arrow_array");
   safe_str(result, buff, bp);
 }

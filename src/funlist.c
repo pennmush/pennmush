@@ -479,14 +479,14 @@ FUNCTION(fun_arrow)
   char result[BUFFER_LEN];
   char *list[MAX_SORTSIZE] = {NULL};
   ufun_attrib ufun;
-  ufun_attrib *ufunList;
+  ufun_attrib *ufun_list;
   int n;
 
   n = list2arr_ansi(list, MAX_SORTSIZE, args[0], ' ', 0);
-  ufunList = mush_calloc(n, sizeof(ufun_attrib), "fun_arrow_array");
+  ufun_list = mush_calloc(n, sizeof(ufun_attrib), "fun_arrow_array");
 
   for(int i = 0; i < n; i++) {
-    if (!fetch_ufun_attrib(list[i], executor, &ufunList[i], UFUN_OBJECT))
+    if (!fetch_ufun_attrib(list[i], executor, &ufun_list[i], UFUN_OBJECT))
       return;
   }
 
@@ -496,15 +496,15 @@ FUNCTION(fun_arrow)
 
   pe_regs = pe_regs_create(PE_REGS_ARG, "fun_arrow");
   pe_regs_setenv(pe_regs, 0, result);
-  for(int ai = 2, z = 1; ai < nargs; ai++, z++)
+  for(int ai = 2, pei = 1; ai < nargs; ai++, pei++)
   {
-    pe_regs_setenv_nocopy(pe_regs, z, args[ai]);
+    pe_regs_setenv_nocopy(pe_regs, pei, args[ai]);
   }
 
   funccount = pe_info->fun_invocations;
   
   for (int i = 0; i < n; i++) {
-    ufun = ufunList[i];
+    ufun = ufun_list[i];
     per = call_ufun(&ufun, result, executor, enactor, pe_info, pe_regs);
     pe_regs_setenv(pe_regs, 0, result);
     if (per || (pe_info->fun_invocations >= FUNCTION_LIMIT &&
@@ -514,7 +514,7 @@ FUNCTION(fun_arrow)
   }
 
   pe_regs_free(pe_regs);
-  mush_free(ufunList, "fun_arrow_array");
+  mush_free(ufun_list, "fun_arrow_array");
   safe_str(result, buff, bp);
 }
 

@@ -477,7 +477,7 @@ FUNCTION(fun_arrow)
   PE_REGS *pe_regs;
   int funccount, per;
   char result[BUFFER_LEN];
-  char *list[MAX_SORTSIZE] = {NULL};
+  char *list[MAX_SORTSIZE];
   ufun_attrib ufun;
   ufun_attrib *ufun_list;
   int n;

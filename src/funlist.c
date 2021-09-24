@@ -21,6 +21,7 @@
 #include "flags.h"
 #include "function.h"
 #include "lock.h"
+#include "log.h" // REMOVE ME
 #include "match.h"
 #include "memcheck.h"
 #include "mushdb.h"
@@ -486,33 +487,46 @@ FUNCTION(fun_arrow)
   ufunList = mush_calloc(n, sizeof(ufun_attrib *), "fun_arrow_array");
 
   for(int i = 0; i < n; i++) {
-    if (!fetch_ufun_attrib(list[i], executor, &ufunList[i], UFUN_DEFAULT))
+    do_rawlog(LT_TRACE, "arrow: storing function name: %d - %s",i,list[i]);
+    if (!fetch_ufun_attrib(list[i], executor, &ufunList[i], UFUN_OBJECT))
       return;
   }
 
+  do_rawlog(LT_TRACE, "arrow: We have this many nargs: %d", nargs);
+  
   mush_strncpy(result, args[1], sizeof result);
 
   pe_regs = pe_regs_create(PE_REGS_ARG, "fun_arrow");
-  pe_regs_setenv_nocopy(pe_regs, 0, result);
-  for(int ai = 2, i = 0; ai < nargs; ai++, i++)
+  pe_regs_setenv(pe_regs, 0, result);
+  for(int ai = 2, i = 1; ai < nargs; ai++, i++)
   {
-    pe_regs_setenv_nocopy(pe_regs, i, args[ai++]);
+    do_rawlog(LT_TRACE, "arrow: an argument: %d - %s", i, args[ai]);
+    pe_regs_setenv(pe_regs, i, args[ai]);
   }
-  
+
   funccount = pe_info->fun_invocations;
   
+  do_rawlog(LT_TRACE, "arrow: part 1 finished");
+  do_rawlog(LT_TRACE, "arrow: result is now: %s", result);
+
   for (int i = 0; i < n; i++) {
+    do_rawlog(LT_TRACE, "arrow: array go start: %s", ufunList[i].attrname);
     per = call_ufun(&ufunList[i], result, executor, enactor, pe_info, pe_regs);
+    do_rawlog(LT_TRACE, "arrow: result is now: %s", result);
+    pe_regs_setenv(pe_regs, 0, result);
     if (per || (pe_info->fun_invocations >= FUNCTION_LIMIT &&
                 pe_info->fun_invocations == funccount))
       break;
     funccount = pe_info->fun_invocations;
+    do_rawlog(LT_TRACE, "arrow: array go end");
   }
 
+  do_rawlog(LT_TRACE, "arrow: cleanup");
+
+  safe_str(result, buff, bp);
   pe_regs_free(pe_regs);
   freearr(list, n);
-  mush_free(ufunList, "ptrarray");
-  safe_str(result, buff, bp);
+  mush_free(ufunList, "fun_arrow_array");
 }
 
 /* ARGSUSED */

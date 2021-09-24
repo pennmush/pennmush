@@ -563,7 +563,7 @@ See also: obj(), poss(), subj()
 & ARROW()
   arrow(<attribute list>, <base case>[, ..., <argN>])
 
-  Passes the base case through each attribute in the space delimited attribute list.
+  Passes the base case through each [<object>/]<attribute> in the space delimited attribute list.
   The result of each evaluation is passed to the next attribute, serving a similar purpose as fold().
 
   Examples:
@@ -589,15 +589,17 @@ See also: fold(), map(), iter()
 & ARROW2
   Examples:
     > &FUN`TESTING me=iter(lattr(%=`),\[TEST\] %i0: [arrow(%i0`setup fun`wrap fun`storeresult %i0`validate fun`testoutput,u(%i0`args`0),u(%i0`args`1),u(%i0`args`2))],,%r)
-    > &FUN`TESTING`1`ARGS`0 me=meow
-    > &FUN`TESTING`1`SETUP me=setq(1,woof)%0
-    > &FUN`TESTING`1`VALIDATE me=strmatch(%0,woof)
-    > &FUN`TESTING`2`ARGS`0 me=meow
-    > &FUN`TESTING`2`SETUP me=setq(1,0)%0
-    > &FUN`TESTING`2`VALIDATE me=strmatch(%0,woof)
     > &FUN`STORERESULT me=setr(Result,%0)
     > &FUN`WRAP me=u(me/arrowfun,%0)
     > &FUN`TESTOUTPUT me=if(%0,ansi(hg,Success),ansi(hr,Test failed\, output failed. Output was: '%q<Result>'))
+    
+    > &FUN`TESTING`1`ARGS`0 me=meow
+    > &FUN`TESTING`1`SETUP me=setq(1,woof)%0
+    > &FUN`TESTING`1`VALIDATE me=strmatch(%0,woof)
+    
+    > &FUN`TESTING`2`ARGS`0 me=meow
+    > &FUN`TESTING`2`SETUP me=setq(1,0)%0
+    > &FUN`TESTING`2`VALIDATE me=strmatch(%0,woof)
     > th u(fun`testing)
     [TEST] FUN`TESTING`1: Success
     [TEST] FUN`TESTING`2: Test failed, output failed. Output was: 'meow'

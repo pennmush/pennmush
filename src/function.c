@@ -367,6 +367,7 @@ FUNTAB flist[] = {
   {"ANSIGEN", fun_ansigen, 1, 1, FN_REG},
 #endif
   {"APOSS", fun_aposs, 1, 1, FN_REG | FN_STRIPANSI},
+  {"ARROW", fun_arrow, 2, MAX_STACK_ARGS + 3, FN_REG},
   {"ART", fun_art, 1, 1, FN_REG | FN_STRIPANSI},
   {"ATRLOCK", fun_atrlock, 1, 2, FN_REG | FN_STRIPANSI},
   {"ATTRIB_SET", fun_attrib_set, 1, -2, FN_REG},

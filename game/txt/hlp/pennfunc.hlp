@@ -126,15 +126,15 @@ See also: Dbref functions
 & List functions
   List functions take at least one list of elements and return transformed lists or one or more members of those lists. Most of these functions can take an arbitrary <delimiter> argument to specify what delimits list elements; if none is provided, a space is used by default.
 
-  elements()    extract()     filter()      filterbool()  first()
-  fold()        grab()        graball()     index()       itemize()
-  items()       iter()        last()        ldelete()     linsert()
-  lreplace()    lockfilter()  map()         match()       matchall()
-  member()      mix()         munge()       namegrab()    namegraball()
-  randword()    remove()      rest()        revwords()    setdiff()
-  setinter()    setunion()    shuffle()     sort()        sortby()
-  sortkey()     splice()      step()        table()       unique()
-  wordpos()     words()
+  arrow()       elements()    extract()     filter()      filterbool()  
+  first()       fold()        grab()        graball()     index()       
+  itemize()     items()       iter()        last()        ldelete()
+  linsert()     lreplace()    lockfilter()  map()         match()       
+  matchall()    member()      mix()         munge()       namegrab()    
+  namegraball() randword()    remove()      rest()        revwords()    
+  setdiff()     setinter()    setunion()    shuffle()     sort()        
+  sortby()      sortkey()     splice()      step()        table()       
+  unique()      wordpos()     words()
 
 See also: LISTS
 & Math functions
@@ -560,6 +560,20 @@ See also: ANSI, COLOR, @sockset, colorstyle, colors()
   Returns the absolute possessive pronoun - his/hers/its/theirs - for an object. The %a substitution returns the absolute possessive pronoun of the enactor.
 
 See also: obj(), poss(), subj()
+& ARROW()
+  arrow(<attribute list>, <base case>[, ..., <argN>])
+
+  Passes the base case through each attribute in the space delimited attribute list.
+  The result of each evaluation is passed to the next attribute, serving a similar purpose as fold().
+
+  Examples:
+    > &JSON`ADDNAME me=json_mod(%0,set,$.name,%1)
+    > &JSON`SETATTACK me=json_mod(%0,set,$.attack,%2)
+    > &JSON`ADDMODIFIER me=if(%3,json_mod(%0,set,$.attack,add(json_query(%0,get,$.attack),%3)),%0)
+    > say arrow(lattr(me/JSON`),json(object),%N)
+
+See also: fold(), map(), iter()
+
 & ART()
   art(<string>)
 

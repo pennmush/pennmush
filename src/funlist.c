@@ -479,54 +479,45 @@ FUNCTION(fun_arrow)
   int funccount, per;
   char result[BUFFER_LEN];
   char *list[MAX_SORTSIZE] = {NULL};
+  ufun_attrib ufun;
   ufun_attrib *ufunList;
   int n;
 
-
   n = list2arr(list, MAX_SORTSIZE, args[0], ' ', 0);
-  ufunList = mush_calloc(n, sizeof(ufun_attrib *), "fun_arrow_array");
+  ufunList = mush_calloc(n, sizeof(ufun_attrib), "fun_arrow_array");
 
   for(int i = 0; i < n; i++) {
-    do_rawlog(LT_TRACE, "arrow: storing function name: %d - %s",i,list[i]);
     if (!fetch_ufun_attrib(list[i], executor, &ufunList[i], UFUN_OBJECT))
       return;
   }
 
-  do_rawlog(LT_TRACE, "arrow: We have this many nargs: %d", nargs);
-  
   mush_strncpy(result, args[1], sizeof result);
 
   pe_regs = pe_regs_create(PE_REGS_ARG, "fun_arrow");
   pe_regs_setenv(pe_regs, 0, result);
-  for(int ai = 2, i = 1; ai < nargs; ai++, i++)
+  for(int ai = 2, z = 1; ai < nargs; ai++, z++)
   {
-    do_rawlog(LT_TRACE, "arrow: an argument: %d - %s", i, args[ai]);
-    pe_regs_setenv(pe_regs, i, args[ai]);
+    pe_regs_setenv_nocopy(pe_regs, z, args[ai]);
   }
 
   funccount = pe_info->fun_invocations;
   
-  do_rawlog(LT_TRACE, "arrow: part 1 finished");
-  do_rawlog(LT_TRACE, "arrow: result is now: %s", result);
-
   for (int i = 0; i < n; i++) {
-    do_rawlog(LT_TRACE, "arrow: array go start: %s", ufunList[i].attrname);
-    per = call_ufun(&ufunList[i], result, executor, enactor, pe_info, pe_regs);
-    do_rawlog(LT_TRACE, "arrow: result is now: %s", result);
+    ufun = ufunList[i];
+    per = call_ufun(&ufun, result, executor, enactor, pe_info, pe_regs);
     pe_regs_setenv(pe_regs, 0, result);
     if (per || (pe_info->fun_invocations >= FUNCTION_LIMIT &&
                 pe_info->fun_invocations == funccount))
       break;
     funccount = pe_info->fun_invocations;
-    do_rawlog(LT_TRACE, "arrow: array go end");
   }
 
   do_rawlog(LT_TRACE, "arrow: cleanup");
 
-  safe_str(result, buff, bp);
   pe_regs_free(pe_regs);
   freearr(list, n);
   mush_free(ufunList, "fun_arrow_array");
+  safe_str(result, buff, bp);
 }
 
 /* ARGSUSED */

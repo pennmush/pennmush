@@ -20,9 +20,18 @@ Numbers next to the developer credit refer to Github issue numbers.
 Version 1.8.8 patchlevel 1 ??? ?? 202?
 ======================================
 
+Minor changes
+-------------
+
+* Sqlite updated to 3.36.0. [SW]
+* cJSON updated to 1.7.13 [SW]
+* PCRE updated to 10.35 [SW]
+* New `--version` option to the netmush binary to display the version and exit. [SW]
+
 Fixes
 -----
 * `udefault` only accepted 12 arguments, not the documented 32. [MG]
+* ``MOGRIFY`FORMAT`` was not being passed the mogrified channel name from ``MOGRIFY`CHANNAME`` as it should. Reported by Xperta [MT]
 
 Version 1.8.8 patchlevel 0 Apr 20 2020
 ======================================

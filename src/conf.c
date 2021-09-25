@@ -42,6 +42,7 @@
 #include "privtab.h"
 #include "pueblo.h"
 #include "strutil.h"
+#include "sqlite3.h"
 
 time_t mudtime; /**< game time, in seconds */
 
@@ -1830,9 +1831,10 @@ show_compile_options(dbref player)
 #ifdef HAVE_POSTGRESQL
   notify(player, T(" The MUSH was compiled with Postgresql support."));
 #endif
-#ifdef HAVE_SQLITE3
-  notify(player, T(" The MUSH was compiled with Sqlite3 support."));
-#endif
+
+  notify_format(player, T(" The MUSH was compiled with Sqlite %s."),
+                SQLITE_VERSION);
+
 
 #ifdef INFO_SLAVE
   notify(player, T(" DNS lookups are handled by a slave process."));

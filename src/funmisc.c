@@ -1578,10 +1578,7 @@ FUNCTION(fun_http)
   struct urlreq *req;
   CURL *handle;
   struct curl_slist *headers = NULL;
-  dbref thing;
-  char *s;
   const char *userpass;
-  char tbuf[BUFFER_LEN];
   enum http_verb verb = HTTP_GET;
   unsigned int i;
   unsigned int http_verb_cnt;
@@ -1619,37 +1616,17 @@ FUNCTION(fun_http)
     safe_str(T("#-1 A GET REQUEST DOES NOT SUPPORT A BODY ARGUMENT."), buff, bp);
     return;
   }
-
-  mush_strncpy(tbuf, args[0], sizeof tbuf);
-  s = strchr(tbuf, '/');
-  if (!s) {
-    safe_str(T("#-1 I NEED TO KNOW WHAT ATTRIBUTE TO TRIGGER"), buff, bp);
-    return;
-  }
-  *(s++) = '\0';
-  upcasestr(s);
-
-  thing = noisy_match_result(executor, tbuf, NOTYPE, MAT_EVERYTHING);
-
-  if (thing == NOTHING) {
-    return;
-  }
-
-  if (!controls(executor, thing)) {
-    safe_str(T("#-1 PERMISSION DENIED"), buff, bp);
-    return;
-  }
   
   if (!fetch_ufun_attrib(args[0], executor, &ufun, UFUN_DEFAULT))
   {
-    safe_str(T("#-1 Invalid attribute to call"), buff, bp);
+    safe_str(T(ufun.errmess), buff, bp);
     return;
   }
 
   req = mush_malloc(sizeof *req, "urlreq");
   req->enactor = enactor;
-  req->thing = thing;
-  req->attrname = mush_strdup(s, "urlreq.attrname");
+  req->thing = ufun.thing;
+  req->attrname = mush_strdup(ufun.attrname, "urlreq.attrname");
   req->body = sqlite3_str_new(NULL);
   req->too_big = 0;
   req->pe_regs = pe_regs_create(PE_REGS_ARG | PE_REGS_Q, "fun_http");

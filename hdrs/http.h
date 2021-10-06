@@ -28,7 +28,7 @@ enum http_verb {
 };
 
 /* Data for translating http_verb to a string that CURL can use */
-static char* http_verb_name[9] = {"GET","POST","DELETE","PUT","PATCH","HEAD","OPTIONS","TRACE","CONNECT"};
+static const char* http_verb_name[9] = {"GET","POST","DELETE","PUT","PATCH","HEAD","OPTIONS","TRACE","CONNECT"};
 
 /* Data for successfull @fetch commands */
 struct urlreq {

@@ -1571,7 +1571,7 @@ FUNCTION(fun_benchmark)
 /* ARGSUSED */
 FUNCTION(fun_http)
 {
-  #ifdef HAVE_LIBCURL
+#ifdef HAVE_LIBCURL
   ufun_attrib ufun;
   extern int ncurl_queries;
   CURLcode curl_status;
@@ -1583,18 +1583,20 @@ FUNCTION(fun_http)
   const char *userpass;
   char tbuf[BUFFER_LEN];
   enum http_verb verb = HTTP_GET;
+  unsigned int i;
+  unsigned int http_verb_cnt;
 
   if (!Wizard(executor) && !has_power_by_name(executor, "Can_HTTP", NOTYPE)) {
     safe_str(T("#-1 PERMISSION DENIED."), buff, bp);
     return;
   }
   
-  if(nargs < 3) {
+  if (nargs < 3) {
     safe_str(T("#-1 FUNCTION EXPECTS AT LEAST 3 ARGUMENTS"), buff, bp);
     return;
   }
   
-  if(nargs > 4) {
+  if (nargs > 4) {
     safe_str(T("#-1 FUNCTION EXPECTS AT MOST 4 ARGUMENTS"), buff, bp);
     return;
   }
@@ -1604,15 +1606,16 @@ FUNCTION(fun_http)
     return;
   }
 
-  for(unsigned int i = 0; i < sizeof(http_verb_name); i++)
+  http_verb_cnt = sizeof(http_verb_name)/sizeof(http_verb_name[0]);
+  for(i = 0; i < http_verb_cnt; i++)
   {
-    if(strcasecmp(args[1], http_verb_name[i]) == 0) {
+    if (strcasecmp(args[1], http_verb_name[i]) == 0) {
       verb = i;
       break;
     }
   }
 
-  if(verb == HTTP_GET && nargs > 3) {
+  if (verb == HTTP_GET && nargs > 3) {
     safe_str(T("#-1 A GET REQUEST DOES NOT SUPPORT A BODY ARGUMENT."), buff, bp);
     return;
   }
@@ -1716,7 +1719,7 @@ FUNCTION(fun_http)
 
   curl_status = curl_easy_perform(handle);
   
-  if (curl_status == CURLM_OK) {
+  if (curl_status == CURLE_OK) {
     long respcode;
     char *contenttype;
     struct urlreq *resp;

@@ -1838,7 +1838,7 @@ COMMAND(cmd_fetch)
   char tbuf[BUFFER_LEN];
   int queue_type = QUEUE_DEFAULT | (queue_entry->queue_type & QUEUE_EVENT);
   enum http_verb verb = HTTP_GET;
-  int switchCnt = 0;
+  int switch_cnt = 0;
 
   if (!Wizard(executor) && !has_power_by_name(executor, "Can_HTTP", NOTYPE)) {
     notify(executor, T("Permission denied."));
@@ -1852,38 +1852,38 @@ COMMAND(cmd_fetch)
 
   if (SW_ISSET(sw, SWITCH_POST)) {
     verb = HTTP_POST;
-    switchCnt++;
+    switch_cnt++;
   }
   if (SW_ISSET(sw, SWITCH_PUT)) {
     verb = HTTP_PUT;
-    switchCnt++;
+    switch_cnt++;
   }
   if (SW_ISSET(sw, SWITCH_DELETE)) {
     verb = HTTP_DELETE;
-    switchCnt++;
+    switch_cnt++;
   }
   if (SW_ISSET(sw, SWITCH_PATCH)) {
     verb = HTTP_PATCH;
-    switchCnt++;
+    switch_cnt++;
   }
   if (SW_ISSET(sw, SWITCH_HEAD)) {
     verb = HTTP_HEAD;
-    switchCnt++;
+    switch_cnt++;
   }
   if (SW_ISSET(sw, SWITCH_OPTIONS)) {
     verb = HTTP_OPTIONS;
-    switchCnt++;
+    switch_cnt++;
   }
   if (SW_ISSET(sw, SWITCH_TRACE)) {
     verb = HTTP_TRACE;
-    switchCnt++;
+    switch_cnt++;
   }
   if (SW_ISSET(sw, SWITCH_CONNECT)) {
     verb = HTTP_CONNECT;
-    switchCnt++;
+    switch_cnt++;
   }
 
-  if (switchCnt > 1) {
+  if (switch_cnt > 1) {
     notify(executor, T("You can't indicate multiple http verbs at the same time!"));
     return;
   }

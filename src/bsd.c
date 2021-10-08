@@ -118,6 +118,7 @@
 #include "tests.h"
 #include "websock.h"
 #include "log.h"
+#include "plugin.h"
 
 #ifndef WIN32
 #include "wait.h"

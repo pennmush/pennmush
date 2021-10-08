@@ -383,6 +383,7 @@ bsd.o: ../hdrs/lookup.h
 bsd.o: ../hdrs/ssl_slave.h
 bsd.o: ../hdrs/websock.h
 bsd.o: ../hdrs/function.h
+bsd.o: ../hdrs/plugin.h
 bufferq.o: ../config.h
 bufferq.o: ../confmagic.h
 bufferq.o: ../options.h

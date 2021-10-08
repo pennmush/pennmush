@@ -569,8 +569,8 @@ struct globals_table {
 
 extern GLOBALTAB globals;
 
-void **plugins;
-int plugin_count;
+extern void **plugins;
+extern int plugin_count;
 
 struct penn_plugins {
   void* handle;
@@ -579,8 +579,8 @@ struct penn_plugins {
   struct penn_plugins* prev;
 };
 
-struct penn_plugins *plugin_head;
-struct penn_plugins *plugin_last;
-struct penn_plugins *plugin_curr;
+extern struct penn_plugins *plugin_head;
+extern struct penn_plugins *plugin_last;
+extern struct penn_plugins *plugin_curr;
 
 #endif /* __PENN_CONF_H */

@@ -1,3 +1,5 @@
+#include "tinyexpr.h"
+
 #include "config.h"
 
 #include <ctype.h>
@@ -31,31 +33,35 @@
 #include "lock.h"
 #include "strutil.h"
 
-#include "tinyexpr.h"
-
-FUNCTION(local_fun_math)
+FUNCTION(local_fun_tinyexpr)
 {
   if (!args[0] || !*args[0]) {
-    safe_str("#-1 NO MATH EQUATION GIVEN!", buff, bp);
+    safe_str("#-1 NO MATH EXPRESSION GIVEN!", buff, bp);
     return;
   }
 
-  const char *c = args[0];
+  char *c = args[0];
   int error;
   double r = te_interp(c, &error);
 
-  if ( error != 0 ) {
-    safe_format(buff, bp, "Error at character %d for expression %s.", error, args[0]);
+//  te_expr *n = te_compile(c, 0, 0, &error);
+
+  if (error != 0) {
+    safe_format(buff, bp, "Error at character %d for expression %s.", error, c);
     return;
   }
 
+//  const double r = te_eval(n);
+
   safe_str(unparse_number(r), buff, bp);
+
+//  te_free(n);
 
   return;
 }
 
 void setupMathFunction() {
-  function_add("MATH", local_fun_math, 1, 1, FN_REG);
+  function_add("TINYEXPR", local_fun_tinyexpr, 1, 1, FN_REG | FN_STRIPANSI | FN_NOPARSE);
 }
 
 int plugin_init() {

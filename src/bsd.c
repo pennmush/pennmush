@@ -489,6 +489,71 @@ static char *get_doing(dbref player, dbref caller, dbref enactor,
 
 static bool who_check_name(DESC *d, char *name, bool wild);
 
+/**
+ * Plugin support
+ */
+void load_plugins() {
+  typedef int plugin_init();
+
+  DIR* pluginsDir;
+  struct dirent* in_file;
+  void* testPlugin;
+  char plugin_name[256];
+  plugin_init* f;
+
+  PENN_PLUGIN *plugin;
+
+  if (NULL != (pluginsDir = opendir("../plugins"))) {
+    while ((in_file = readdir(pluginsDir)))
+    {
+      if (!strcmp(in_file->d_name, ".")) continue;
+      if (!strcmp(in_file->d_name, "..")) continue;
+      if (!strstr(in_file->d_name, ".so")) continue;
+
+      memset(plugin_name, 0, strlen(plugin_name));
+      snprintf(plugin_name, sizeof(plugin_name), "../plugins/%s", in_file->d_name);
+
+      do_rawlog(LT_ERR, "Found plugin: %s ", plugin_name);
+
+      testPlugin = dlopen(plugin_name, RTLD_LAZY);
+      if (testPlugin == NULL) continue;
+
+      do_rawlog(LT_ERR, "Opened plugin: %s", plugin_name);
+
+      f = dlsym(testPlugin, "plugin_init");
+      if (f == NULL) {
+        do_rawlog(LT_ERR, "Missing plugin_init: %s", plugin_name);
+        dlclose(testPlugin);
+        continue;
+      }
+
+      plugin = malloc(sizeof(PENN_PLUGIN));
+      plugin->handle = testPlugin;
+      plugin->name = plugin_name;
+
+      plugin_count++;
+
+      plugins = realloc(plugins, sizeof(plugin) + sizeof(PENN_PLUGIN));
+
+      plugins[plugin_count] = plugin;
+
+      f();
+    }
+  }
+}
+
+void unload_plugins() {
+  for ( int i = 0; i < plugin_count; i++) {
+    if ( plugins[i]->handle != NULL ) {
+      dlclose(plugins[i]->handle);
+    }
+    //free(plugins[i]);
+  }
+
+  plugin_count = 0;
+  free(plugins);
+}
+
 #ifndef BOOLEXP_DEBUGGING
 #ifdef WIN32SERVICES
 /* Under WIN32, MUSH is a "service", so we just start a thread here.
@@ -931,66 +996,6 @@ main(int argc, char **argv)
   exit(0);
 }
 #endif /* BOOLEXP_DEBUGGING */
-
-void load_plugins() {
-  typedef int plugin_init();
-
-  DIR* pluginsDir;
-  struct dirent* in_file;
-  void* testPlugin;
-  char plugin_name[256];
-  plugin_init* f;
-
-  PENN_PLUGIN *plugin;
-
-  if (NULL != (pluginsDir = opendir("../plugins"))) {
-    while ((in_file = readdir(pluginsDir)))
-    {
-      if (!strcmp(in_file->d_name, ".")) continue;
-      if (!strcmp(in_file->d_name, "..")) continue;
-      if (!strstr(in_file->d_name, ".so")) continue;
-
-      memset(plugin_name, 0, strlen(plugin_name));
-      snprintf(plugin_name, sizeof(plugin_name), "../plugins/%s", in_file->d_name);
-
-      do_rawlog(LT_ERR, "Found plugin: %s ", plugin_name);
-
-      testPlugin = dlopen(plugin_name, RTLD_LAZY);
-      if (testPlugin == NULL) continue;
-
-      do_rawlog(LT_ERR, "Opened plugin: %s", plugin_name);
-
-      f = dlsym(testPlugin, "plugin_init");
-      if (f == NULL) {
-        do_rawlog(LT_ERR, "Missing plugin_init: %s", plugin_name);
-        dlclose(testPlugin);
-        continue;
-      }
-
-      plugin = malloc(sizeof(PENN_PLUGIN));
-      plugin->handle = testPlugin;
-      plugin->name = plugin_name;
-
-      plugin_count++;
-
-      plugins = realloc(plugins, sizeof(plugin) + sizeof(PENN_PLUGIN));
-
-      plugins[plugin_count] = plugin;
-
-      f();
-    }
-  }
-}
-
-void unload_plugins() {
-  for ( int i = 0; i < plugin_count; i++) {
-    dlclose(plugins[i]->handle);
-    //free(plugins[i]);
-  }
-
-  plugin_count = 0;
-  free(plugins);
-}
 
 /** Install our default signal handlers. */
 void

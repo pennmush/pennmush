@@ -939,10 +939,9 @@ void load_plugins() {
   struct dirent* in_file;
   void* testPlugin;
   char plugin_name[256];
+  plugin_init* f;
 
-  plugin_head = NULL;
-  plugin_last = NULL;
-  plugin_curr = NULL;
+  PENN_PLUGIN *plugin;
 
   if (NULL != (pluginsDir = opendir("../plugins"))) {
     while ((in_file = readdir(pluginsDir)))
@@ -954,41 +953,29 @@ void load_plugins() {
       memset(plugin_name, 0, strlen(plugin_name));
       snprintf(plugin_name, sizeof(plugin_name), "../plugins/%s", in_file->d_name);
 
-      do_rawlog(LT_ERR, "Found: %s ", plugin_name);
+      do_rawlog(LT_ERR, "Found plugin: %s ", plugin_name);
 
       testPlugin = dlopen(plugin_name, RTLD_LAZY);
       if (testPlugin == NULL) continue;
 
-      do_rawlog(LT_ERR, "Opened: %s", plugin_name);
+      do_rawlog(LT_ERR, "Opened plugin: %s", plugin_name);
 
-      plugin_init* f = dlsym(testPlugin, "plugin_init");
+      f = dlsym(testPlugin, "plugin_init");
       if (f == NULL) {
         do_rawlog(LT_ERR, "Missing plugin_init: %s", plugin_name);
         dlclose(testPlugin);
         continue;
       }
 
-      struct penn_plugins* test = plugin_head;
-      struct penn_plugins* newPlugin = (struct penn_plugins*) malloc(sizeof(struct penn_plugins));
-      newPlugin->handle = testPlugin;
-      newPlugin->name = in_file->d_name;
-      newPlugin->prev = NULL;
-      newPlugin->next = NULL;
+      plugin = malloc(sizeof(PENN_PLUGIN));
+      plugin->handle = testPlugin;
+      plugin->name = plugin_name;
 
-      if ( plugin_head == NULL ) {
-        plugin_head = newPlugin;
+      plugin_count++;
 
-        do_rawlog(LT_ERR, "Running plugin_init: %s", newPlugin->name);
+      plugins = realloc(plugins, sizeof(plugin) + sizeof(PENN_PLUGIN));
 
-        f();
-        continue;
-      }
-
-      while(test->next != NULL) test = test->next;
-      test->next = newPlugin;
-      newPlugin->prev = test;
-
-      do_rawlog(LT_ERR, "Running plugin_init: %s", newPlugin->name);
+      plugins[plugin_count] = plugin;
 
       f();
     }
@@ -996,11 +983,13 @@ void load_plugins() {
 }
 
 void unload_plugins() {
-  while(plugin_head != NULL) {
-    dlclose(plugin_head->handle);
-    if (plugin_head->prev != NULL) { free(plugin_head->prev); }
-    plugin_head = plugin_head->next;
+  for ( int i = 0; i < plugin_count; i++) {
+    dlclose(plugins[i]->handle);
+    //free(plugins[i]);
   }
+
+  plugin_count = 0;
+  free(plugins);
 }
 
 /** Install our default signal handlers. */

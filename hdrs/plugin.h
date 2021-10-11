@@ -7,18 +7,14 @@
 #ifndef __PENNPLUGIN_H
 #define __PENNPLUGIN_H
 
-extern void **plugins;
-extern int plugin_count;
+//extern void **plugins;
+int plugin_count = 0;
 
-struct penn_plugins {
+typedef struct penn_plugin {
   void* handle;
   char *name;
-  struct penn_plugins* next;
-  struct penn_plugins* prev;
-};
+} PENN_PLUGIN;
 
-struct penn_plugins *plugin_head;
-struct penn_plugins *plugin_last;
-struct penn_plugins *plugin_curr;
+PENN_PLUGIN **plugins = NULL;
 
 #endif /* __PENN_PLUGIN_H */

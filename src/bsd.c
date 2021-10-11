@@ -532,13 +532,13 @@ void load_plugins() {
         continue;
       }
 
-      plugin = malloc(sizeof(PENN_PLUGIN));
+      plugin = mush_malloc(sizeof(PENN_PLUGIN), "penn_plugin");
       plugin->handle = testPlugin;
       plugin->name = plugin_name;
 
       plugin_count++;
 
-      plugins = realloc(plugins, sizeof(plugin) + sizeof(PENN_PLUGIN));
+      plugins = mush_realloc(plugins, sizeof(plugin) + sizeof(PENN_PLUGIN), "plugins");
 
       plugins[plugin_count] = plugin;
 
@@ -552,11 +552,10 @@ void unload_plugins() {
     if ( plugins[i]->handle != NULL ) {
       dlclose(plugins[i]->handle);
     }
-    //free(plugins[i]);
   }
 
   plugin_count = 0;
-  free(plugins);
+  mush_free(plugins, "plugins");
 }
 
 #ifndef BOOLEXP_DEBUGGING

@@ -503,6 +503,8 @@ void load_plugins() {
 
   PENN_PLUGIN *plugin;
 
+  int plugin_name_return = 0;
+
   if (NULL != (pluginsDir = opendir("../plugins"))) {
     while ((in_file = readdir(pluginsDir)))
     {
@@ -511,7 +513,10 @@ void load_plugins() {
       if (!strstr(in_file->d_name, ".so")) continue;
 
       memset(plugin_name, 0, strlen(plugin_name));
-      snprintf(plugin_name, sizeof(plugin_name), "../plugins/%s", in_file->d_name);
+      plugin_name_return = snprintf(plugin_name, sizeof(plugin_name), "../plugins/%s", in_file->d_name);
+      if (plugin_name_return < 0) {
+        continue;
+      }
 
       do_rawlog(LT_ERR, "Found plugin: %s ", plugin_name);
 

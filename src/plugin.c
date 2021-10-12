@@ -23,8 +23,28 @@
 PENN_PLUGIN **plugins = NULL;
 int plugin_count = 0;
 
-/**
- * Plugin support
+/** 
+ * Loop through all the .so files found in the
+ * plugins directory, and for each one found
+ * attempt to open it, check for the plugin information
+ * and run the plugin.
+ * 
+ * The first step is to try and open a handle to the plugin,
+ * if a valid handle can't be created then we ignore this plugin.
+ * 
+ * Second step is to get a handle to the plugin_info() function
+ * found in the plugin, if the function can't be found then we
+ * ignore this plugin, as it doesn't meet the requirements.
+ * 
+ * Third step is to get a handle to the plugin_init() function,
+ * if we can't find the function then we ignore the plugin.
+ * 
+ * Fourth step is to keep track of the plugin we just opened so that
+ * we can close it later on (or run further functions on it).
+ * 
+ * Final step is to actually run the plugin_init() function on the
+ * plugin which will allow the function to set up anything it needs.
+ *
  */
 void load_plugins() {
   typedef int plugin_init();
@@ -94,6 +114,18 @@ void load_plugins() {
   }
 }
 
+/**
+ * Loop through all currently loaded plugins and close
+ * their respective handles.
+ * 
+ * Once we have closed all the plugin handles then we free
+ * the structure that was used for keeping track of them and
+ * reset the plugin_count back to 0.
+ * 
+ * If this is a full shutdown then none of this really matters,
+ * but if it is an @shutdown/reboot then we need to make sure
+ * everything is clean for when load_plugins() runs again.
+ */
 void unload_plugins()
 {
   for (int i = 0; i < plugin_count; i++) {
@@ -107,3 +139,4 @@ void unload_plugins()
 
   plugin_count = 0;
 }
+

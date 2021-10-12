@@ -8,7 +8,7 @@
 #define __PENNPLUGIN_H
 
 //extern void **plugins;
-int plugin_count = 0;
+extern int plugin_count;
 
 typedef struct plugin_info {
   char *name;
@@ -24,6 +24,9 @@ typedef struct penn_plugin {
   PLUGIN_INFO *info;
 } PENN_PLUGIN;
 
-PENN_PLUGIN **plugins = NULL;
+extern PENN_PLUGIN **plugins;
+
+extern void load_plugins();
+extern void unload_plugins();
 
 #endif /* __PENN_PLUGIN_H */

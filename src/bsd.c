@@ -494,13 +494,19 @@ static bool who_check_name(DESC *d, char *name, bool wild);
  */
 void load_plugins() {
   typedef int plugin_init();
+  typedef void *get_plugin();
 
   DIR* pluginsDir;
   struct dirent* in_file;
-  void* testPlugin;
-  char plugin_name[256];
-  plugin_init* f;
+  char plugin_file[256];
 
+  void* handle;
+  char *plugin_name;
+  plugin_init* init_plugin;
+  get_plugin* info_plugin;
+
+  struct plugin_info *plugin_info;
+    
   PENN_PLUGIN *plugin;
 
   int plugin_name_return = 0;
@@ -512,29 +518,41 @@ void load_plugins() {
       if (!strcmp(in_file->d_name, "..")) continue;
       if (!strstr(in_file->d_name, ".so")) continue;
 
-      memset(plugin_name, 0, strlen(plugin_name));
-      plugin_name_return = snprintf(plugin_name, sizeof(plugin_name), "../plugins/%s", in_file->d_name);
+      memset(plugin_file, 0, strlen(plugin_file));
+      plugin_name_return = snprintf(plugin_file, sizeof(plugin_file), "../plugins/%s", in_file->d_name);
       if (plugin_name_return < 0) {
         continue;
       }
 
-      do_rawlog(LT_ERR, "Found plugin: %s ", plugin_name);
+      do_rawlog(LT_ERR, "Found plugin: %s ", plugin_file);
 
-      testPlugin = dlopen(plugin_name, RTLD_LAZY);
-      if (testPlugin == NULL) continue;
+      handle = dlopen(plugin_file, RTLD_LAZY);
+      if (handle == NULL) continue;
 
-      do_rawlog(LT_ERR, "Opened plugin: %s", plugin_name);
+      do_rawlog(LT_ERR, "Opened plugin: %s", plugin_file);
 
-      f = dlsym(testPlugin, "plugin_init");
-      if (f == NULL) {
-        do_rawlog(LT_ERR, "Missing plugin_init: %s", plugin_name);
-        dlclose(testPlugin);
+      info_plugin = dlsym(handle, "get_plugin");
+      if (info_plugin == NULL) {
+        do_rawlog(LT_ERR, "Missing get_plugin: %s", plugin_file);
+        dlclose(handle);
+        continue;
+      }
+
+      init_plugin = dlsym(handle, "plugin_init");
+      if (init_plugin == NULL) {
+        do_rawlog(LT_ERR, "Missing plugin_init: %s", plugin_file);
+        dlclose(handle);
         continue;
       }
 
       plugin = mush_malloc(sizeof(PENN_PLUGIN), "penn_plugin");
-      plugin->handle = testPlugin;
+      plugin->handle = handle;
       plugin->name = plugin_name;
+
+      plugin->info = mush_malloc(sizeof(PLUGIN_INFO), "plugin_info");
+      plugin->info = info_plugin();
+
+      do_rawlog(LT_ERR, "Plugin: %s by %s version %s", plugin->info->name, plugin->info->author, plugin->info->app_version);
 
       plugin_count++;
 
@@ -542,7 +560,7 @@ void load_plugins() {
 
       plugins[plugin_count] = plugin;
 
-      f();
+      init_plugin();
     }
   }
 }

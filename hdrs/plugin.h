@@ -10,9 +10,17 @@
 //extern void **plugins;
 int plugin_count = 0;
 
+typedef struct plugin_info {
+  char *name;
+  char *author;
+  char *app_version;
+  int version_id;
+} PLUGIN_INFO;
+
 typedef struct penn_plugin {
   void* handle;
   char *name;
+  PLUGIN_INFO *info;
 } PENN_PLUGIN;
 
 PENN_PLUGIN **plugins = NULL;

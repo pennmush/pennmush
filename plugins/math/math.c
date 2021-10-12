@@ -8,6 +8,13 @@
 #include "function.h"
 #include "strutil.h"
 
+struct plugin_info {
+  char *name;
+  char *author;
+  char *app_version;
+  int version_id;
+};
+
 FUNCTION(local_fun_tinyexpr)
 {
   char *c;
@@ -34,6 +41,12 @@ FUNCTION(local_fun_tinyexpr)
 
 void setupMathFunction() {
   function_add("TINYEXPR", local_fun_tinyexpr, 1, 1, FN_REG | FN_STRIPANSI | FN_NOPARSE);
+}
+
+struct plugin_info p = { "TinyExpr Math Library", "Ray Herring", "1.0.0", 100000 };
+
+struct plugin_info *get_plugin() {
+  return &p;
 }
 
 int plugin_init() {

@@ -15,6 +15,7 @@ typedef struct plugin_info {
   char *author;
   char *app_version;
   int version_id;
+  int author_id;
 } PLUGIN_INFO;
 
 typedef struct penn_plugin {

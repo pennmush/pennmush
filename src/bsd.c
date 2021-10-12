@@ -572,8 +572,9 @@ void unload_plugins() {
     }
   }
 
+  if (plugins != NULL) { mush_free(plugins, "plugins"); }
+
   plugin_count = 0;
-  mush_free(plugins, "plugins");
 }
 
 #ifndef BOOLEXP_DEBUGGING

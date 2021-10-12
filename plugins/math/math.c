@@ -13,6 +13,8 @@ struct plugin_info {
   char *author;
   char *app_version;
   int version_id;
+  int author_id;
+  int plugin_id;
 };
 
 FUNCTION(local_fun_tinyexpr)

@@ -31,7 +31,7 @@ Minor changes
 Softcode
 --------
 
-* `arrow()` for thrushing functionality. Patch by Mercutio.
+* `chain()` for function chaining functionality. Patch by Mercutio.
 
 Fixes
 -----

@@ -465,7 +465,7 @@ FUNCTION(fun_graball)
 }
 
 /* ARGSUSED */
-FUNCTION(fun_arrow)
+FUNCTION(fun_chain)
 {
   /* iteratively evaluates a list of attributes, with a single argument 
    * and optional arguments. It passes the result of each result to the 
@@ -483,18 +483,21 @@ FUNCTION(fun_arrow)
   int n;
 
   n = list2arr_ansi(list, MAX_SORTSIZE, args[0], ' ', 0);
-  ufun_list = mush_calloc(n, sizeof(ufun_attrib), "fun_arrow_array");
+  ufun_list = mush_calloc(n, sizeof(ufun_attrib), "fun_chain_array");
 
   for(int i = 0; i < n; i++) {
     if (!fetch_ufun_attrib(list[i], executor, &ufun_list[i], UFUN_OBJECT))
+    {
+      mush_free(ufun_list, "fun_chain_array");
       return;
+    }
   }
 
   freearr(list, n);
 
   mush_strncpy(result, args[1], sizeof result);
 
-  pe_regs = pe_regs_create(PE_REGS_ARG, "fun_arrow");
+  pe_regs = pe_regs_create(PE_REGS_ARG, "fun_chain");
   pe_regs_setenv(pe_regs, 0, result);
   for(int ai = 2, pei = 1; ai < nargs; ai++, pei++)
   {
@@ -506,7 +509,7 @@ FUNCTION(fun_arrow)
   for (int i = 0; i < n; i++) {
     ufun = ufun_list[i];
     per = call_ufun(&ufun, result, executor, enactor, pe_info, pe_regs);
-    pe_regs_setenv(pe_regs, 0, result);
+    pe_regs_setenv_nocopy(pe_regs, 0, result);
     if (per || (pe_info->fun_invocations >= FUNCTION_LIMIT &&
                 pe_info->fun_invocations == funccount))
       break;
@@ -514,7 +517,7 @@ FUNCTION(fun_arrow)
   }
 
   pe_regs_free(pe_regs);
-  mush_free(ufun_list, "fun_arrow_array");
+  mush_free(ufun_list, "fun_chain_array");
   safe_str(result, buff, bp);
 }
 

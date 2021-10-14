@@ -126,7 +126,7 @@ See also: Dbref functions
 & List functions
   List functions take at least one list of elements and return transformed lists or one or more members of those lists. Most of these functions can take an arbitrary <delimiter> argument to specify what delimits list elements; if none is provided, a space is used by default.
 
-  arrow()       elements()    extract()     filter()      filterbool()  
+  chain()       elements()    extract()     filter()      filterbool()  
   first()       fold()        grab()        graball()     index()       
   itemize()     items()       iter()        last()        ldelete()
   linsert()     lreplace()    lockfilter()  map()         match()       
@@ -560,8 +560,8 @@ See also: ANSI, COLOR, @sockset, colorstyle, colors()
   Returns the absolute possessive pronoun - his/hers/its/theirs - for an object. The %a substitution returns the absolute possessive pronoun of the enactor.
 
 See also: obj(), poss(), subj()
-& ARROW()
-  arrow(<attribute list>, <base case>[, ..., <argN>])
+& CHAIN()
+  chain(<attribute list>, <base case>[, ..., <argN>])
 
   Passes the base case through each [<object>/]<attribute> in the space delimited attribute list.
   The result of each evaluation is passed to the next attribute, serving a similar purpose as fold().
@@ -570,7 +570,7 @@ See also: obj(), poss(), subj()
     > &JSON`ADDNAME me=json_mod(%0,set,$.name,json(string,%1))
     > &JSON`SET_CHA me=json_mod(%0,set,$.stats.charisma.val,%2)
     > &JSON`SET_CHA_MODIFIER me=json_mod(%0,set,$.stats.charisma.mod,div(sub(%2,10),2))
-    > say arrow(JSON`ADDNAME JSON`SET_CHA JSON`SET_CHA_MODIFIER,json(object),%N,13)
+    > say chain(JSON`ADDNAME JSON`SET_CHA JSON`SET_CHA_MODIFIER,json(object),%N,13)
     You say, "{"name":"One","stats":{"charisma":{"val":13,"mod":1}}}"
 
     > &type me=farmer
@@ -580,17 +580,17 @@ See also: obj(), poss(), subj()
     > &FUN`FARMER`GOLD me=json_mod(%0,set,$.gold,1)
     > &FUN`FARMER`SKILL`FARM me=json_mod(%0,set,$.skill.farming,10)
     > &FUN`FARMER`SKILL me=%0
-    > say arrow(lattr(me/FUN`[v(type)]`**),json(object))
+    > say chain(lattr(me/FUN`[v(type)]`**),json(object))
     You say, "{"gold":1,"skill":{"farming":10}}"
 
-  See 'help arrow2' for more examples.
+  See 'help chain2' for more examples.
 
 See also: fold(), map(), iter()
-& ARROW2
+& CHAIN2
   Examples:
-    > &FUN`TESTING me=iter(lattr(%=`),\[TEST\] %i0: [arrow(%i0`setup fun`wrap fun`storeresult %i0`validate fun`testoutput,u(%i0`args`0),u(%i0`args`1),u(%i0`args`2))],,%r)
+    > &FUN`TESTING me=iter(lattr(%=`),\[TEST\] %i0: [chain(%i0`setup fun`wrap fun`storeresult %i0`validate fun`testoutput,u(%i0`args`0),u(%i0`args`1),u(%i0`args`2))],,%r)
     > &FUN`STORERESULT me=setr(Result,%0)
-    > &FUN`WRAP me=u(me/arrowfun,%0)
+    > &FUN`WRAP me=u(me/chainfun,%0)
     > &FUN`TESTOUTPUT me=if(%0,ansi(hg,Success),ansi(hr,Test failed\, output failed. Output was: '%q<Result>'))
     
     > &FUN`TESTING`1`ARGS`0 me=meow

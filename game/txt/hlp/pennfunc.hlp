@@ -604,7 +604,44 @@ See also: fold(), map(), iter()
     [TEST] FUN`TESTING`1: Success
     [TEST] FUN`TESTING`2: Test failed, output failed. Output was: 'meow'
 
+  See 'help chain3' for implementation examples.
+
 See also: fold(), map(), iter()
+& CHAIN3
+  Examples:
+    Discord Example: Create an automatic avatar for a user.
+    > &email me=test@test.com
+    > &fn`discord`5.avatar`1.prepare me=setq(Avatar.Name,name(%0),Avatar.Email,get(%0/email),Avatar.Size,%1,Avatar.Foreground,colors(%2,hex),Avatar.Background,colors(%3,hex))
+    > &fn`discord`5.avatar`2.clean me=setq(Avatar.Email,lcstr(trim(%q<Avatar.Email>)),Avatar.Foreground,edit(%q<Avatar.Foreground>,#,),Avatar.Background,edit(%q<Avatar.Background>,#,))
+    > &fn`discord`5.avatar`3.ui-avatar me=https://ui-avatars.com/api/%q<Avatar.Name>/%q<Avatar.Size>/%q<Avatar.Background>/%q<Avatar.Foreground>/2/0.5/true/true/true/png
+    > &fn`discord`5.avatar`4.gravatar me=https://www.gravatar.com/avatar/[digest(md5,strfirstof(%q<Avatar.Email>,%q<Avatar.Name>))]?size=%q<Size>&d=[urlencode(%0)]
+    > &fn`discord`5.avatar`5.clear me=unsetq(Avatar.)%0
+
+    > say chain(sort(lattr(%!/fn`discord`5.avatar`),m),%:,300,hw,+blue)
+    You say, "https://www.gravatar.com/avatar/b642b4217b34b1e8d3bd915fc65c4452?size=&d=https%3A%2F%2Fui-avatars.com%2Fapi%2FOne%2F300%2F0000ff%2Fffffff%2F2%2F0.5%2Ftrue%2Ftrue%2Ftrue%2Fpng"
+
+    Discord Example: Combine to create a webhook json
+    > &data`discord`size me=300
+    > &data`discord`foreground me=hr
+    > &data`discord`background me=+grey
+    > &fn`discord me=chain(sort(lattr(%!/fn`discord`),m),json(object),%0,%1,%2)
+    > &fn`discord`1.ready me=setq(Discord.Player,%1,Discord.User,name(%1),Discord.Title,%2,Discord.Content,%3,Discord.Timestamp,timefmt($Y-$m-$dT$H:$M:$S.000Z))%0
+    > &fn`discord`2.title me=json_mod(%0,set,$.title,json(string,%q<Discord.Title>))
+    > &fn`discord`3.content me=json_mod(%0,set,$.content,json(string,%q<Discord.Content>))
+    > &fn`discord`4.timestamp me=json_mod(%0,set,$.timestamp,json(string,%q<Discord.Timestamp>))
+    > &fn`discord`5.avatar me=json_mod(%0,set,$.avatar_url,json(string,chain(sort(lattr(%!/fn`discord`5.avatar`),m),%q<Discord.Player>,v(data`discord`size),v(data`discord`foreground),v(data`discord`background))))
+    > &fn`discord`6.username me=json_mod(%0,set,$.username,json(string,%q<Discord.User>))
+    > &fn`discord`7.clear me=unsetq(Discord.)%0
+    
+    > th u(fn`discord,%:,Some Title,This is content.)
+    {"title":"Some Title","content":"This is content.","timestamp":"2021-10-13T20:40:23.000Z","avatar_url":"https://www.gravatar.com/avatar/b642b4217b34b1e8d3bd915fc65c4452?size=&d=https%3A%2F%2Fui-avatars.com%2Fapi%2FOne%2F300%2Fbebebe%2Fff0000%2F2%2F0.5%2Ftrue%2Ftrue%2Ftrue%2Fpng","username":"One"}
+
+    Discord Example: Post it to a webhook.
+    > &test me=say %q<Status>
+    > @http/post %!/test me=https://discordapp.com/api/webhooks/YOURWEBHOOKHERE,u(fn`discord,%:,Some Title,This is Content.)
+    You say, "204"
+
+    See also: @http, json(), json_mod(), setq(), unsetq(), sort(), lattr()
 & ART()
   art(<string>)
 

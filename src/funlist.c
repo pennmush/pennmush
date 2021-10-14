@@ -509,7 +509,7 @@ FUNCTION(fun_chain)
   for (int i = 0; i < n; i++) {
     ufun = ufun_list[i];
     per = call_ufun(&ufun, result, executor, enactor, pe_info, pe_regs);
-    pe_regs_setenv_nocopy(pe_regs, 0, result);
+    pe_regs_setenv(pe_regs, 0, result);
     if (per || (pe_info->fun_invocations >= FUNCTION_LIMIT &&
                 pe_info->fun_invocations == funccount))
       break;

@@ -373,6 +373,7 @@ struct options_table {
     connlog_db[FILE_PATH_LEN]; /**< Sqlite3 file to use for connection logs. */
   char dict_file[FILE_PATH_LEN]; /**< List of words to load into suggest() db */
   char colors_file[FILE_PATH_LEN]; /**< JSON file holding the colors database */
+  char plugins_dir[FILE_PATH_LEN]; /**< Directory for where plugins are found based on the penn-root dir */
 };
 
 typedef struct mssp MSSP;
@@ -547,6 +548,8 @@ int can_view_config_option(dbref player, PENNCONF *opt);
 #define CHUNK_MIGRATE_AMOUNT (options.chunk_migrate_amount)
 
 #define READ_REMOTE_DESC (options.read_remote_desc)
+
+#define PLUGINS_DIR (options.plugins_dir)
 
 typedef struct globals_table GLOBALTAB;
 

@@ -349,6 +349,7 @@ PENNCONF conftable[] = {
    "files"},
   {"colors_file", cf_str, options.colors_file, sizeof options.colors_file, 0,
    "files"},
+  {"plugins_dir", cf_str, options.plugins_dir, sizeof options.plugins_dir, 0, "files"},
 
   {NULL, NULL, NULL, 0, 0, NULL}};
 
@@ -1362,6 +1363,7 @@ conf_default_set(void)
   strcpy(options.connlog_db, "log/connlog.db");
   strcpy(options.dict_file, "");
   strcpy(options.colors_file, "txt/colors.json");
+  strcpy(options.plugins_dir, "../plugins");
 }
 
 #undef set_string_option

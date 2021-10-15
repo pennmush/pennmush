@@ -1869,6 +1869,8 @@ player.o: ../hdrs/mushsql.h
 player.o: ../hdrs/sqlite3.h
 player.o: ../hdrs/strutil.h
 plugin.o: ../hdrs/copyrite.h
+plugin.o: ../hdrs/cmds.h
+plugin.o: ../hdrs/command.h
 plugin.o: ../hdrs/conf.h
 plugin.o: ../hdrs/log.h
 plugin.o: ../hdrs/mymalloc.h

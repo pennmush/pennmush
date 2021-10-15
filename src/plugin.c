@@ -10,6 +10,8 @@
  */
 
 #include "copyrite.h"
+#include "cmds.h"
+#include "command.h"
 #include "conf.h"
 #include "log.h"
 #include "mymalloc.h"
@@ -62,7 +64,7 @@ void load_plugins() {
 
   int plugin_name_return = 0;
 
-  if (NULL != (pluginsDir = opendir("../plugins"))) {
+  if (NULL != (pluginsDir = opendir(options.plugins_dir))) {
     while ((in_file = readdir(pluginsDir))) {
       if (!strcmp(in_file->d_name, ".")) continue;
       if (!strcmp(in_file->d_name, "..")) continue;
@@ -140,3 +142,27 @@ void unload_plugins()
   plugin_count = 0;
 }
 
+/**
+ * In-game command for dealing with plugins.
+ * 
+ * Command will deal with the following things:
+ *  - active - List currently active plugins
+ *  - info - Display information about an active plugin
+ *  - list - List all plugins in the plugins directory
+ *  - load - Load a plugin
+ *  - reload - Reload an active plugin (combines unload and load together)
+ *  - unload - Unload an active plugin
+ * 
+ * Arguments for commands:
+ *  - active requires no arguments
+ *  - info requires the plugin name (as found in 'list' or 'active')
+ *  - list requires no arguments
+ *  - load requires the plugin name (as found in 'list')
+ *  - reload requires the plugin name (as found in 'list')
+ *  - unload requires the plugin name (as found in 'list')
+ */
+COMMAND(cmd_plugin) {
+    if (SW_ISSET(sw, SWITCH_ACTIVE)) {
+
+    }
+}

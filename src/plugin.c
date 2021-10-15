@@ -15,6 +15,7 @@
 #include "conf.h"
 #include "log.h"
 #include "mymalloc.h"
+#include "notify.h"
 #include "plugin.h"
 
 #include <dlfcn.h>
@@ -22,8 +23,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-//PENN_PLUGIN **plugins = NULL;
-int plugin_count = 0;
 HASHTAB plugins;
 
 /**
@@ -85,7 +84,7 @@ void load_plugins() {
       if (!strstr(in_file->d_name, ".so")) continue;
 
       memset(plugin_file, 0, strlen(plugin_file));
-      plugin_name_return = snprintf(plugin_file, sizeof(plugin_file), "../plugins/%s", in_file->d_name);
+      plugin_name_return = snprintf(plugin_file, sizeof(plugin_file), "%s/%s", options.plugins_dir, in_file->d_name);
       if (plugin_name_return < 0) continue;
 
       do_rawlog(LT_ERR, "Found plugin: %s ", plugin_file);
@@ -116,16 +115,11 @@ void load_plugins() {
       plugin->info = info_plugin();
 
       plugin->name = plugin->info->name;
+      plugin->file = in_file->d_name;
 
       do_rawlog(LT_ERR, "Plugin: %s by %s version %s", plugin->info->name, plugin->info->author, plugin->info->app_version);
 
-      //plugin_count++;
-
       hash_add(&plugins, plugin->name, plugin);
-
-      //plugins = mush_realloc(plugins, sizeof(plugin) + sizeof(PENN_PLUGIN), "plugins");
-
-      //plugins[plugin_count] = plugin;
 
       init_plugin();
     }
@@ -154,19 +148,6 @@ void unload_plugins()
       hash_delete(&plugins, plugin->name);
     }
   }
-
-    /**
-  for (int i = 0; i < plugin_count; i++) {
-    if (plugins[i]->handle) {
-      dlclose(plugins[i]->handle);
-    }
-  }
-  if (plugins != NULL) {
-    mush_free(plugins, "plugins");
-  }
-
-  plugin_count = 0;
-  **/
 }
 
 /**
@@ -189,7 +170,26 @@ void unload_plugins()
  *  - unload requires the plugin name (as found in 'list')
  */
 COMMAND(cmd_plugin) {
+    PENN_PLUGIN *plugin;
     if (SW_ISSET(sw, SWITCH_ACTIVE)) {
 
+    } else if (SW_ISSET(sw, SWITCH_INFO)) {
+
+    } else if (SW_ISSET(sw, SWITCH_LIST)) {
+      notify_format(executor, "ID  Plugin Name                   Active? Description                         ");
+
+      for (plugin = hash_firstentry(&plugins); plugin; plugin = hash_nextentry(&plugins)) {
+        if (plugin->handle) {
+          notify_format(executor, "%3d %-29s %-7s %-36s", 0, plugin->name, "YES", plugin->info->shortdesc);
+        }
+      }
+    } else if (SW_ISSET(sw, SWITCH_LOAD)) {
+
+    } else if (SW_ISSET(sw, SWITCH_RELOAD)) {
+
+    } else if (SW_ISSET(sw, SWITCH_UNLOAD)) {
+
+    } else {
+        /* Probably do the same as SWITCH_INFO? */
     }
 }

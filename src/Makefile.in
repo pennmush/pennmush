@@ -1874,6 +1874,7 @@ plugin.o: ../hdrs/command.h
 plugin.o: ../hdrs/conf.h
 plugin.o: ../hdrs/log.h
 plugin.o: ../hdrs/mymalloc.h
+plugin.o: ../hdrs/notify.h
 plugin.o: ../hdrs/plugin.h
 plyrlist.o: ../config.h
 plyrlist.o: ../confmagic.h

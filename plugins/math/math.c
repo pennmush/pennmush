@@ -13,8 +13,8 @@ struct plugin_info {
   char *author;
   char *app_version;
   int version_id;
-  int author_id;
-  int plugin_id;
+  char shortdesc[30];
+  char description[BUFFER_LEN];
 };
 
 FUNCTION(local_fun_tinyexpr)
@@ -45,7 +45,7 @@ void setupMathFunction() {
   function_add("TINYEXPR", local_fun_tinyexpr, 1, 1, FN_REG | FN_STRIPANSI | FN_NOPARSE);
 }
 
-struct plugin_info p = { "TinyExpr Math Library", "Ray Herring", "1.0.0", 100000 };
+struct plugin_info p = { "TinyExpr Math Library", "Ray Herring", "1.0.0", 100000, "Run math related equations", "Run math related equations that aren't as easy to do using Penn's standard math functions" };
 
 struct plugin_info *get_plugin() {
   return &p;

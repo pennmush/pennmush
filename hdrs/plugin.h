@@ -24,7 +24,9 @@ typedef struct penn_plugin {
   PLUGIN_INFO *info;
 } PENN_PLUGIN;
 
-extern PENN_PLUGIN **plugins;
+//extern PENN_PLUGIN **plugins;
+
+extern HASHTAB plugins;
 
 extern void load_plugins();
 extern void unload_plugins();

@@ -22,8 +22,20 @@
 #include <stdlib.h>
 #include <string.h>
 
-PENN_PLUGIN **plugins = NULL;
+//PENN_PLUGIN **plugins = NULL;
 int plugin_count = 0;
+HASHTAB plugins;
+
+/**
+ * Free the memory being used by a plugin when removing
+ * it from the hashtab
+ * 
+ * \param ptr pointer to the struct to free
+ */
+void free_plugin(void *ptr) {
+    PENN_PLUGIN *p = (PENN_PLUGIN *) ptr;
+    mush_free(p, "penn_plugin");
+}
 
 /** 
  * Loop through all the .so files found in the
@@ -63,6 +75,8 @@ void load_plugins() {
   PENN_PLUGIN *plugin;
 
   int plugin_name_return = 0;
+
+  hash_init(&plugins, 1, free_plugin);
 
   if (NULL != (pluginsDir = opendir(options.plugins_dir))) {
     while ((in_file = readdir(pluginsDir))) {
@@ -105,11 +119,13 @@ void load_plugins() {
 
       do_rawlog(LT_ERR, "Plugin: %s by %s version %s", plugin->info->name, plugin->info->author, plugin->info->app_version);
 
-      plugin_count++;
+      //plugin_count++;
 
-      plugins = mush_realloc(plugins, sizeof(plugin) + sizeof(PENN_PLUGIN), "plugins");
+      hash_add(&plugins, plugin->name, plugin);
 
-      plugins[plugin_count] = plugin;
+      //plugins = mush_realloc(plugins, sizeof(plugin) + sizeof(PENN_PLUGIN), "plugins");
+
+      //plugins[plugin_count] = plugin;
 
       init_plugin();
     }
@@ -130,6 +146,16 @@ void load_plugins() {
  */
 void unload_plugins()
 {
+  PENN_PLUGIN *plugin;
+
+  for (plugin = hash_firstentry(&plugins); plugin; plugin = hash_nextentry(&plugins)) {
+    if (plugin->handle) {
+      dlclose(plugin->handle);
+      hash_delete(&plugins, plugin->name);
+    }
+  }
+
+    /**
   for (int i = 0; i < plugin_count; i++) {
     if (plugins[i]->handle) {
       dlclose(plugins[i]->handle);
@@ -140,6 +166,7 @@ void unload_plugins()
   }
 
   plugin_count = 0;
+  **/
 }
 
 /**

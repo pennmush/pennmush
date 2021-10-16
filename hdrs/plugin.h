@@ -20,6 +20,7 @@ typedef struct penn_plugin {
   void* handle;
   char *name;
   char *file;
+  int id;
   PLUGIN_INFO *info;
 } PENN_PLUGIN;
 

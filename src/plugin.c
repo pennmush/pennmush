@@ -74,6 +74,7 @@ void load_plugins() {
   PENN_PLUGIN *plugin;
 
   int plugin_name_return = 0;
+  int i = 1;
 
   hash_init(&plugins, 1, free_plugin);
 
@@ -117,6 +118,9 @@ void load_plugins() {
         plugin->name = mush_malloc(sizeof(char *), "plugin_name");
       plugin->name = plugin->info->name;
       plugin->file = in_file->d_name;
+      plugin->id = i;
+
+        i++;
 
       do_rawlog(LT_ERR, "Plugin: %s by %s version %s", plugin->info->name, plugin->info->author, plugin->info->app_version);
 
@@ -171,10 +175,16 @@ void unload_plugins()
  *  - unload requires the plugin name (as found in 'list')
  */
 COMMAND(cmd_plugin) {
+    int plugin_id;
+
     if (SW_ISSET(sw, SWITCH_ACTIVE)) {
 
     } else if (SW_ISSET(sw, SWITCH_INFO)) {
-
+        if (sscanf(arg_left, "%d", &plugin_id) != 1) {
+            notify(executor, T("Invalid plugin id!"));
+        } else {
+            show_plugin_info(executor, plugin_id);
+        }
     } else if (SW_ISSET(sw, SWITCH_LIST)) {
       do_list_plugins(executor, sw);
     } else if (SW_ISSET(sw, SWITCH_LOAD)) {
@@ -210,10 +220,39 @@ void do_list_plugins(dbref executor, switch_mask sw) {
 
             plugin = hashfind(in_file->d_name, &plugins);
             if (plugin && plugin->handle) {
-                notify_format(executor, "%2d %-29s %-7s %-37s", 0, plugin->name, "YES", plugin->info->shortdesc);
+                notify_format(executor, "%2d %-29s %-7s %-37s", plugin->id, plugin->name, "YES", plugin->info->shortdesc);
             } else {
                 notify_format(executor, "%2d %-29s %-7s %-37s", 0, in_file->d_name, "NO", "");
             }
         }
+    }
+}
+
+/**
+ * Display the information for a particular plugin by id
+ *
+ * \param executor Who ran the @plugin command
+ * \param id The id of the plugin as found in @plugin/list
+ */
+void show_plugin_info(dbref executor, int id) {
+    PENN_PLUGIN *plugin;
+
+    if (id == 0) return; /* ID of 0 means the plugin hasn't been loaded into penn */
+
+    for (plugin = hash_firstentry(&plugins); plugin; plugin = hash_nextentry(&plugins)) {
+        if ( plugin->id == id ) {
+            break;
+        }
+    }
+
+    if (!plugin) { notify(executor, T("No plugin found!")); return; }
+    if (!plugin->info) { notify(executor, T("Plugin has no information associated with it!")); return; }
+
+    if (plugin && plugin->info) {
+        notify_format(executor, "%13s %-65s", "Name:", plugin->info->name);
+        notify_format(executor, "%13s %-65s", "Version:", plugin->info->app_version);
+        notify_format(executor, "%13s %-65s", "Author:", plugin->info->author);
+        notify_format(executor, "%13s %-65s", "Description:", plugin->info->description);
+        notify_format(executor, "%13s %-65s", "File:", plugin->file);
     }
 }

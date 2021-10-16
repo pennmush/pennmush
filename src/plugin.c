@@ -114,12 +114,13 @@ void load_plugins() {
       plugin->info = mush_malloc(sizeof(PLUGIN_INFO), "plugin_info");
       plugin->info = info_plugin();
 
+        plugin->name = mush_malloc(sizeof(char *), "plugin_name");
       plugin->name = plugin->info->name;
       plugin->file = in_file->d_name;
 
       do_rawlog(LT_ERR, "Plugin: %s by %s version %s", plugin->info->name, plugin->info->author, plugin->info->app_version);
 
-      hash_add(&plugins, plugin->name, plugin);
+      hash_add(&plugins, in_file->d_name, plugin);
 
       init_plugin();
     }
@@ -170,19 +171,12 @@ void unload_plugins()
  *  - unload requires the plugin name (as found in 'list')
  */
 COMMAND(cmd_plugin) {
-    PENN_PLUGIN *plugin;
     if (SW_ISSET(sw, SWITCH_ACTIVE)) {
 
     } else if (SW_ISSET(sw, SWITCH_INFO)) {
 
     } else if (SW_ISSET(sw, SWITCH_LIST)) {
-      notify_format(executor, "ID  Plugin Name                   Active? Description                         ");
-
-      for (plugin = hash_firstentry(&plugins); plugin; plugin = hash_nextentry(&plugins)) {
-        if (plugin->handle) {
-          notify_format(executor, "%3d %-29s %-7s %-36s", 0, plugin->name, "YES", plugin->info->shortdesc);
-        }
-      }
+      do_list_plugins(executor, sw);
     } else if (SW_ISSET(sw, SWITCH_LOAD)) {
 
     } else if (SW_ISSET(sw, SWITCH_RELOAD)) {
@@ -191,5 +185,35 @@ COMMAND(cmd_plugin) {
 
     } else {
         /* Probably do the same as SWITCH_INFO? */
+    }
+}
+
+/**
+ * Free the memory being used by a plugin when removing
+ * it from the hashtab
+ * 
+ * \param executor Who ran the @plugin command
+ * \param sw The switch that was used with @plugin
+ */
+void do_list_plugins(dbref executor, switch_mask sw) {
+    PENN_PLUGIN *plugin;
+    DIR *pluginsDir;
+    struct dirent *in_file;
+
+    notify_format(executor, "ID Plugin Name                   Active? Description                          ");
+
+    if (NULL != (pluginsDir = opendir(options.plugins_dir))) {
+        while ((in_file = readdir(pluginsDir))) {
+            if (!strcmp(in_file->d_name, ".")) continue;
+            if (!strcmp(in_file->d_name, "..")) continue;
+            if (!strstr(in_file->d_name, ".so")) continue;
+
+            plugin = hashfind(in_file->d_name, &plugins);
+            if (plugin && plugin->handle) {
+                notify_format(executor, "%2d %-29s %-7s %-37s", 0, plugin->name, "YES", plugin->info->shortdesc);
+            } else {
+                notify_format(executor, "%2d %-29s %-7s %-37s", 0, in_file->d_name, "NO", "");
+            }
+        }
     }
 }

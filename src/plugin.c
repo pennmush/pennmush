@@ -26,6 +26,8 @@
 
 HASHTAB plugins;
 
+int plugin_id = 1;
+
 /**
  * Free the memory being used by a plugin when removing
  * it from the hashtab
@@ -57,8 +59,9 @@ void do_real_unload_plugin(PENN_PLUGIN *plugin) {
  * do_reload_plugin, and load_plugins.
  * 
  * \param filename The filename of the plugin you want to load. eg. ../plugins/test.so
+ * \return int 0 for plugin loaded, -1 for plugin not loaded
  */
-void do_real_load_plugin(char filename[256]) {
+int do_real_load_plugin(char filename[256]) {
     typedef int plugin_init();
     typedef void *get_plugin();
 
@@ -71,16 +74,15 @@ void do_real_load_plugin(char filename[256]) {
     PENN_PLUGIN *plugin;
 
     int plugin_name_return = 0;
-    int i = 1;
 
     memset(plugin_file, 0, strlen(plugin_file));
     plugin_name_return = snprintf(plugin_file, sizeof(plugin_file), "%s/%s", options.plugins_dir, filename);
-    if (plugin_name_return < 0) return;
+    if (plugin_name_return < 0) return -1;
 
     do_rawlog(LT_ERR, "Found plugin: %s ", plugin_file);
 
     handle = dlopen(plugin_file, RTLD_LAZY);
-    if (handle == NULL) return;
+    if (handle == NULL) return -1;
 
     do_rawlog(LT_ERR, "Opened plugin: %s", plugin_file);
 
@@ -88,14 +90,14 @@ void do_real_load_plugin(char filename[256]) {
     if (info_plugin == NULL) {
         do_rawlog(LT_ERR, "Missing get_plugin: %s", plugin_file);
         dlclose(handle);
-        return;
+        return -1;
     }
 
     init_plugin = dlsym(handle, "plugin_init");
     if (init_plugin == NULL) {
         do_rawlog(LT_ERR, "Missing plugin_init: %s", plugin_file);
         dlclose(handle);
-        return;
+        return -1;
     }
 
     plugin = mush_malloc(sizeof(PENN_PLUGIN), "penn_plugin");
@@ -107,15 +109,17 @@ void do_real_load_plugin(char filename[256]) {
     plugin->name = mush_malloc(sizeof(char *), "plugin_name");
     plugin->name = plugin->info->name;
     strcpy(plugin->file, filename);
-    plugin->id = i;
+    plugin->id = plugin_id;
 
-    i++;
+    plugin_id++;
 
     do_rawlog(LT_ERR, "Plugin: %s by %s version %s", plugin->info->name, plugin->info->author, plugin->info->app_version);
 
     hash_add(&plugins, filename, plugin);
 
     init_plugin();
+
+    return 0;
 }
 
 /** 
@@ -144,6 +148,7 @@ void do_real_load_plugin(char filename[256]) {
 void load_plugins() {
   DIR *pluginsDir;
   struct dirent *in_file;
+  int retval;
 
   hash_init(&plugins, 1, free_plugin);
 
@@ -153,7 +158,7 @@ void load_plugins() {
       if (!strcmp(in_file->d_name, "..")) continue;
       if (!strstr(in_file->d_name, ".so")) continue;
 
-      do_real_load_plugin(in_file->d_name);
+      retval = do_real_load_plugin(in_file->d_name);
     }
 
     closedir(pluginsDir);
@@ -214,7 +219,15 @@ void do_list_plugins(dbref executor, switch_mask sw) {
     DIR *pluginsDir;
     struct dirent *in_file;
 
-    notify_format(executor, "ID Plugin Name                   Active? Description                          ");
+    //notify_format(executor, "----------------------------------- LOADED -----------------------------------\n");
+    notify_format(executor, "ID Plugin Name                       Description                              ");
+
+    for (plugin = hash_firstentry(&plugins); plugin; plugin = hash_nextentry(&plugins)) {
+        notify_format(executor, "%2d %-33s %-41s", plugin->id, plugin->name, plugin->info->shortdesc);
+    }
+
+/*     notify_format(executor, "\n--------------------------------- NOT LOADED ---------------------------------\n");
+    notify_format(executor, "ID Plugin Name                       Description                              "); */
 
     if (NULL != (pluginsDir = opendir(options.plugins_dir))) {
         while ((in_file = readdir(pluginsDir))) {
@@ -222,12 +235,8 @@ void do_list_plugins(dbref executor, switch_mask sw) {
             if (!strcmp(in_file->d_name, "..")) continue;
             if (!strstr(in_file->d_name, ".so")) continue;
 
-            plugin = hashfind(in_file->d_name, &plugins);
-            if (plugin && plugin->handle) {
-                notify_format(executor, "%2d %-29s %-7s %-37s", plugin->id, plugin->name, "YES", plugin->info->shortdesc);
-            } else {
-
-                notify_format(executor, "%2d %-29s %-7s %-37s", 0, in_file->d_name, "NO", "");
+            if (!hashfind(in_file->d_name, &plugins)) {
+                notify_format(executor, "%2d %-33s %-41s", 0, in_file->d_name, "** NOT CURRENTLY LOADED **");
             }
         }
 
@@ -236,23 +245,25 @@ void do_list_plugins(dbref executor, switch_mask sw) {
 }
 
 void do_load_plugin(dbref executor, char filename[256]) {
-    DIR *pluginsDir;
-    struct dirent *in_file;
     char fullpath[256];
-    char *path;
     int retval;
 
     if (!strstr(filename, ".so")) { filename = strcat(filename, ".so"); }
 
     memset(fullpath, 0, sizeof(fullpath));
-    snprintf(fullpath, sizeof(fullpath), "%s/%s", options.plugins_dir, filename);
+    retval = snprintf(fullpath, sizeof(fullpath), "%s/%s", options.plugins_dir, filename);
+    if ( retval < 0 ) return;
 
     struct stat buffer;
     retval = stat(fullpath, &buffer);
 
     if ( retval != 0 ) return;
 
-    do_real_load_plugin(filename);
+    retval = do_real_load_plugin(filename);
+
+    if (retval == 0) {
+        notify(executor, "Plugin loaded!");
+    }
 }
 
 /**
@@ -287,6 +298,7 @@ void show_plugin_info(dbref executor, int id) {
 void do_reload_plugin(dbref executor, int id) {
     PENN_PLUGIN *plugin = get_plugin_by_id(id);
     char file[256];
+    int retval;
 
     if (!plugin) { notify(executor, T("No plugin found!")); return; }
     if (!plugin->info) { notify(executor, T("Plugin has no information associated with it!")); return; }
@@ -297,7 +309,11 @@ void do_reload_plugin(dbref executor, int id) {
     do_real_unload_plugin(plugin);
 
     /* Open a new handle to the plugin and add it to the hashtab */
-    do_real_load_plugin(file);
+    retval = do_real_load_plugin(file);
+
+    if (retval == 0) {
+        notify(executor, "Plugin reloaded!");
+    }
 }
 
 /**
@@ -317,6 +333,8 @@ void do_unload_plugin(dbref executor, int id) {
 
     /* Close the handle to the plugin and delete it from the hashtab */
     do_real_unload_plugin(plugin);
+
+    notify(executor, "Plugin unloaded!");
 }
 
 /**

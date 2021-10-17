@@ -190,12 +190,36 @@ COMMAND(cmd_plugin) {
     } else if (SW_ISSET(sw, SWITCH_LOAD)) {
 
     } else if (SW_ISSET(sw, SWITCH_RELOAD)) {
-
+        if (sscanf(arg_left, "%d", &plugin_id) != 1) {
+            notify(executor, T("Invalid plugin id!"));
+        } else {
+            do_reload_plugin(executor, plugin_id);
+        }
     } else if (SW_ISSET(sw, SWITCH_UNLOAD)) {
 
     } else {
         /* Probably do the same as SWITCH_INFO? */
     }
+}
+
+/**
+ * Get the plugin by its id.
+ *
+ * \param id The id of the plugin
+ * \return plugin The plugin found or null if it can't be found
+ */
+PENN_PLUGIN* get_plugin_by_id(int id) {
+    PENN_PLUGIN *plugin = NULL;
+
+    if (id == 0) return NULL; /* ID of 0 means the plugin hasn't been loaded into penn */
+
+    for (plugin = hash_firstentry(&plugins); plugin; plugin = hash_nextentry(&plugins)) {
+        if ( plugin->id == id ) {
+            break;
+        }
+    }
+
+    return plugin;
 }
 
 /**
@@ -235,15 +259,7 @@ void do_list_plugins(dbref executor, switch_mask sw) {
  * \param id The id of the plugin as found in @plugin/list
  */
 void show_plugin_info(dbref executor, int id) {
-    PENN_PLUGIN *plugin;
-
-    if (id == 0) return; /* ID of 0 means the plugin hasn't been loaded into penn */
-
-    for (plugin = hash_firstentry(&plugins); plugin; plugin = hash_nextentry(&plugins)) {
-        if ( plugin->id == id ) {
-            break;
-        }
-    }
+    PENN_PLUGIN *plugin = get_plugin_by_id(id);
 
     if (!plugin) { notify(executor, T("No plugin found!")); return; }
     if (!plugin->info) { notify(executor, T("Plugin has no information associated with it!")); return; }
@@ -255,4 +271,26 @@ void show_plugin_info(dbref executor, int id) {
         notify_format(executor, "%13s %-65s", "Description:", plugin->info->description);
         notify_format(executor, "%13s %-65s", "File:", plugin->file);
     }
+}
+
+/**
+ * Reload an already loaded plugin. Can be because of changes
+ * made to the plugin itself, or because the plugin was unloaded
+ * in order to disable it.
+ * 
+ * \param executor Who ran the @plugin command
+ * \param id The id of the plugin as found in @plugin/list
+ */
+void do_reload_plugin(dbref executor, int id) {
+    PENN_PLUGIN *plugin = get_plugin_by_id(id);
+
+    if (!plugin) { notify(executor, T("No plugin found!")); return; }
+    if (!plugin->info) { notify(executor, T("Plugin has no information associated with it!")); return; }
+
+    /* Close the handle to the plugin and delete it from the hashtab */
+    dlclose(plugin->handle);
+    hash_delete(&plugins, plugin->name);
+
+    /* Open a new handle to the plugin and add it to the hashtab */
+    
 }

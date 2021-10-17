@@ -38,7 +38,7 @@ void free_plugin(void *ptr) {
 
 void do_real_unload_plugin(PENN_PLUGIN *plugin) {
     dlclose(plugin->handle);
-    hash_delete(&plugins, plugin->name);
+    hash_delete(&plugins, plugin->file);
 }
 
 void do_real_load_plugin(char filename[256]) {
@@ -162,52 +162,6 @@ void unload_plugins()
   }
 }
 
-/**
- * In-game command for dealing with plugins.
- * 
- * Command will deal with the following things:
- *  - active - List currently active plugins
- *  - info - Display information about an active plugin
- *  - list - List all plugins in the plugins directory
- *  - load - Load a plugin
- *  - reload - Reload an active plugin (combines unload and load together)
- *  - unload - Unload an active plugin
- * 
- * Arguments for commands:
- *  - active requires no arguments
- *  - info requires the plugin name (as found in 'list' or 'active')
- *  - list requires no arguments
- *  - load requires the plugin name (as found in 'list')
- *  - reload requires the plugin name (as found in 'list')
- *  - unload requires the plugin name (as found in 'list')
- */
-COMMAND(cmd_plugin) {
-    int plugin_id;
-
-    if (SW_ISSET(sw, SWITCH_ACTIVE)) {
-
-    } else if (SW_ISSET(sw, SWITCH_INFO)) {
-        if (sscanf(arg_left, "%d", &plugin_id) != 1) {
-            notify(executor, T("Invalid plugin id!"));
-        } else {
-            show_plugin_info(executor, plugin_id);
-        }
-    } else if (SW_ISSET(sw, SWITCH_LIST)) {
-      do_list_plugins(executor, sw);
-    } else if (SW_ISSET(sw, SWITCH_LOAD)) {
-
-    } else if (SW_ISSET(sw, SWITCH_RELOAD)) {
-        if (sscanf(arg_left, "%d", &plugin_id) != 1) {
-            notify(executor, T("Invalid plugin id!"));
-        } else {
-            do_reload_plugin(executor, plugin_id);
-        }
-    } else if (SW_ISSET(sw, SWITCH_UNLOAD)) {
-
-    } else {
-        /* Probably do the same as SWITCH_INFO? */
-    }
-}
 
 /**
  * Get the plugin by its id.
@@ -302,4 +256,68 @@ void do_reload_plugin(dbref executor, int id) {
 
     /* Open a new handle to the plugin and add it to the hashtab */
     do_real_load_plugin(file);
+}
+
+void do_unload_plugin(dbref executor, int id) {
+    PENN_PLUGIN *plugin = get_plugin_by_id(id);
+    char file[256];
+
+    if (!plugin) { notify(executor, T("No plugin found!")); return; }
+    if (!plugin->info) { notify(executor, T("Plugin has no information associated with it!")); return; }
+
+    strcpy(file, plugin->file);
+
+    /* Close the handle to the plugin and delete it from the hashtab */
+    do_real_unload_plugin(plugin);
+}
+
+/**
+ * In-game command for dealing with plugins.
+ * 
+ * Command will deal with the following things:
+ *  - active - List currently active plugins
+ *  - info - Display information about an active plugin
+ *  - list - List all plugins in the plugins directory
+ *  - load - Load a plugin
+ *  - reload - Reload an active plugin (combines unload and load together)
+ *  - unload - Unload an active plugin
+ * 
+ * Arguments for commands:
+ *  - active requires no arguments
+ *  - info requires the plugin name (as found in 'list' or 'active')
+ *  - list requires no arguments
+ *  - load requires the plugin name (as found in 'list')
+ *  - reload requires the plugin name (as found in 'list')
+ *  - unload requires the plugin name (as found in 'list')
+ */
+COMMAND(cmd_plugin) {
+    int plugin_id;
+
+    if (SW_ISSET(sw, SWITCH_ACTIVE)) {
+
+    } else if (SW_ISSET(sw, SWITCH_INFO)) {
+        if (sscanf(arg_left, "%d", &plugin_id) != 1) {
+            notify(executor, T("Invalid plugin id!"));
+        } else {
+            show_plugin_info(executor, plugin_id);
+        }
+    } else if (SW_ISSET(sw, SWITCH_LIST)) {
+      do_list_plugins(executor, sw);
+    } else if (SW_ISSET(sw, SWITCH_LOAD)) {
+
+    } else if (SW_ISSET(sw, SWITCH_RELOAD)) {
+        if (sscanf(arg_left, "%d", &plugin_id) != 1) {
+            notify(executor, T("Invalid plugin id!"));
+        } else {
+            do_reload_plugin(executor, plugin_id);
+        }
+    } else if (SW_ISSET(sw, SWITCH_UNLOAD)) {
+        if (sscanf(arg_left, "%d", &plugin_id) != 1) {
+            notify(executor, T("Invalid plugin id!"));
+        } else {
+            do_unload_plugin(executor, plugin_id);
+        }
+    } else {
+        /* Probably do the same as SWITCH_INFO? */
+    }
 }

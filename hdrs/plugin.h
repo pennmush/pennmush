@@ -19,7 +19,7 @@ typedef struct plugin_info {
 typedef struct penn_plugin {
   void* handle;
   char *name;
-  char *file;
+  char file[256];
   int id;
   PLUGIN_INFO *info;
 } PENN_PLUGIN;

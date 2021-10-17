@@ -36,6 +36,71 @@ void free_plugin(void *ptr) {
     mush_free(p, "penn_plugin");
 }
 
+void do_real_unload_plugin(PENN_PLUGIN *plugin) {
+    dlclose(plugin->handle);
+    hash_delete(&plugins, plugin->name);
+}
+
+void do_real_load_plugin(char filename[256]) {
+    typedef int plugin_init();
+    typedef void *get_plugin();
+
+    char plugin_file[256];
+
+    void *handle;
+    plugin_init *init_plugin;
+    get_plugin *info_plugin;
+
+    PENN_PLUGIN *plugin;
+
+    int plugin_name_return = 0;
+    int i = 1;
+
+    memset(plugin_file, 0, strlen(plugin_file));
+    plugin_name_return = snprintf(plugin_file, sizeof(plugin_file), "%s/%s", options.plugins_dir, filename);
+    if (plugin_name_return < 0) return;
+
+    do_rawlog(LT_ERR, "Found plugin: %s ", plugin_file);
+
+    handle = dlopen(plugin_file, RTLD_LAZY);
+    if (handle == NULL) return;
+
+    do_rawlog(LT_ERR, "Opened plugin: %s", plugin_file);
+
+    info_plugin = dlsym(handle, "get_plugin");
+    if (info_plugin == NULL) {
+        do_rawlog(LT_ERR, "Missing get_plugin: %s", plugin_file);
+        dlclose(handle);
+        return;
+    }
+
+    init_plugin = dlsym(handle, "plugin_init");
+    if (init_plugin == NULL) {
+        do_rawlog(LT_ERR, "Missing plugin_init: %s", plugin_file);
+        dlclose(handle);
+        return;
+    }
+
+    plugin = mush_malloc(sizeof(PENN_PLUGIN), "penn_plugin");
+    plugin->handle = &handle;
+
+    plugin->info = mush_malloc(sizeof(PLUGIN_INFO), "plugin_info");
+    plugin->info = info_plugin();
+
+    plugin->name = mush_malloc(sizeof(char *), "plugin_name");
+    plugin->name = plugin->info->name;
+    strcpy(plugin->file, filename);
+    plugin->id = i;
+
+    i++;
+
+    do_rawlog(LT_ERR, "Plugin: %s by %s version %s", plugin->info->name, plugin->info->author, plugin->info->app_version);
+
+    hash_add(&plugins, filename, plugin);
+
+    init_plugin();
+}
+
 /** 
  * Loop through all the .so files found in the
  * plugins directory, and for each one found
@@ -60,21 +125,8 @@ void free_plugin(void *ptr) {
  *
  */
 void load_plugins() {
-  typedef int plugin_init();
-  typedef void *get_plugin();
-
   DIR *pluginsDir;
   struct dirent *in_file;
-  char plugin_file[256];
-
-  void *handle;
-  plugin_init *init_plugin;
-  get_plugin *info_plugin;
-
-  PENN_PLUGIN *plugin;
-
-  int plugin_name_return = 0;
-  int i = 1;
 
   hash_init(&plugins, 1, free_plugin);
 
@@ -84,49 +136,7 @@ void load_plugins() {
       if (!strcmp(in_file->d_name, "..")) continue;
       if (!strstr(in_file->d_name, ".so")) continue;
 
-      memset(plugin_file, 0, strlen(plugin_file));
-      plugin_name_return = snprintf(plugin_file, sizeof(plugin_file), "%s/%s", options.plugins_dir, in_file->d_name);
-      if (plugin_name_return < 0) continue;
-
-      do_rawlog(LT_ERR, "Found plugin: %s ", plugin_file);
-
-      handle = dlopen(plugin_file, RTLD_LAZY);
-      if (handle == NULL) continue;
-
-      do_rawlog(LT_ERR, "Opened plugin: %s", plugin_file);
-
-      info_plugin = dlsym(handle, "get_plugin");
-      if (info_plugin == NULL) {
-        do_rawlog(LT_ERR, "Missing get_plugin: %s", plugin_file);
-        dlclose(handle);
-        continue;
-      }
-
-      init_plugin = dlsym(handle, "plugin_init");
-      if (init_plugin == NULL) {
-        do_rawlog(LT_ERR, "Missing plugin_init: %s", plugin_file);
-        dlclose(handle);
-        continue;
-      }
-
-      plugin = mush_malloc(sizeof(PENN_PLUGIN), "penn_plugin");
-      plugin->handle = &handle;
-
-      plugin->info = mush_malloc(sizeof(PLUGIN_INFO), "plugin_info");
-      plugin->info = info_plugin();
-
-        plugin->name = mush_malloc(sizeof(char *), "plugin_name");
-      plugin->name = plugin->info->name;
-      plugin->file = in_file->d_name;
-      plugin->id = i;
-
-        i++;
-
-      do_rawlog(LT_ERR, "Plugin: %s by %s version %s", plugin->info->name, plugin->info->author, plugin->info->app_version);
-
-      hash_add(&plugins, in_file->d_name, plugin);
-
-      init_plugin();
+      do_real_load_plugin(in_file->d_name);
     }
   }
 }
@@ -148,10 +158,7 @@ void unload_plugins()
   PENN_PLUGIN *plugin;
 
   for (plugin = hash_firstentry(&plugins); plugin; plugin = hash_nextentry(&plugins)) {
-    if (plugin->handle) {
-      dlclose(plugin->handle);
-      hash_delete(&plugins, plugin->name);
-    }
+    if (plugin->handle) do_real_unload_plugin(plugin);
   }
 }
 
@@ -283,14 +290,16 @@ void show_plugin_info(dbref executor, int id) {
  */
 void do_reload_plugin(dbref executor, int id) {
     PENN_PLUGIN *plugin = get_plugin_by_id(id);
+    char file[256];
 
     if (!plugin) { notify(executor, T("No plugin found!")); return; }
     if (!plugin->info) { notify(executor, T("Plugin has no information associated with it!")); return; }
 
+    strcpy(file, plugin->file);
+
     /* Close the handle to the plugin and delete it from the hashtab */
-    dlclose(plugin->handle);
-    hash_delete(&plugins, plugin->name);
+    do_real_unload_plugin(plugin);
 
     /* Open a new handle to the plugin and add it to the hashtab */
-    
+    do_real_load_plugin(file);
 }

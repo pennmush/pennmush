@@ -239,15 +239,18 @@ void do_load_plugin(dbref executor, char filename[256]) {
     DIR *pluginsDir;
     struct dirent *in_file;
     char fullpath[256];
+    char *path;
     int retval;
 
     if (!strstr(filename, ".so")) { filename = strcat(filename, ".so"); }
 
-    retval = snprintf(fullpath, sizeof(fullpath), "%s/%s", options.plugins_dir, filename);
-    if (retval < 0) return;
+    memset(fullpath, 0, sizeof(fullpath));
+    snprintf(fullpath, sizeof(fullpath), "%s/%s", options.plugins_dir, filename);
 
     struct stat buffer;
-    if (stat(fullpath, &buffer != 0)) return;
+    retval = stat(fullpath, &buffer);
+
+    if ( retval != 0 ) return;
 
     do_real_load_plugin(filename);
 }

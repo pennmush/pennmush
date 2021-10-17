@@ -22,6 +22,7 @@
 #include <dirent.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/stat.h>
 
 HASHTAB plugins;
 
@@ -237,23 +238,18 @@ void do_list_plugins(dbref executor, switch_mask sw) {
 void do_load_plugin(dbref executor, char filename[256]) {
     DIR *pluginsDir;
     struct dirent *in_file;
+    char fullpath[256];
+    int retval;
 
     if (!strstr(filename, ".so")) { filename = strcat(filename, ".so"); }
 
-    if (NULL != (pluginsDir = opendir(options.plugins_dir))) {
-        while ((in_file = readdir(pluginsDir))) {
-            if (!strcmp(in_file->d_name, ".")) continue;
-            if (!strcmp(in_file->d_name, "..")) continue;
-            if (!strstr(in_file->d_name, ".so")) continue;
+    retval = snprintf(fullpath, sizeof(fullpath), "%s/%s", options.plugins_dir, filename);
+    if (retval < 0) return;
 
-            if (strcmp(in_file->d_name, filename)) {
-                do_real_load_plugin(in_file->d_name);
-                break;
-            }
-        }
+    struct stat buffer;
+    if (stat(fullpath, &buffer != 0)) return;
 
-        closedir(pluginsDir);
-    }
+    do_real_load_plugin(filename);
 }
 
 /**

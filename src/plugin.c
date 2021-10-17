@@ -36,11 +36,27 @@ void free_plugin(void *ptr) {
     mush_free(p, "penn_plugin");
 }
 
+/**
+ * Helper function for unloading a plugin.
+ * 
+ * Function gets called by do_unload_plugin,
+ * do_reload_plugin, and unload_plugins.
+ * 
+ * \param plugin A pointer to the plugin to be unloaded.
+ */
 void do_real_unload_plugin(PENN_PLUGIN *plugin) {
     dlclose(plugin->handle);
     hash_delete(&plugins, plugin->file);
 }
 
+/**
+ * Helper function for loading a plugin.
+ * 
+ * Function gets called by do_load_plugin,
+ * do_reload_plugin, and load_plugins.
+ * 
+ * \param filename The filename of the plugin you want to load. eg. ../plugins/test.so
+ */
 void do_real_load_plugin(char filename[256]) {
     typedef int plugin_init();
     typedef void *get_plugin();
@@ -138,6 +154,8 @@ void load_plugins() {
 
       do_real_load_plugin(in_file->d_name);
     }
+
+    closedir(pluginsDir);
   }
 }
 
@@ -207,9 +225,34 @@ void do_list_plugins(dbref executor, switch_mask sw) {
             if (plugin && plugin->handle) {
                 notify_format(executor, "%2d %-29s %-7s %-37s", plugin->id, plugin->name, "YES", plugin->info->shortdesc);
             } else {
+
                 notify_format(executor, "%2d %-29s %-7s %-37s", 0, in_file->d_name, "NO", "");
             }
         }
+
+        closedir(pluginsDir);
+    }
+}
+
+void do_load_plugin(dbref executor, char filename[256]) {
+    DIR *pluginsDir;
+    struct dirent *in_file;
+
+    if (!strstr(filename, ".so")) { filename = strcat(filename, ".so"); }
+
+    if (NULL != (pluginsDir = opendir(options.plugins_dir))) {
+        while ((in_file = readdir(pluginsDir))) {
+            if (!strcmp(in_file->d_name, ".")) continue;
+            if (!strcmp(in_file->d_name, "..")) continue;
+            if (!strstr(in_file->d_name, ".so")) continue;
+
+            if (strcmp(in_file->d_name, filename)) {
+                do_real_load_plugin(in_file->d_name);
+                break;
+            }
+        }
+
+        closedir(pluginsDir);
     }
 }
 
@@ -258,6 +301,12 @@ void do_reload_plugin(dbref executor, int id) {
     do_real_load_plugin(file);
 }
 
+/**
+ * Unload a specific plugin.
+ * 
+ * \param executor Who ran the @plugin command
+ * \param id The id of the plugin as found in @plugin/list
+ */
 void do_unload_plugin(dbref executor, int id) {
     PENN_PLUGIN *plugin = get_plugin_by_id(id);
     char file[256];
@@ -304,7 +353,7 @@ COMMAND(cmd_plugin) {
     } else if (SW_ISSET(sw, SWITCH_LIST)) {
       do_list_plugins(executor, sw);
     } else if (SW_ISSET(sw, SWITCH_LOAD)) {
-
+        do_load_plugin(executor, arg_left);
     } else if (SW_ISSET(sw, SWITCH_RELOAD)) {
         if (sscanf(arg_left, "%d", &plugin_id) != 1) {
             notify(executor, T("Invalid plugin id!"));
@@ -318,6 +367,10 @@ COMMAND(cmd_plugin) {
             do_unload_plugin(executor, plugin_id);
         }
     } else {
-        /* Probably do the same as SWITCH_INFO? */
+        if (sscanf(arg_left, "%d", &plugin_id) != 1) {
+            notify(executor, T("Invalid plugin id!"));
+        } else {
+            show_plugin_info(executor, plugin_id);
+        }
     }
 }

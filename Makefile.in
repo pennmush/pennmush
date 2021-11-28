@@ -1,4 +1,4 @@
-# Makefile for PennMUSH 
+# Makefile for PennMUSH
 
 # - System configuration - #
 
@@ -21,7 +21,7 @@ SQL_CFLAGS=@MYSQL_CFLAGS@ @POSTGRESQL_CPPFLAGS@
 SQL_LDFLAGS=@MYSQL_LDFLAGS@ @POSTGRESQL_LDFLAGS@
 
 CCFLAGS=@CFLAGS@ -I.. -I../hdrs -include ../config.h -include ../confmagic.h -include ../options.h @PTHREAD_CFLAGS@ @CPPFLAGS@ @ICU_CPPFLAGS@ @OPENSSL_INCLUDES@ @CURL_CFLAGS@
-LDFLAGS=@LDFLAGS@  @OPENSSL_LDFLAGS@ 
+LDFLAGS=@LDFLAGS@  @OPENSSL_LDFLAGS@
 CLIBS=@PTHREAD_LIBS@ @LIBS@ @ICU_LIBS@ @OPENSSL_LIBS@ @POSTGRESQL_LIBS@ @CURL_LIBS@
 INSTALL=@INSTALL@
 INSTALLDIR=$installdir
@@ -34,7 +34,7 @@ SHELL=/bin/sh
 # Where to install with 'make globalinstall'
 GLOBAL_INSTALL=@libexecdir@
 
-PCRE2_DIR=pcre2-10.35
+PCRE2_DIR=pcre2-10.39
 
 
 all: config.h autogen game/mush.cnf
@@ -80,14 +80,14 @@ hdrs/gitinfo.h: $(wildcard .git/HEAD .git/index)
 	@echo "/* Built at `date +%Y%m%d%H%M%S` */" >> hdrs/gitinfo.h
 
 install: localized all
-	@if [ -f game/netmush ]; then rm -f game/netmush; fi	
-	@if [ -f game/info_slave ]; then rm -f game/info_slave; fi	
-	@if [ -f game/ssl_slave ]; then rm -f game/ssl_slave; fi	
+	@if [ -f game/netmush ]; then rm -f game/netmush; fi
+	@if [ -f game/info_slave ]; then rm -f game/info_slave; fi
+	@if [ -f game/ssl_slave ]; then rm -f game/ssl_slave; fi
 	-(cd game; $(INSTALL_LINKS))
 	(cd game/txt; @MAKE@)
 	@echo "If you plan to run multiple MUSHes, consider running 'make customize'"
 
-netmud: 
+netmud:
 	(cd src; @MAKE@ netmud "CC=$(CC)" "CCFLAGS=$(CCFLAGS)" \
 	"SQL_CFLAGS=$(SQL_CFLAGS)" "SQL_LDFLAGS=$(SQL_LDFLAGS)" \
 	"LDFLAGS=$(LDFLAGS)" "CLIBS=$(CLIBS)" )
@@ -182,7 +182,7 @@ clean:
 	(cd src; @MAKE@ clean)
 	(cd game; rm -f netmush info_slave)
 
-distclean: 
+distclean:
 	(cd hdrs; rm -f *.orig *~ \#* *.rej *.bak funs.h cmds.h gitinfo.h buildinf.h)
 	(cd utils; rm -f *.orig *~ \#* *.rej *.bak mkcmds.sh *.o)
 	(cd game; rm -rf *.log netmush info_slave *.orig *.rej *~ *.bak mush.cnf restart)
@@ -190,12 +190,12 @@ distclean:
 	(cd game/txt; @MAKE@ clean)
 	(rm -rf .config Makefile config.h config.sh)
 
-totallyclean: distclean 
+totallyclean: distclean
 	(cd hdrs; rm -rf *.rej)
 	(cd src; rm -rf *.rej)
 	-rm -f Makefile
 
-etags: 
+etags:
 	(cd src; @MAKE@ etags)
 
 ctags:
@@ -222,5 +222,3 @@ globalinstall: install
 
 htmldoc:
 	cd htmldoc && make
-
-

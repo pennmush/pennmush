@@ -82,9 +82,15 @@ int do_real_load_plugin(char filename[256]) {
     do_rawlog(LT_ERR, "Found plugin: %s ", plugin_file);
 
     handle = dlopen(plugin_file, RTLD_LAZY);
-    if (handle == NULL) return -1;
+    if (handle == NULL) {
+        do_rawlog(LT_ERR, "Could not load plugin: %s", plugin_file);
+        do_rawlog(LT_ERR, "Reason: %s", dlerror());
+        return -1;
+    }
 
     do_rawlog(LT_ERR, "Opened plugin: %s", plugin_file);
+
+    dlerror(); /* Clear any existing error */
 
     info_plugin = dlsym(handle, "get_plugin");
     if (info_plugin == NULL) {

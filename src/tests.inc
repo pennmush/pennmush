@@ -1,13 +1,13 @@
 /* Auto-generated file. DO NOT EDIT */
-void test_is_integer(int *, int *);
 void test_switch_find(int *, int *);
 void test_split_token(int *, int *);
+void test_is_integer(int *, int *);
 void test_next_token(int *, int *);
-void test_is_boolean(int *, int *);
 void test_switchmask(int *, int *);
 void test_remove_word(int *, int *);
-void test_SW_BY_NAME(int *, int *);
+void test_is_boolean(int *, int *);
 void test_do_wordcount(int *, int *);
+void test_SW_BY_NAME(int *, int *);
 void test_chopstr(int *, int *);
 void test_copy_up_to(int *, int *);
 void test_escape_like(int *, int *);
@@ -42,15 +42,15 @@ struct test_record {
 #define TEST_SKIPME 3
 
 static struct test_record tests[] = {
-{"is_integer", test_is_integer, "||", TEST_NOT_RUN},
 {"switch_find", test_switch_find, "||", TEST_NOT_RUN},
 {"split_token", test_split_token, "||", TEST_NOT_RUN},
+{"is_integer", test_is_integer, "||", TEST_NOT_RUN},
 {"next_token", test_next_token, "||", TEST_NOT_RUN},
-{"is_boolean", test_is_boolean, "|is_integer|", TEST_NOT_RUN},
 {"switchmask", test_switchmask, "|switch_find|split_token|", TEST_NOT_RUN},
 {"remove_word", test_remove_word, "|split_token|", TEST_NOT_RUN},
-{"SW_BY_NAME", test_SW_BY_NAME, "|switch_find|switchmask|", TEST_NOT_RUN},
+{"is_boolean", test_is_boolean, "|is_integer|", TEST_NOT_RUN},
 {"do_wordcount", test_do_wordcount, "|next_token|", TEST_NOT_RUN},
+{"SW_BY_NAME", test_SW_BY_NAME, "|switch_find|switchmask|", TEST_NOT_RUN},
 {"chopstr", test_chopstr, "||", TEST_NOT_RUN},
 {"copy_up_to", test_copy_up_to, "||", TEST_NOT_RUN},
 {"escape_like", test_escape_like, "||", TEST_NOT_RUN},

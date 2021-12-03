@@ -61,7 +61,7 @@ void do_real_unload_plugin(PENN_PLUGIN *plugin) {
  * \param filename The filename of the plugin you want to load. eg. ../plugins/test.so
  * \return int 0 for plugin loaded, -1 for plugin not loaded
  */
-int do_real_load_plugin(char filename[256]) {
+char *do_real_load_plugin(char filename[256]) {
     typedef int plugin_init();
     typedef void *get_plugin();
 
@@ -71,21 +71,26 @@ int do_real_load_plugin(char filename[256]) {
     plugin_init *init_plugin;
     get_plugin *info_plugin;
 
+    char *errorVal;
+
     PENN_PLUGIN *plugin;
 
     int plugin_name_return = 0;
 
+    errorVal = mush_malloc(sizeof(char *), "plugin_error_string");
+
     memset(plugin_file, 0, strlen(plugin_file));
     plugin_name_return = snprintf(plugin_file, sizeof(plugin_file), "%s/%s", options.plugins_dir, filename);
-    if (plugin_name_return < 0) return -1;
+    if (plugin_name_return < 0) return NULL;
 
     do_rawlog(LT_ERR, "Found plugin: %s ", plugin_file);
 
     handle = dlopen(plugin_file, RTLD_LAZY);
     if (handle == NULL) {
+        strcpy(errorVal, dlerror());
         do_rawlog(LT_ERR, "Could not load plugin: %s", plugin_file);
-        do_rawlog(LT_ERR, "Reason: %s", dlerror());
-        return -1;
+        do_rawlog(LT_ERR, "Reason: %s", errorVal);
+        return errorVal;
     }
 
     do_rawlog(LT_ERR, "Opened plugin: %s", plugin_file);
@@ -94,17 +99,23 @@ int do_real_load_plugin(char filename[256]) {
 
     info_plugin = dlsym(handle, "get_plugin");
     if (info_plugin == NULL) {
+        strcpy(errorVal, dlerror());
         do_rawlog(LT_ERR, "Missing get_plugin: %s", plugin_file);
         dlclose(handle);
-        return -1;
+        return errorVal;
     }
+
+    dlerror();
 
     init_plugin = dlsym(handle, "plugin_init");
     if (init_plugin == NULL) {
+        strcpy(errorVal, dlerror());
         do_rawlog(LT_ERR, "Missing plugin_init: %s", plugin_file);
         dlclose(handle);
-        return -1;
+        return errorVal;
     }
+
+    dlerror();
 
     plugin = mush_malloc(sizeof(PENN_PLUGIN), "penn_plugin");
     plugin->handle = &handle;
@@ -125,7 +136,7 @@ int do_real_load_plugin(char filename[256]) {
 
     init_plugin();
 
-    return 0;
+    return NULL;
 }
 
 /** 
@@ -154,7 +165,7 @@ int do_real_load_plugin(char filename[256]) {
 void load_plugins() {
   DIR *pluginsDir;
   struct dirent *in_file;
-  int retval;
+  char *errorVal = "\0";
 
   hash_init(&plugins, 1, free_plugin);
 
@@ -164,7 +175,7 @@ void load_plugins() {
       if (!strcmp(in_file->d_name, "..")) continue;
       if (!strstr(in_file->d_name, ".so")) continue;
 
-      retval = do_real_load_plugin(in_file->d_name);
+      errorVal = do_real_load_plugin(in_file->d_name);
     }
 
     closedir(pluginsDir);
@@ -252,6 +263,7 @@ void do_list_plugins(dbref executor, switch_mask sw) {
 
 void do_load_plugin(dbref executor, char filename[256]) {
     char fullpath[256];
+    char *errorVal = "\0";
     int retval;
 
     if (!strstr(filename, ".so")) { filename = strcat(filename, ".so"); }
@@ -265,10 +277,12 @@ void do_load_plugin(dbref executor, char filename[256]) {
 
     if ( retval != 0 ) return;
 
-    retval = do_real_load_plugin(filename);
+    errorVal = do_real_load_plugin(filename);
 
-    if (retval == 0) {
+    if (errorVal == NULL) {
         notify(executor, "Plugin loaded!");
+    } else {
+        notify(executor, errorVal);
     }
 }
 
@@ -304,7 +318,7 @@ void show_plugin_info(dbref executor, int id) {
 void do_reload_plugin(dbref executor, int id) {
     PENN_PLUGIN *plugin = get_plugin_by_id(id);
     char file[256];
-    int retval;
+    char *errorVal = "\0";
 
     if (!plugin) { notify(executor, T("No plugin found!")); return; }
     if (!plugin->info) { notify(executor, T("Plugin has no information associated with it!")); return; }
@@ -315,9 +329,9 @@ void do_reload_plugin(dbref executor, int id) {
     do_real_unload_plugin(plugin);
 
     /* Open a new handle to the plugin and add it to the hashtab */
-    retval = do_real_load_plugin(file);
+    errorVal = do_real_load_plugin(file);
 
-    if (retval == 0) {
+    if (errorVal == NULL) {
         notify(executor, "Plugin reloaded!");
     }
 }

@@ -26,8 +26,6 @@
 
 HASHTAB plugins;
 
-int plugin_id = 1;
-
 /**
  * Free the memory being used by a plugin when removing
  * it from the hashtab
@@ -126,17 +124,26 @@ char *do_real_load_plugin(char filename[256]) {
     plugin->name = mush_malloc(sizeof(char *), "plugin_name");
     plugin->name = plugin->info->name;
     strcpy(plugin->file, filename);
-    plugin->id = plugin_id;
-
-    plugin_id++;
 
     do_rawlog(LT_ERR, "Plugin: %s by %s version %s", plugin->info->name, plugin->info->author, plugin->info->app_version);
 
     hash_add(&plugins, filename, plugin);
 
+    resequence_plugin_ids();
+
     init_plugin();
 
     return NULL;
+}
+
+void resequence_plugin_ids() {
+    PENN_PLUGIN *plugin;
+    int id = 1;
+
+    for (plugin = hash_firstentry(&plugins); plugin; plugin = hash_nextentry(&plugins)) {
+        plugin->id = id;
+        id++;
+    }
 }
 
 /** 
@@ -335,6 +342,7 @@ void do_reload_plugin(dbref executor, int id) {
     errorVal = do_real_load_plugin(file);
 
     if (errorVal == NULL) {
+        resequence_plugin_ids();
         notify(executor, "Plugin reloaded!");
     }
 }
@@ -357,6 +365,7 @@ void do_unload_plugin(dbref executor, int id) {
     /* Close the handle to the plugin and delete it from the hashtab */
     do_real_unload_plugin(plugin);
 
+    resequence_plugin_ids();
     notify(executor, "Plugin unloaded!");
 }
 

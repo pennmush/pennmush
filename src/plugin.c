@@ -105,7 +105,7 @@ char *do_real_load_plugin(char filename[256]) {
         return errorVal;
     }
 
-    dlerror();
+    dlerror(); /* Clear any existing error */
 
     init_plugin = dlsym(handle, "plugin_init");
     if (init_plugin == NULL) {
@@ -115,7 +115,7 @@ char *do_real_load_plugin(char filename[256]) {
         return errorVal;
     }
 
-    dlerror();
+    dlerror(); /* Clear any existing error */
 
     plugin = mush_malloc(sizeof(PENN_PLUGIN), "penn_plugin");
     plugin->handle = &handle;
@@ -225,8 +225,8 @@ PENN_PLUGIN* get_plugin_by_id(int id) {
 }
 
 /**
- * Free the memory being used by a plugin when removing
- * it from the hashtab
+ * List all the plugins found in the plugins directory,
+ * whether they have been loaded or not.
  * 
  * \param executor Who ran the @plugin command
  * \param sw The switch that was used with @plugin
@@ -236,15 +236,12 @@ void do_list_plugins(dbref executor, switch_mask sw) {
     DIR *pluginsDir;
     struct dirent *in_file;
 
-    //notify_format(executor, "----------------------------------- LOADED -----------------------------------\n");
     notify_format(executor, "ID Plugin Name                       Description                              ");
 
     for (plugin = hash_firstentry(&plugins); plugin; plugin = hash_nextentry(&plugins)) {
         notify_format(executor, "%2d %-33s %-41s", plugin->id, plugin->name, plugin->info->shortdesc);
     }
 
-/*     notify_format(executor, "\n--------------------------------- NOT LOADED ---------------------------------\n");
-    notify_format(executor, "ID Plugin Name                       Description                              "); */
 
     if (NULL != (pluginsDir = opendir(options.plugins_dir))) {
         while ((in_file = readdir(pluginsDir))) {
@@ -261,6 +258,12 @@ void do_list_plugins(dbref executor, switch_mask sw) {
     }
 }
 
+/**
+ * @brief Load a plugin into the game using the @plugin/load command
+ * 
+ * @param executor Dbref of the person executing @plugin/load
+ * @param filename The filename of the plugin that we want to load, eg. math.so
+ */
 void do_load_plugin(dbref executor, char filename[256]) {
     char fullpath[256];
     char *errorVal = "\0";
@@ -361,16 +364,14 @@ void do_unload_plugin(dbref executor, int id) {
  * In-game command for dealing with plugins.
  * 
  * Command will deal with the following things:
- *  - active - List currently active plugins
- *  - info - Display information about an active plugin
+ *  - info - Display information about a plugin that has been loaded
  *  - list - List all plugins in the plugins directory
  *  - load - Load a plugin
- *  - reload - Reload an active plugin (combines unload and load together)
- *  - unload - Unload an active plugin
+ *  - reload - Reload a previously loaded plugin (combines unload and load together)
+ *  - unload - Unload a loaded plugin
  * 
  * Arguments for commands:
- *  - active requires no arguments
- *  - info requires the plugin name (as found in 'list' or 'active')
+ *  - info requires the plugin name (as found in 'list')
  *  - list requires no arguments
  *  - load requires the plugin name (as found in 'list')
  *  - reload requires the plugin name (as found in 'list')
@@ -379,9 +380,7 @@ void do_unload_plugin(dbref executor, int id) {
 COMMAND(cmd_plugin) {
     int plugin_id;
 
-    if (SW_ISSET(sw, SWITCH_ACTIVE)) {
-
-    } else if (SW_ISSET(sw, SWITCH_INFO)) {
+    if (SW_ISSET(sw, SWITCH_INFO)) {
         if (sscanf(arg_left, "%d", &plugin_id) != 1) {
             notify(executor, T("Invalid plugin id!"));
         } else {

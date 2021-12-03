@@ -244,11 +244,11 @@ void do_list_plugins(dbref executor, switch_mask sw) {
     struct dirent *in_file;
 
     notify_format(executor, "ID Plugin Name                       Description                              ");
-
+/*
     for (plugin = hash_firstentry(&plugins); plugin; plugin = hash_nextentry(&plugins)) {
         notify_format(executor, "%2d %-33s %-41s", plugin->id, plugin->name, plugin->info->shortdesc);
     }
-
+*/
 
     if (NULL != (pluginsDir = opendir(options.plugins_dir))) {
         while ((in_file = readdir(pluginsDir))) {
@@ -256,8 +256,11 @@ void do_list_plugins(dbref executor, switch_mask sw) {
             if (!strcmp(in_file->d_name, "..")) continue;
             if (!strstr(in_file->d_name, ".so")) continue;
 
-            if (!hashfind(in_file->d_name, &plugins)) {
+            plugin = hashfind(in_file->d_name, &plugins);
+            if (!plugin) {
                 notify_format(executor, "%2d %-33s %-41s", 0, in_file->d_name, "** NOT CURRENTLY LOADED **");
+            } else {
+                notify_format(executor, "%2d %-33s %-41s", plugin->id, plugin->name, plugin->info->shortdesc);
             }
         }
 

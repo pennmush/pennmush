@@ -38,6 +38,21 @@ void free_plugin(void *ptr) {
 }
 
 /**
+ * @brief Resequence all the plugin ids for currently
+ * loaded plugins so that they go 1...n without having gaps
+ * 
+ */
+void resequence_plugin_ids() {
+    PENN_PLUGIN *plugin;
+    int id = 1;
+
+    for (plugin = hash_firstentry(&plugins); plugin; plugin = hash_nextentry(&plugins)) {
+        plugin->id = id;
+        id++;
+    }
+}
+
+/**
  * Helper function for unloading a plugin.
  * 
  * Function gets called by do_unload_plugin,
@@ -136,16 +151,6 @@ char *do_real_load_plugin(char filename[256]) {
     return NULL;
 }
 
-void resequence_plugin_ids() {
-    PENN_PLUGIN *plugin;
-    int id = 1;
-
-    for (plugin = hash_firstentry(&plugins); plugin; plugin = hash_nextentry(&plugins)) {
-        plugin->id = id;
-        id++;
-    }
-}
-
 /** 
  * Loop through all the .so files found in the
  * plugins directory, and for each one found
@@ -236,19 +241,13 @@ PENN_PLUGIN* get_plugin_by_id(int id) {
  * whether they have been loaded or not.
  * 
  * \param executor Who ran the @plugin command
- * \param sw The switch that was used with @plugin
  */
-void do_list_plugins(dbref executor, switch_mask sw) {
+void do_list_plugins(dbref executor) {
     PENN_PLUGIN *plugin;
     DIR *pluginsDir;
     struct dirent *in_file;
 
     notify_format(executor, "ID Plugin Name                       Description                              ");
-/*
-    for (plugin = hash_firstentry(&plugins); plugin; plugin = hash_nextentry(&plugins)) {
-        notify_format(executor, "%2d %-33s %-41s", plugin->id, plugin->name, plugin->info->shortdesc);
-    }
-*/
 
     if (NULL != (pluginsDir = opendir(options.plugins_dir))) {
         while ((in_file = readdir(pluginsDir))) {
@@ -399,7 +398,7 @@ COMMAND(cmd_plugin) {
             show_plugin_info(executor, plugin_id);
         }
     } else if (SW_ISSET(sw, SWITCH_LIST)) {
-      do_list_plugins(executor, sw);
+      do_list_plugins(executor);
     } else if (SW_ISSET(sw, SWITCH_LOAD)) {
         do_load_plugin(executor, arg_left);
     } else if (SW_ISSET(sw, SWITCH_RELOAD)) {
@@ -421,4 +420,8 @@ COMMAND(cmd_plugin) {
             show_plugin_info(executor, plugin_id);
         }
     }
+}
+
+COMMAND(cmd_plugins) {
+    do_list_plugins(executor);
 }

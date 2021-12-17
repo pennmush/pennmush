@@ -11265,10 +11265,10 @@ fi
 $as_echo "$as_me: Configuring PCRE2" >&6;}
 PCRE2_VERSION="10.39"
 PCRE2_TARBALL="pcre2-${PCRE2_VERSION}.tar.gz"
-PCRE2_URL="https://github.com/PhilipHazel/pcre2/releases/download/${PCRE2_TARBALL}"
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for ${PCRE2_VERSION}" >&5
+PCRE2_URL="https://github.com/PhilipHazel/pcre2/releases/download/pcre2-${PCRE2_VERSION}/${PCRE2_TARBALL}"
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for pcre2-${PCRE2_VERSION}" >&5
 $as_echo_n "checking for ${PCRE2_VERSION}... " >&6; }
-if test -d ${PCRE2_VERSION} ; then
+if test -d pcre2-${PCRE2_VERSION} ; then
    { $as_echo "$as_me:${as_lineno-$LINENO}: result: found" >&5
 $as_echo "found" >&6; }
 else

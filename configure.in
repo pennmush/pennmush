@@ -399,10 +399,21 @@ AX_ZONEINFO()
 
 ### PCRE2 config
 
+## FIXME: PCRE2 detection and installation
+
+# Variable declarations
+
+PCRE2_VERSION="10.39"
+PCRE2_TARBALL="pcre2-${PCRE2_VERSION}.tar.gz"
+PCRE2_URL="https://github.com/PhilipHazel/pcre2/releases/download/pcre2-${PCRE2_VERSION}/${PCRE2_TARBALL}"
+PCRE2_DIR=./pcre2-${PCRE2_VERSION}
+
+# End of variable declarations
+
 AC_ARG_ENABLE(jit,  AS_HELP_STRING([--disable-jit],
       [Don't use JIT optimizations]), enable_jit=$enableval, enable_jit=yes)
 
-PCRE2_OPTIONS="--prefix=$(pwd)/pcre2/ --disable-shared --enable-never-backslash-C"
+PCRE2_OPTIONS="--prefix=$(pwd)/${PCRE2_DIR}/ --disable-shared --enable-never-backslash-C"
 if test "x${USING_CYGWIN}" = "xyes"; then
  # pcre jit crashes Cygwin builds; don't use it there.
  PCRE2_OPTIONS="${PCRE2_OPTIONS} --disable-jit"
@@ -414,11 +425,8 @@ else
  fi
 fi
 AC_MSG_NOTICE([Configuring PCRE2])
-PCRE2_VERSION="10.39"
-PCRE2_TARBALL="pcre2-${PCRE2_VERSION}.tar.gz"
-PCRE2_URL="https://github.com/PhilipHazel/pcre2/releases/download/pcre2-${PCRE2_VERSION}/${PCRE2_TARBALL}"
-AC_MSG_CHECKING([for ${PCRE2_VERSION}])
-if test -d pcre-${PCRE2_VERSION} ; then
+AC_MSG_CHECKING([for pcre-${PCRE2_VERSION}])
+if test -d ${PCRE2_DIR} ; then
    AC_MSG_RESULT([found])
 else
    AC_MSG_RESULT([not found])
@@ -440,8 +448,8 @@ fi
 if test -d pcre2 ; then
    rm -rf pcre2/
 fi
-CPPFLAGS="${CPPFLAGS} -I../pcre2/include"
-LDFLAGS="${LDFLAGS} ../pcre2/lib/libpcre2-8.a"
+CPPFLAGS="${CPPFLAGS} -I$(pwd)/${PCRE2_DIR}/include"
+LDFLAGS="${LDFLAGS} $(pwd)/${PCRE2_DIR}/lib/libpcre2-8.a"
 AC_DEFINE(HAVE_PCRE)
 
 ### Misc features

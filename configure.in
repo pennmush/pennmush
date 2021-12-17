@@ -418,7 +418,7 @@ PCRE2_VERSION="10.39"
 PCRE2_TARBALL="pcre2-${PCRE2_VERSION}.tar.gz"
 PCRE2_URL="https://github.com/PhilipHazel/pcre2/releases/download/pcre2-${PCRE2_VERSION}/${PCRE2_TARBALL}"
 AC_MSG_CHECKING([for ${PCRE2_VERSION}])
-if test -d ${PCRE2_VERSION} ; then
+if test -d pcre-${PCRE2_VERSION} ; then
    AC_MSG_RESULT([found])
 else
    AC_MSG_RESULT([not found])

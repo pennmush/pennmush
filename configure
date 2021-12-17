@@ -11242,6 +11242,17 @@ _ACEOF
 
 ### PCRE2 config
 
+## FIXME: PCRE2 detection and install
+
+# Declaration of PCRE2 variables
+
+PCRE2_VERSION="10.39"
+PCRE2_TARBALL="pcre2-${PCRE2_VERSION}.tar.gz"
+PCRE2_URL="https://github.com/PhilipHazel/pcre2/releases/download/${PCRE2_TARBALL}"
+PCRE2_DIR="pcre2-${PCRE2_VERSION}"
+
+# End of declaration
+
 # Check whether --enable-jit was given.
 if test "${enable_jit+set}" = set; then :
   enableval=$enable_jit; enable_jit=$enableval
@@ -11250,7 +11261,7 @@ else
 fi
 
 
-PCRE2_OPTIONS="--prefix=$(pwd)/pcre2/ --disable-shared --enable-never-backslash-C"
+PCRE2_OPTIONS="--prefix=$(pwd)/${PCRE2_DIR}/ --disable-shared --enable-never-backslash-C"
 if test "x${USING_CYGWIN}" = "xyes"; then
  # pcre jit crashes Cygwin builds; don't use it there.
  PCRE2_OPTIONS="${PCRE2_OPTIONS} --disable-jit"
@@ -11263,12 +11274,9 @@ else
 fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: Configuring PCRE2" >&5
 $as_echo "$as_me: Configuring PCRE2" >&6;}
-PCRE2_VERSION="10.39"
-PCRE2_TARBALL="pcre2-${PCRE2_VERSION}.tar.gz"
-PCRE2_URL="https://github.com/PhilipHazel/pcre2/releases/download/pcre2-${PCRE2_VERSION}/${PCRE2_TARBALL}"
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking for pcre2-${PCRE2_VERSION}" >&5
-$as_echo_n "checking for ${PCRE2_VERSION}... " >&6; }
-if test -d pcre2-${PCRE2_VERSION} ; then
+$as_echo_n "checking for pcre2-${PCRE2_VERSION}... " >&6; }
+if test -d ${PCRE2_DIR} ; then
    { $as_echo "$as_me:${as_lineno-$LINENO}: result: found" >&5
 $as_echo "found" >&6; }
 else
@@ -11292,12 +11300,12 @@ $as_echo "$as_me: Trying to download from ${PCRE2_URL}" >&6;}
    perl -pi -e 's/\Qif (separator != CHAR_SLASH && separator != CHAR_BACKSLASH &&\E/$& separator != CHAR_GRAVE_ACCENT &&/' "${PCRE2_VERSION}/src/pcre2_context.c"
 fi
 
-(cd ${PCRE2_VERSION} && ./configure ${PCRE2_OPTIONS})
-if test -d pcre2 ; then
-   rm -rf pcre2/
+(cd ${PCRE2_DIR} && ./configure ${PCRE2_OPTIONS})
+if test -d ${PCRE2_DIR} ; then
+   rm -rf ${PCRE2_DIR}
 fi
-CPPFLAGS="${CPPFLAGS} -I../pcre2/include"
-LDFLAGS="${LDFLAGS} ../pcre2/lib/libpcre2-8.a"
+CPPFLAGS="${CPPFLAGS} -I./${PCRE2_DIR}/include"
+LDFLAGS="${LDFLAGS} ./${PCRE2_DIR}/lib/libpcre2-8.a"
 $as_echo "#define HAVE_PCRE 1" >>confdefs.h
 
 
@@ -12774,4 +12782,3 @@ if test -n "$ac_unrecognized_opts" && test "$enable_option_checking" != no; then
   { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: unrecognized options: $ac_unrecognized_opts" >&5
 $as_echo "$as_me: WARNING: unrecognized options: $ac_unrecognized_opts" >&2;}
 fi
-

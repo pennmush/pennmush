@@ -4581,7 +4581,8 @@ See also: json()
   For <type>...   <data> should be...
   null            not given
   boolean         one arg, either "true", "1", "false" or "0"
-  string          one arg, any string, including an empty string
+  string          one arg, any string, including an empty string - escapes but converts to ansi markup only
+  markupstring    one arg, any string, including an empty string - escapes and retains full internal markup
   number          one arg, a valid number
   array           zero or more args, each themselves valid JSON
   object          zero or more pairs of arguments, the first a plain string (NOT a quoted JSON string), the second valid JSON of any type
@@ -4669,7 +4670,7 @@ See also: json(), json_query()
   exists       For arrays and objects, returns 1 if there is an object found by following the path specified in <arg>... and 0 if not. If the current arg is an integer and the current json element is an array, uses the <arg>th index of the array (Starting at 0) as the new current element. Otherwise, if the current json element is an object, treats the current <arg> as a key into the object and its value as the new current element.  Returns #-1 for other types.
   get          For arrays and objects, returns the json element found by following the path laid out in <args>... as described above. If no such element exists, returns an empty string. Returns #-1 for other JSON types.
   extract      Like get, but takes a single combined path arg as described in 'help json paths'. Some caveats: Returns 0 for false, 1 for true, and strings are unquoted.
-  unescape     Only valid for JSON strings; returns the unescaped form of <json>.
+  unescape     Only valid for JSON strings; returns the unescaped form of <json>. Will only show ansi and internal markup if the json_unsafe_unescape config option is 1.
 
   See 'help json_query2' for examples.
 See also: json(), json_map()

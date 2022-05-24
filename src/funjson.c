@@ -64,6 +64,33 @@ json_escape_string(char *input)
   return buff;
 }
 
+/** Returns a buffer containing the string after removing unprintable characters.
+ * In the case that the json_unsafe_unescape option is set to 1, it will leave 
+ * ANSI and internal markup characters.
+ * \param latin1 the input string
+ * \param len length of the input string
+ * \return pointer to a char array under 'json.string.partialbuf', which must be freed after use. 
+ */
+char * json_unescape_latin1string(char *latin1, int len)
+{
+  char *c;
+  char *partialbuf = mush_calloc(len+1,sizeof(char),"json.string.partialbuf");
+  char *bpp = partialbuf;
+  for (c = latin1; *c; c += 1) {
+    if(UNSAFE_UNESCAPE) {
+      safe_chr(*c,partialbuf,&bpp);
+    }
+    else if (!isprint(*c) && !isspace(*c)) {
+      safe_chr('?', partialbuf,&bpp);
+    }
+    else {
+      safe_chr(*c,partialbuf,&bpp);
+    }
+  }
+
+  return partialbuf;
+}
+
 #include "jsontypes.c"
 
 enum json_query {
@@ -160,20 +187,17 @@ FUNCTION(fun_json_query)
     }
     break;
   case JSON_QUERY_UNESCAPE: {
-    char *latin1, *c;
+    char *latin1, *partialbuf;
     int len;
     if (!cJSON_IsString(json)) {
       safe_str("#-1", buff, bp);
       break;
     }
-    latin1 =
-      utf8_to_latin1(cJSON_GetStringValue(json), -1, &len, 0, "json.string");
-    for (c = latin1; *c; c += 1) {
-      if (!isprint(*c) && !isspace(*c)) {
-        *c = '?';
-      }
-    }
-    safe_strl(latin1, len, buff, bp);
+
+    latin1 = utf8_to_latin1(cJSON_GetStringValue(json), -1, &len, 0, "json.string");
+    partialbuf = json_unescape_latin1string(latin1,len);
+    safe_strl(partialbuf, len, buff, bp);
+    mush_free(partialbuf, "json.string.partialbuf");
     mush_free(latin1, "json.string");
   } break;
   case JSON_QUERY_EXISTS:
@@ -208,16 +232,13 @@ FUNCTION(fun_json_query)
     } else {
       if (curr) {
         int len;
-        char *c;
+        char *partialbuf;
         char *jstr = cJSON_PrintUnformatted(curr);
         char *latin1 = utf8_to_latin1(jstr, -1, &len, 0, "json.string");
-        for (c = latin1; *c; c += 1) {
-          if (!isprint(*c) && !isspace(*c)) {
-            *c = '?';
-          }
-        }
-
-        safe_strl(latin1, len, buff, bp);
+            
+        partialbuf = json_unescape_latin1string(latin1,len);
+        safe_strl(partialbuf, len, buff, bp);
+        mush_free(partialbuf, "json.string.partialbuf");
         mush_free(latin1, "json.string");
         free(jstr);
       }
@@ -245,19 +266,14 @@ FUNCTION(fun_json_query)
 
     if (status == SQLITE_ROW) {
       if (sqlite3_column_type(op, 0) != SQLITE_NULL) {
-        char *latin1;
+        char *latin1, *partialbuf;
         int len;
-        char *c;
         const char *p = (const char *) sqlite3_column_text(op, 0);
         int plen = sqlite3_column_bytes(op, 0);
         latin1 = utf8_to_latin1_us(p, plen, &len, 0, "json.string");
-        for (c = latin1; *c; c += 1) {
-          if (!isprint(*c) && !isspace(*c)) {
-            *c = '?';
-          }
-        }
-
-        safe_strl(latin1, len, buff, bp);
+        partialbuf = json_unescape_latin1string(latin1,len);
+        safe_strl(partialbuf, len, buff, bp);
+        mush_free(partialbuf, "json.string.partialbuf");
         mush_free(latin1, "json.string");
       }
     } else {
@@ -387,19 +403,15 @@ FUNCTION(fun_json_mod)
   status = sqlite3_step(op);
   if (status == SQLITE_ROW) {
     if (sqlite3_column_type(op, 0) != SQLITE_NULL) {
-      char *latin1, *c;
+      char *latin1, *partialbuf;
       int len;
       const char *p = (const char *) sqlite3_column_text(op, 0);
       int plen = sqlite3_column_bytes(op, 0);
       latin1 = utf8_to_latin1_us(p, plen, &len, 0, "string");
-      for (c = latin1; *c; c += 1) {
-        if (!isprint(*c) && !isspace(*c)) {
-          *c = '?';
-        }
-      }
-
-      safe_strl(latin1, len, buff, bp);
-      mush_free(latin1, "string");
+        partialbuf = json_unescape_latin1string(latin1,len);
+        safe_strl(partialbuf, len, buff, bp);
+        mush_free(partialbuf, "json.string.partialbuf");
+        mush_free(latin1, "json.string");
     }
   } else {
     safe_str("#-1 JSON ERROR", buff, bp);
@@ -483,6 +495,7 @@ json_map_call(ufun_attrib *ufun, sqlite3_str *rbuff, PE_REGS *pe_regs,
               dbref enactor)
 {
   const char *jtype;
+  char *latin1, *partialbuf;
   const struct json_type_map *ptype;
   char buff[BUFFER_LEN] = {'\0'};
   bool status;
@@ -504,20 +517,14 @@ json_map_call(ufun_attrib *ufun, sqlite3_str *rbuff, PE_REGS *pe_regs,
     pe_regs_setenv(pe_regs, 1, (const char *) sqlite3_column_text(json, 1));
   } else {
     const char *utf8;
-    char *latin1, *c;
     int ulen, len;
-
     utf8 = (const char *) sqlite3_column_text(json, 1);
     ulen = sqlite3_column_bytes(json, 1);
     latin1 = utf8_to_latin1_us(utf8, ulen, &len, 0, "string");
-    for (c = latin1; *c; c += 1) {
-      if (!isprint(*c) && !isspace(*c)) {
-        *c = '?';
-      }
-    }
-
-    pe_regs_setenv(pe_regs, 1, latin1);
-    mush_free(latin1, "string");
+    partialbuf = json_unescape_latin1string(latin1,len);
+    pe_regs_setenv(pe_regs, 1, partialbuf);
+    mush_free(partialbuf, "json.string.partialbuf");
+    mush_free(latin1, "json.string");
   }
   if (sqlite3_column_type(json, 2) == SQLITE_INTEGER) {
     pe_regs_setenv(pe_regs, 2, pe_regs_intname(sqlite3_column_int(json, 2)));
@@ -525,16 +532,10 @@ json_map_call(ufun_attrib *ufun, sqlite3_str *rbuff, PE_REGS *pe_regs,
     const char *utf8 = (const char *) sqlite3_column_text(json, 2);
     int ulen = sqlite3_column_bytes(json, 2);
     int len;
-    char *c;
-    char *latin1 = utf8_to_latin1(utf8, ulen, &len, 0, "string");
-
-    for (c = latin1; *c; c += 1) {
-      if (!isprint(*c) && !isspace(*c)) {
-        *c = '?';
-      }
-    }
-
-    pe_regs_setenv(pe_regs, 2, latin1);
+    latin1 = utf8_to_latin1(utf8, ulen, &len, 0, "string");
+    partialbuf = json_unescape_latin1string(latin1,len);
+    pe_regs_setenv(pe_regs, 2, partialbuf);
+    mush_free(partialbuf, "json.string.partialbuf");
     mush_free(latin1, "string");
   }
 
@@ -556,6 +557,8 @@ FUNCTION(fun_json)
     type = JSON_STR;
   } else if (strcasecmp("string", args[0]) == 0) {
     type = JSON_STR;
+  } else if (strcasecmp("markupstring", args[0]) == 0) {
+    type = JSON_MKSTR;
   } else if (strcasecmp("boolean", args[0]) == 0) {
     type = JSON_BOOL;
   } else if (strcasecmp("array", args[0]) == 0) {
@@ -572,7 +575,7 @@ FUNCTION(fun_json)
   }
 
   if ((type == JSON_NULL && nargs > 2) ||
-      ((type == JSON_STR || type == JSON_NUMBER || type == JSON_BOOL) &&
+      ((type == JSON_STR || type == JSON_MKSTR || type == JSON_NUMBER || type == JSON_BOOL) &&
        nargs != 2) ||
       (type == JSON_OBJECT && (nargs % 2) != 1)) {
     safe_str(T("#-1 WRONG NUMBER OF ARGUMENTS"), buff, bp);
@@ -580,7 +583,7 @@ FUNCTION(fun_json)
   }
 
   /* strip ansi markup from non-string types */
-  if (type != JSON_STR) {
+  if (type != JSON_STR && type != JSON_MKSTR) {
     for (i = 1; i < nargs; i++) {
       strcpy(args[i], remove_markup(args[i], NULL));
     }
@@ -615,8 +618,12 @@ FUNCTION(fun_json)
     strcpy(tmp, render_string(args[1], MSG_XTERM256));
     safe_format(buff, bp, "\"%s\"", json_escape_string(tmp));
     return;
+  case JSON_MKSTR:
+    strcpy(tmp, render_string(args[1], MSG_MARKUP));
+    safe_format(buff, bp, "\"%s\"", json_escape_string(tmp));
+    return;
   case JSON_ARRAY: {
-    char *jstr, *latin1, *c;
+    char *jstr, *latin1, *partialbuf;
     int len;
     cJSON *arr = cJSON_CreateArray();
     for (i = 1; i < nargs; i++) {
@@ -635,18 +642,15 @@ FUNCTION(fun_json)
     jstr = cJSON_PrintUnformatted(arr);
     cJSON_Delete(arr);
     latin1 = utf8_to_latin1(jstr, -1, &len, 0, "json.string");
-    for (c = latin1; *c; c += 1) {
-      if (!isprint(*c) && !isspace(*c)) {
-        *c = '?';
-      }
-    }
 
-    safe_strl(latin1, len, buff, bp);
+    partialbuf = json_unescape_latin1string(latin1,len);
+    safe_strl(partialbuf, len, buff, bp);
+    mush_free(partialbuf, "json.string.partialbuf");
     mush_free(latin1, "json.string");
     free(jstr);
   } break;
   case JSON_OBJECT: {
-    char *jstr, *latin1, *c;
+    char *jstr, *latin1, *partialbuf;
     int len;
     cJSON *obj = cJSON_CreateObject();
     for (i = 1; i < nargs; i += 2) {
@@ -667,13 +671,9 @@ FUNCTION(fun_json)
     jstr = cJSON_PrintUnformatted(obj);
     cJSON_Delete(obj);
     latin1 = utf8_to_latin1(jstr, -1, &len, 0, "json.string");
-    for (c = latin1; *c; c += 1) {
-      if (!isprint(*c) && !isspace(*c)) {
-        *c = '?';
-      }
-    }
-
-    safe_strl(latin1, len, buff, bp);
+    partialbuf = json_unescape_latin1string(latin1,len);
+    safe_strl(partialbuf, len, buff, bp);
+    mush_free(partialbuf, "json.string.partialbuf");
     mush_free(latin1, "json.string");
     free(jstr);
   } break;

@@ -1017,3 +1017,14 @@ include alias.cnf
 ###
 include restrict.cnf
 
+### JSON Configuration Options
+# JSON Safety by default is active. This means that during unescaping of any 
+# json functions from a json string to mush string, it does not turn the escaped  
+# Markup or ANSI sequences into real markup. This is to prevent a player from 
+# causing ansi or markup bleeding.
+# 
+# We recommend to keep this off unless you know what you are doing. 
+# If you set this to 1, we recommend making all json functions Roy or Wiz based using 
+# @function/restrict, and to strictly be in control of any call that would unescape an 
+# existing json value.
+json_unsafe_unescape 0

@@ -235,6 +235,7 @@ struct options_table {
   int log_commands;               /**< Should we log all commands? */
   int log_forces;                 /**< Should we log force commands? */
   int support_pueblo;             /**< Should the MUSH send Pueblo tags? */
+  int json_unsafe_unescape;            /**< Should the MUSH unsafely unescape JSON? */
   int login_allow;                /**< Are mortals allowed to log in? */
   int guest_allow;                /**< Are guests allowed to log in? */
   int create_allow;               /**< Can new players be created? */
@@ -446,6 +447,7 @@ int can_view_config_option(dbref player, PENNCONF *opt);
 #define SUPPORT_PUEBLO (options.support_pueblo)
 #define SUPPORT_WEBSOCKETS (options.use_ws)
 #define SUPPORT_HTML (SUPPORT_PUEBLO || SUPPORT_WEBSOCKETS)
+#define UNSAFE_UNESCAPE (options.json_unsafe_unescape)
 
 #define QUEUE_QUOTA (options.player_queue_limit)
 

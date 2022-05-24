@@ -23,8 +23,18 @@ test('json.string.2', $mortal, 'think json(string, foo bar)', '^"foo bar"$');
 test('json.string.3', $mortal, 'think json(string, foo "bar" baz)', '^"foo \\\\"bar\\\\" baz"$');
 test('json.string.4', $mortal, 'think json(string, foo\\\\bar\\\\baz)', '^"foo\\\\\\\\bar\\\\\\\\baz"$');
 test('json.string.5', $mortal, 'think json(string, accent(foo, f:o))', '^"f\\\\u00F6o"');
+
 # Also tests unescape
 test('json.string.6', $mortal, 'think json_query(json(string,accent(foo,f:o)), unescape)', '^f\xF6o');
+test('json.string.7', $god, 'think json_query(json(string,ansi(Yr,foo[ansi(gh,bar)]baz)),unescape)', '\?\[31;43mfoo\?\[1;32mbar\?\[0m\?\[31;43mbaz\?\[0m');
+
+# Test unescape with the new option.
+$god->command('@config/set json_unsafe_unescape=Yes');
+test('json.string.8', $god, 'think json_query(json(string,ansi(Yr,foo[ansi(gh,bar)]baz)),unescape)', 'foobarbaz');
+$god->command('@config/set json_unsafe_unescape=No');
+
+# Markup string tests.
+test('json.string.9', $mortal, 'think json(markupstring,ansi(hr,foo))','"\\\\u0002chr\\\\u0003foo\\\\u0002c/\\\\u0003"');
 
 test('json.number.1', $mortal, 'think json(number, 5)', '5');
 test('json.number.2', $mortal, 'think json(number, 5.555)', '5.555');

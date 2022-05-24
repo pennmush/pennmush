@@ -52,11 +52,11 @@ See also: MUSHCODE, FUNCTION LIST
   aposs()        attrib_set()   default()      edefault()     eval()
   flags()        get()          grep()         grepi()        hasattr()
   hasattrp()     hasattrval()   hasflag()      lattr()        lflags()
-  nattr()        obj()          pfun()         poss()         reglattr()
-  regrep()       regrepi()      regxattr()     set()          subj()
-  udefault()     ufun()         ulambda()      uldefault()    ulocal()
-  v()            wildgrep()     wildgrepi()    xattr()        xget()
-  zfun()
+  nattr()        obj()          owner()        pfun()         poss()
+  reglattr()     regrep()       regrepi()      regxattr()     set()
+  subj()         udefault()     ufun()         ulambda()      uldefault()
+  ulocal()       v()            wildgrep()     wildgrepi()    xattr()
+  xget()         zfun()
 
 See also: ATTRIBUTES, NON-STANDARD ATTRIBUTES
 & Bitwise functions
@@ -3226,7 +3226,8 @@ See also: lockowner(), @chown, @atrchown
   parent(<object>[, <new parent>])
 
   This function returns the dbref number of an object's parent. You must be able to examine the object to do this. If you specify a second argument, parent() attempts to change the parent first. You must control <object>, and be allowed to @parent to <new parent>.
-See also: @parent, ancestors, pfun()
+
+See also: @parent, ancestors, pfun(), lparent()
 & PEMIT()
 & NSPEMIT()
 & PROMPT()

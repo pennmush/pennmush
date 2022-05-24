@@ -27,10 +27,10 @@ C_FILES=access.c atr_tab.c attrib.c boolexp.c bsd.c bufferq.c		\
 	map_file.c markup.c match.c memcheck.c move.c mycrypt.c		\
 	mymalloc.c mysocket.c myrlimit.c myssl.c notify.c parse.c	\
 	pcg_basic.c player.c plyrlist.c predicat.c privtab.c		\
-	info_master.c ptab.c remember.c rob.c services.c set.c sig.c	\
-	sort.c speech.c spellfix.c sql.c sqlite3.c ssl_master.c		\
-	strdup.c strtree.c strutil.c tables.c testframework.c timer.c	\
-	tz.c uint.c unparse.c utf_impl.c utils.c version.c wait.c	\
+	info_master.c ptab.c rob.c services.c set.c sig.c sort.c	\
+	speech.c spellfix.c sql.c sqlite3.c ssl_master.c strdup.c	\
+	strtree.c strutil.c tables.c testframework.c timer.c tz.c	\
+	uint.c unparse.c utf_impl.c utils.c version.c wait.c		\
 	warnings.c websock.c wild.c wiz.c
 
 
@@ -45,10 +45,10 @@ O_FILES=access.o atr_tab.o attrib.o boolexp.o bsd.o bufferq.o		\
 	map_file.o markup.o match.o memcheck.o move.o mycrypt.o		\
 	mymalloc.o mysocket.o myrlimit.o myssl.o notify.o parse.o	\
 	pcg_basic.o player.o plyrlist.o predicat.o privtab.o		\
-	info_master.o ptab.o remember.o rob.o services.o set.o sig.o	\
-	sort.o speech.o spellfix.o sql.o sqlite3.o ssl_master.o		\
-	strdup.o strtree.o strutil.o tables.o testframework.o timer.o	\
-	tz.o uint.o unparse.o utf_impl.o utils.o version.o wait.o	\
+	info_master.o ptab.o rob.o services.o set.o sig.o sort.o	\
+	speech.o spellfix.o sql.o sqlite3.o ssl_master.o strdup.o	\
+	strtree.o strutil.o tables.o testframework.o timer.o tz.o	\
+	uint.o unparse.o utf_impl.o utils.o version.o wait.o		\
 	warnings.o websock.o wild.o wiz.o
 
 # This is a dummy target, in case you type 'make' in the source
@@ -59,10 +59,10 @@ first:
 
 all: $(OUTFILES)
 
-netmud: $(O_FILES) 
+netmud: $(O_FILES)
 	@echo "Making netmud."
 	-mv -f netmud netmud~
-	$(CC) $(CCFLAGS) -o netmud $(O_FILES) $(LDFLAGS) $(SQL_LDFLAGS) $(LIBS) 
+	$(CC) $(CCFLAGS) -o netmud $(O_FILES) $(LDFLAGS) $(SQL_LDFLAGS) $(LIBS)
 
 # We recompile mysocket.c instead of reusing mysocket.o because we
 # want to do some error handing differently for info_slave.
@@ -87,7 +87,7 @@ buildinf:
 	@echo "#define CCFLAGS \"$(CFLAGS)\"" >> ../hdrs/buildinf.h
 
 # If funlocal.c doesn't exist, we want to build it from
-# funlocal.dst. 
+# funlocal.dst.
 funlocal.c: funlocal.dst
 	@if [ ! -f funlocal.c ]; then \
 	  cp funlocal.dst funlocal.c; \
@@ -169,10 +169,10 @@ jsontypes.c: jsontypes.gperf
 		echo "*** NOTE ***: src/jsontypes.c appears to be out of date, but you don't have gperf installed. Install gperf or touch src/jsontypes.c to suppress this message."; \
 	fi
 
-etags: 
+etags:
 	@ETAGS@ *.c ../hdrs/*.h
 
-ctags: 
+ctags:
 	@CTAGS@ *.c ../hdrs/*.h
 
 depend: $(C_FILES) info_slave.c ssl_slave.c
@@ -182,13 +182,13 @@ depend: $(C_FILES) info_slave.c ssl_slave.c
 # Requires clang-format
 
 indent:
-	@INDENT@ -i --style=file *.dst $(filter-out cJSON.c cmdlocal.c funlocal.c flaglocal.c local.c remember.c spellfix.c sqlite3.c tables.c, $(C_FILES)) \
+	@INDENT@ -i --style=file *.dst $(filter-out cJSON.c cmdlocal.c funlocal.c flaglocal.c local.c spellfix.c sqlite3.c tables.c, $(C_FILES)) \
 	$(filter-out ../hdrs/buildinf.h ../hdrs/cJSON.h ../hdrs/cmds.h ../hdrs/funs.h ../hdrs/gitinfo.h ../hdrs/sqlite3.h ../hdrs/sqlite3ext.h ../hdrs/switches.h ../hdrs/version.h, $(wildcard ../hdrs/*.h)) \
 	ssl_slave.c info_slave.c
 
 clean:
-	-rm -f *.o 
-	-rm -f a.out core gmon.out $(OUTFILES) 
+	-rm -f *.o
+	-rm -f a.out core gmon.out $(OUTFILES)
 
 distclean: clean
 	-rm -f *~ *.orig *.rej *.bak funlocal.c cmdlocal.c flaglocal.c local.c \#*
@@ -196,7 +196,7 @@ distclean: clean
 test_compress: comp_h.c
 	$(CC) $(CFLAGS) -o test_compress -DSTANDALONE comp_h.c
 
-portmsg: portmsg.c mysocket.c sig.o wait.o 
+portmsg: portmsg.c mysocket.c sig.o wait.o
 	$(CC) $(CCFLAGS) -DSLAVE -o portmsg portmsg.c mysocket.c sig.o \
 	wait.o $(LDFLAGS) $(LIBS)
 
@@ -1969,11 +1969,6 @@ ptab.o: ../hdrs/mymalloc.h
 ptab.o: ../hdrs/compile.h
 ptab.o: ../hdrs/notify.h
 ptab.o: ../hdrs/strutil.h
-remember.o: ../config.h
-remember.o: ../confmagic.h
-remember.o: ../options.h
-remember.o: ../hdrs/sqlite3ext.h
-remember.o: ../hdrs/sqlite3.h
 rob.o: ../config.h
 rob.o: ../confmagic.h
 rob.o: ../options.h

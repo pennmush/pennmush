@@ -23,9 +23,9 @@ Version 1.8.8 patchlevel 1 ??? ?? 202?
 Minor changes
 -------------
 
-* Sqlite updated to 3.34.1. [SW]
+* Sqlite updated to 3.36.0. [SW]
 * cJSON updated to 1.7.13 [SW]
-* PCRE updated to 10.35 [SW]
+* PCRE updated to 10.39 [SW]
 * New `--version` option to the netmush binary to display the version and exit. [SW]
 
 Fixes

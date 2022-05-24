@@ -179,7 +179,7 @@ add_to(dbref player, int am)
   sqlite3 *sqldb;
   sqlite3_stmt *adder;
   int status;
-  sqlite3_int64 newam;
+  int newam = -1;
 
   if (QUEUE_PER_OWNER) {
     player = Owner(player);
@@ -187,15 +187,17 @@ add_to(dbref player, int am)
 
   sqldb = get_shared_db();
   adder = prepare_statement(
-    sqldb, "UPDATE objects SET queue = remember(queue + ?, ?) WHERE dbref = ?",
+    sqldb, "UPDATE objects SET queue = queue + ? WHERE dbref = ? RETURNING queue",
     "queue.add");
   sqlite3_bind_int(adder, 1, am);
-  sqlite3_bind_pointer(adder, 2, &newam, "carray", NULL);
-  sqlite3_bind_int(adder, 3, player);
+  sqlite3_bind_int(adder, 2, player);
 
   do {
     status = sqlite3_step(adder);
-  } while (is_busy_status(status));
+    if (status == SQLITE_ROW) {
+      newam = sqlite3_column_int(adder, 0);
+    }
+  } while (status == SQLITE_ROW || is_busy_status(status));
   if (status != SQLITE_DONE) {
     do_rawlog(LT_ERR, "Unable to update queue for #%d: %s", player,
               sqlite3_errstr(status));

@@ -803,7 +803,7 @@ FUNTAB flist[] = {
 #else
   {"UCSTR2", fun_ucstr, 1, 1, FN_REG | FN_STRIPANSI},
 #endif
-  {"UDEFAULT", fun_udefault, 2, 12, FN_NOPARSE},
+  {"UDEFAULT", fun_udefault, 2, (MAX_STACK_ARGS + 2), FN_NOPARSE},
   {"UFUN", fun_ufun, 1, (MAX_STACK_ARGS + 1), FN_REG},
   {"PFUN", fun_pfun, 1, (MAX_STACK_ARGS + 1), FN_REG},
   {"ULAMBDA", fun_ufun, 1, (MAX_STACK_ARGS + 1), FN_REG},

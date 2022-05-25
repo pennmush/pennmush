@@ -3907,7 +3907,7 @@ channel_send(CHAN *channel, dbref player, int flags, const char *origmessage)
 
   if (GoodObject(mogrifier)) {
     argv[0] = ctype;
-    argv[1] = ChanName(channel);
+    argv[1] = channame;
     argv[2] = message;
     argv[3] = playername;
     argv[4] = title;

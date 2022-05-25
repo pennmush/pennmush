@@ -556,7 +556,10 @@ main(int argc, char **argv)
     int n;
     for (n = 1; n < argc; n++) {
       if (argv[n][0] == '-') {
-        if (strcmp(argv[n], "--no-session") == 0)
+        if (strcmp(argv[n], "--version") == 0) {
+          printf("PennMUSH %s patchlevel %s\n", VERSION, PATCHLEVEL);
+          return EXIT_SUCCESS;
+        } else if (strcmp(argv[n], "--no-session") == 0)
           detach_session = 0;
         else if (strcmp(argv[n], "--disable-socket-quota") == 0) {
           disable_socket_quota = true;

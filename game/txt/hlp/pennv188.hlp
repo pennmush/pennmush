@@ -1,6 +1,6 @@
 & changes
-& 1.8.8p0
-Version 1.8.8 patchlevel 0 Apr 20 2020
+& 1.8.8p1
+Version 1.8.8 patchlevel 1 ??? ?? 202?
 
 This is a list of changes in this patchlevel which are probably of
 interest to players. More information about new commands and functions
@@ -13,6 +13,21 @@ help topics named for each release (e.g. 'help 1.8.7p0').
 A list of the patchlevels associated with each release can
 be read in 'help patchlevels'.
 
+
+Minor changes:
+
+* Sqlite updated to 3.36.0. [SW]
+* cJSON updated to 1.7.13 [SW]
+* PCRE updated to 10.35 [SW]
+* New [1m--version[0m option to the netmush binary to display the version and exit. [SW]
+
+Fixes:
+
+* [1mudefault[0m only accepted 12 arguments, not the documented 32. [MG]
+* [1mMOGRIFY`FORMAT[0m was not being passed the mogrified channel name from [1mMOGRIFY`CHANNAME[0m as it should. Reported by Xperta [MT]
+
+& 1.8.8p0
+Version 1.8.8 patchlevel 0 Apr 20 2020
 
 WARNING! With the removal of the object queue, please be careful when upgrading that you do not have any infinitely looping triggers without an @wait.
 

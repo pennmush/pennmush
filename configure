@@ -11263,9 +11263,9 @@ else
 fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: Configuring PCRE2" >&5
 $as_echo "$as_me: Configuring PCRE2" >&6;}
-PCRE2_VERSION="pcre2-10.35"
+PCRE2_VERSION="pcre2-10.39"
 PCRE2_TARBALL="${PCRE2_VERSION}.tar.gz"
-PCRE2_URL="http://ftp.pcre.org/pub/pcre/${PCRE2_TARBALL}"
+PCRE2_URL="https://github.com/PhilipHazel/pcre2/releases/download/${PCRE2_VERSION}/${PCRE2_TARBALL}"
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking for ${PCRE2_VERSION}" >&5
 $as_echo_n "checking for ${PCRE2_VERSION}... " >&6; }
 if test -d ${PCRE2_VERSION} ; then
@@ -11285,8 +11285,7 @@ $as_echo "found" >&6; }
 $as_echo "not found" >&6; }
       { $as_echo "$as_me:${as_lineno-$LINENO}: Trying to download from ${PCRE2_URL}" >&5
 $as_echo "$as_me: Trying to download from ${PCRE2_URL}" >&6;}
-      perl -MFile::Fetch -e "File::Fetch->new(uri => '${PCRE2_URL}')->fetch() or exit 1" && (gzip -dc "${PCRE2_TARBALL}" | tar xf -)
-      if test $? -ne 0 ; then
+      if ! (curl -LO "${PCRE2_URL}" && (gzip -dc "${PCRE2_TARBALL}" | tar xf -)); then
          as_fn_error $? "Unable to automatically fetch file. Download it manually and try again." "$LINENO" 5
       fi
    fi

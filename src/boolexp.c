@@ -241,7 +241,7 @@ struct bvm_asm {
 #include "bflags.c"
 
 static uint8_t *safe_get_bytecode(boolexp b) __attribute_malloc__;
-static uint8_t *get_bytecode(boolexp b, uint16_t *storelen);
+static uint8_t *get_bytecode(boolexp b, uint32_t *storelen);
 static struct boolexp_node *alloc_bool(void) __attribute_malloc__;
 static struct boolatr *alloc_atr(const char *name, const char *s,
                                  bool upcase_s) __attribute_malloc__;
@@ -302,7 +302,7 @@ static uint8_t *
 safe_get_bytecode(boolexp b)
 {
   uint8_t *bytecode;
-  uint16_t len;
+  uint32_t len;
 
   len = chunk_len(b);
   bytecode = mush_malloc(len, "boolexp.bytecode");
@@ -316,10 +316,10 @@ safe_get_bytecode(boolexp b)
  * \return a static copy of the bytecode.
  */
 static uint8_t *
-get_bytecode(boolexp b, uint16_t *storelen)
+get_bytecode(boolexp b, uint32_t *storelen)
 {
   static uint8_t bytecode[BUFFER_LEN * 2];
-  uint16_t len;
+  uint32_t len;
 
   len = chunk_fetch(b, (char *) bytecode, sizeof bytecode);
   if (storelen)
@@ -340,7 +340,7 @@ dup_bool(boolexp b)
 {
   boolexp r;
   uint8_t *bytecode;
-  uint16_t len = 0;
+  uint32_t len = 0;
 
   if (b == TRUE_BOOLEXP)
     return TRUE_BOOLEXP;
@@ -1840,7 +1840,7 @@ emit_bytecode(struct bvm_asm *a, int derefs)
   struct bvm_asmnode *i;
   struct bvm_strnode *s;
   char *pc, *bytecode;
-  uint16_t len, blen;
+  uint32_t len, blen;
 
   if (!a)
     return TRUE_BOOLEXP;
@@ -2240,7 +2240,7 @@ boolexp
 cleanup_boolexp(boolexp b)
 {
   uint8_t *pc, *bytecode;
-  uint16_t bytecode_len = 0;
+  uint32_t bytecode_len = 0;
   bvm_opcode op;
   int arg;
   bool revised = 0;

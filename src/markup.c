@@ -1986,7 +1986,7 @@ parse_ansi_string(const char *source)
 
   /* The string has markup. Nuts. */
   as->flags |= AS_HAS_MARKUP;
-  as->markup = mush_calloc(BUFFER_LEN, sizeof(uint16_t), "ansi_string.markup");
+  as->markup = mush_calloc(BUFFER_LEN, sizeof(uint32_t), "ansi_string.markup");
 
   c = 0;
   for (s = as->source; *s;) {
@@ -2272,7 +2272,7 @@ flip_ansi_string(ansi_string *as)
   int s;
   int e;
   char tmp;
-  uint16_t mitmp;
+  uint32_t mitmp;
 
   for (s = 0, e = as->len - 1; s < e; s++, e--) {
     tmp = as->text[s];
@@ -2314,7 +2314,7 @@ ansi_string_delete(ansi_string *as, int start, int count)
   memmove(as->text + s, as->text + c, l);
   /* Move markup left. */
   if (as->markup) {
-    l *= sizeof(uint16_t);
+    l *= sizeof(uint32_t);
     memmove(as->markup + s, as->markup + c, l);
   }
   if (as->flags & AS_HAS_STANDALONE) {
@@ -2407,7 +2407,7 @@ ansi_string_replace(ansi_string *dst, int loc, int count, ansi_string *src)
       /* Special case: src has only standalone tags. */
       if (!dst->markup) {
         dst->markup =
-          mush_calloc(BUFFER_LEN, sizeof(uint16_t), "ansi_string.markup");
+          mush_calloc(BUFFER_LEN, sizeof(uint32_t), "ansi_string.markup");
         for (i = 0; i < dst->len; i++) {
           dst->markup[i] = NOMARKUP;
         }
@@ -2476,7 +2476,7 @@ ansi_string_replace(ansi_string *dst, int loc, int count, ansi_string *src)
   /* In case of copying from marked up string to non-marked-up. */
   if (!dst->markup) {
     dst->markup =
-      mush_calloc(BUFFER_LEN, sizeof(uint16_t), "ansi_string.markup");
+      mush_calloc(BUFFER_LEN, sizeof(uint32_t), "ansi_string.markup");
     for (i = 0; i < len; i++) {
       dst->markup[i] = NOMARKUP;
     }
@@ -2554,7 +2554,7 @@ ansi_string_replace(ansi_string *dst, int loc, int count, ansi_string *src)
     }
 
     /* Copy src's markup over, updating to new idx. */
-    memcpy(dst->markup + loc, src->markup, srclen * sizeof(uint16_t));
+    memcpy(dst->markup + loc, src->markup, srclen * sizeof(uint32_t));
     for (i = loc, j = 0; i < srcend; i++, j++) {
       if (src->markup[j] >= 0) {
         dst->markup[i] = src->markup[j] + idx;
@@ -2580,7 +2580,7 @@ scramble_ansi_string(ansi_string *as)
 {
   int i, j;
   char tmp;
-  uint16_t idxtmp;
+  uint32_t idxtmp;
 
   for (i = 0; i < as->len; i++) {
     j = get_random_u32(0, as->len - 1);

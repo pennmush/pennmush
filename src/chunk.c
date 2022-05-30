@@ -264,7 +264,7 @@
    data. Derefs are not used. */
 
 static chunk_reference_t
-acm_chunk_create(char const *data, uint16_t len,
+acm_chunk_create(char const *data, uint32_t len,
                  uint8_t derefs __attribute__((__unused__)))
 {
   uint8_t *chunk;
@@ -285,10 +285,10 @@ acm_chunk_delete(chunk_reference_t reference)
     mush_free((void *) reference, "chunk");
 }
 
-static uint16_t
-acm_chunk_fetch(chunk_reference_t reference, char *buffer, uint16_t buffer_len)
+static uint32_t
+acm_chunk_fetch(chunk_reference_t reference, char *buffer, uint32_t buffer_len)
 {
-  uint16_t len;
+  uint32_t len;
 
   if (!reference)
     return 0;
@@ -302,10 +302,10 @@ acm_chunk_fetch(chunk_reference_t reference, char *buffer, uint16_t buffer_len)
   return len;
 }
 
-static uint16_t
+static uint32_t
 acm_chunk_len(chunk_reference_t reference)
 {
-  uint16_t len;
+  uint32_t len;
   if (!reference)
     return 0;
   memcpy(&len, (void *) reference, 2);
@@ -592,18 +592,18 @@ LenToFullLen(int len)
                                              : CHUNK_SHORT_DATA_OFFSET));
 }
 
-static inline char *ChunkPointer(uint16_t, uint16_t);
+static inline char *ChunkPointer(uint32_t, uint32_t);
 
 /*
  * Functions for probing and manipulating chunk headers
  */
-static inline uint16_t
+static inline uint32_t
 CPLenShort(const char *cptr)
 {
   return cptr[CHUNK_SHORT_LEN_OFFSET] & CHUNK_SHORT_LEN_MASK;
 }
 
-static inline uint16_t
+static inline uint32_t
 CPLenMedium(const char *cptr)
 {
   return ((cptr[CHUNK_MEDIUM_LEN_MSB_OFFSET] & CHUNK_MEDIUM_LEN_MSB_MASK)
@@ -611,14 +611,14 @@ CPLenMedium(const char *cptr)
          (cptr[CHUNK_MEDIUM_LEN_LSB_OFFSET] & CHUNK_MEDIUM_LEN_LSB_MASK);
 }
 
-static inline uint16_t
+static inline uint32_t
 CPLenLong(const char *cptr)
 {
   return ((cptr[CHUNK_LONG_LEN_MSB_OFFSET] & CHUNK_LONG_LEN_MSB_MASK) << 8) +
          (cptr[CHUNK_LONG_LEN_LSB_OFFSET] & CHUNK_LONG_LEN_LSB_MASK);
 }
 
-static uint16_t
+static uint32_t
 CPLen(const char *cptr)
 {
   if (*cptr & CHUNK_TAG1_MASK) {
@@ -630,13 +630,13 @@ CPLen(const char *cptr)
     return CPLenShort(cptr);
 }
 
-static inline uint16_t
-ChunkLen(uint16_t region, uint16_t offset)
+static inline uint32_t
+ChunkLen(uint32_t region, uint32_t offset)
 {
   return CPLen(ChunkPointer(region, offset));
 }
 
-static inline uint16_t
+static inline uint32_t
 CPFullLen(const char *cptr)
 {
   if (*cptr & CHUNK_TAG1_MASK) {
@@ -648,26 +648,26 @@ CPFullLen(const char *cptr)
     return CPLenShort(cptr) + CHUNK_SHORT_DATA_OFFSET;
 }
 
-static inline uint16_t
-ChunkFullLen(uint16_t region, uint16_t offset)
+static inline uint32_t
+ChunkFullLen(uint32_t region, uint32_t offset)
 {
   return CPFullLen(ChunkPointer(region, offset));
 }
 
 static inline bool
-ChunkIsFree(uint16_t region, uint16_t offset)
+ChunkIsFree(uint32_t region, uint32_t offset)
 {
   return (*ChunkPointer(region, offset) & CHUNK_FREE_MASK) == CHUNK_FREE;
 }
 
 static inline bool
-ChunkIsShort(uint16_t region, uint16_t offset)
+ChunkIsShort(uint32_t region, uint32_t offset)
 {
   return (*ChunkPointer(region, offset) & CHUNK_TAG1_MASK) == CHUNK_TAG1_SHORT;
 }
 
 static inline bool
-ChunkIsMedium(uint16_t region, uint16_t offset)
+ChunkIsMedium(uint32_t region, uint32_t offset)
 {
   return (*ChunkPointer(region, offset) &
           (CHUNK_TAG1_MASK | CHUNK_TAG2_MASK)) ==
@@ -675,7 +675,7 @@ ChunkIsMedium(uint16_t region, uint16_t offset)
 }
 
 static inline bool
-ChunkIsLong(uint16_t region, uint16_t offset)
+ChunkIsLong(uint32_t region, uint32_t offset)
 {
   return (*ChunkPointer(region, offset) &
           (CHUNK_TAG1_MASK | CHUNK_TAG2_MASK)) ==
@@ -683,13 +683,13 @@ ChunkIsLong(uint16_t region, uint16_t offset)
 }
 
 static inline uint8_t
-ChunkDerefs(uint16_t region, uint16_t offset)
+ChunkDerefs(uint32_t region, uint32_t offset)
 {
   return ChunkPointer(region, offset)[CHUNK_DEREF_OFFSET];
 }
 
 static void
-SetChunkDerefs(uint16_t region, uint16_t offset, uint8_t derefs)
+SetChunkDerefs(uint32_t region, uint32_t offset, uint8_t derefs)
 {
   ChunkPointer(region, offset)[CHUNK_DEREF_OFFSET] = derefs;
 }
@@ -707,13 +707,13 @@ CPDataPtr(char *cptr)
 }
 
 static inline char *
-ChunkDataPtr(uint16_t region, uint16_t offset)
+ChunkDataPtr(uint32_t region, uint32_t offset)
 {
   return CPDataPtr(ChunkPointer(region, offset));
 }
 
-static inline uint16_t
-ChunkNextFree(uint16_t region, uint16_t offset)
+static inline uint32_t
+ChunkNextFree(uint32_t region, uint32_t offset)
 {
   return (ChunkDataPtr(region, offset)[0] << 8) + ChunkDerefs(region, offset);
 }
@@ -733,8 +733,8 @@ FitsInSpace(int size, int capacity)
  * the rest of the 64K bytes of the region contain chunks.
  */
 typedef struct region_header {
-  uint16_t region_id;         /**< will be INVALID_REGION_ID if not in use */
-  uint16_t first_free;        /**< offset of 1st free chunk */
+  uint32_t region_id;         /**< will be INVALID_REGION_ID if not in use */
+  uint32_t first_free;        /**< offset of 1st free chunk */
   struct region_header *prev; /**< linked list prev for LRU cache */
   struct region_header *next; /**< linked list next for LRU cache */
 } RegionHeader;
@@ -743,16 +743,16 @@ typedef struct region_header {
 
 /** In-memory (never paged) region info.  */
 typedef struct region {
-  uint16_t used_count;             /**< number of used chunks */
-  uint16_t free_count;             /**< number of free chunks */
-  uint16_t free_bytes;             /**< number of free bytes (with headers) */
-  uint16_t largest_free_chunk;     /**< largest single free chunk */
+  uint32_t used_count;             /**< number of used chunks */
+  uint32_t free_count;             /**< number of free chunks */
+  uint32_t free_bytes;             /**< number of free bytes (with headers) */
+  uint32_t largest_free_chunk;     /**< largest single free chunk */
   uint32_t total_derefs;           /**< total of all used chunk derefs */
   uint32_t period_last_touched;    /**< "this" period, for deref counts;
                                               we don't page in regions to update
                                               counts on period change! */
   RegionHeader *in_memory;         /**< cache entry; NULL if paged out */
-  uint16_t oddballs[NUM_ODDBALLS]; /**< chunk offsets with odd derefs */
+  uint32_t oddballs[NUM_ODDBALLS]; /**< chunk offsets with odd derefs */
 } Region;
 
 /*
@@ -826,20 +826,20 @@ static int noisy_log = 0;
 /*
  * Forward decls
  */
-static void find_oddballs(uint16_t region);
+static void find_oddballs(uint32_t region);
 
 /*
  * Lookup functions
  */
 
 static inline char *
-ChunkPointer(uint16_t region, uint16_t offset)
+ChunkPointer(uint32_t region, uint32_t offset)
 {
   return ((char *) (regions[region].in_memory)) + offset;
 }
 
 static uint8_t
-RegionDerefs(uint16_t region)
+RegionDerefs(uint32_t region)
 {
   if (regions[region].used_count)
     return (regions[region].total_derefs >>
@@ -850,7 +850,7 @@ RegionDerefs(uint16_t region)
 }
 
 static uint8_t
-RegionDerefsWithChunk(uint16_t region, uint16_t derefs)
+RegionDerefsWithChunk(uint32_t region, uint32_t derefs)
 {
   return ((regions[region].total_derefs >>
            (curr_period - regions[region].period_last_touched)) +
@@ -904,7 +904,7 @@ dump_debug_log(FILE *fp)
 
 /** Test if a chunk is migratable. */
 static int
-migratable(uint16_t region, uint16_t offset)
+migratable(uint32_t region, uint32_t offset)
 {
   chunk_reference_t ref = ChunkReference(region, offset);
   int j;
@@ -923,11 +923,11 @@ migratable(uint16_t region, uint16_t offset)
  * \param fp the FILE* to output to.
  */
 static void
-debug_dump_region(uint16_t region, FILE *fp)
+debug_dump_region(uint32_t region, FILE *fp)
 {
   Region *rp = regions + region;
   RegionHeader *rhp;
-  uint16_t offset, count;
+  uint32_t offset, count;
 
   ASSERT(region < region_count);
   rhp = rp->in_memory;
@@ -977,9 +977,9 @@ debug_dump_region(uint16_t region, FILE *fp)
  * \param offset the offset to verify.
  */
 static void
-verify_used_chunk(uint16_t region, uint16_t offset)
+verify_used_chunk(uint32_t region, uint32_t offset)
 {
-  uint16_t pos;
+  uint32_t pos;
 
   ASSERT(region < region_count);
 
@@ -1002,21 +1002,21 @@ verify_used_chunk(uint16_t region, uint16_t offset)
  * \return true if the region is valid.
  */
 static int
-region_is_valid(uint16_t region)
+region_is_valid(uint32_t region)
 {
   int result;
   Region *rp;
   RegionHeader *rhp;
-  int used_count;
-  int free_count;
-  int free_bytes;
-  int largest_free;
+  uint32_t used_count;
+  uint32_t free_count;
+  uint32_t free_bytes;
+  uint32_t largest_free;
   unsigned int total_derefs;
-  int len;
+  uint32_t len;
   int was_free;
   int dump;
-  uint16_t next_free;
-  uint16_t offset;
+  uint32_t next_free;
+  uint32_t offset;
 
   if (region >= region_count) {
     do_rawlog(LT_ERR, "region 0x%04x is not valid: region_count is 0x%04x",
@@ -1180,8 +1180,8 @@ region_is_valid(uint16_t region)
  * \param derefs the deref count to set on the chunk.
  */
 static void
-write_used_chunk(uint16_t region, uint16_t offset, uint16_t full_len,
-                 char const *data, uint16_t data_len, uint8_t derefs)
+write_used_chunk(uint32_t region, uint32_t offset, uint32_t full_len,
+                 char const *data, uint32_t data_len, uint8_t derefs)
 {
   char *cptr = ChunkPointer(region, offset);
   if (full_len <= MAX_SHORT_CHUNK_LEN + CHUNK_SHORT_DATA_OFFSET) {
@@ -1192,14 +1192,14 @@ write_used_chunk(uint16_t region, uint16_t offset, uint16_t full_len,
     memcpy(cptr + CHUNK_SHORT_DATA_OFFSET, data, data_len);
   } else if (full_len <= MAX_MEDIUM_CHUNK_LEN + CHUNK_MEDIUM_DATA_OFFSET) {
     /* chunk is medium */
-    uint16_t len = full_len - CHUNK_MEDIUM_DATA_OFFSET;
+    uint32_t len = full_len - CHUNK_MEDIUM_DATA_OFFSET;
     cptr[0] = (len >> 8) + CHUNK_USED + CHUNK_TAG1_MEDIUM + CHUNK_TAG2_MEDIUM;
     cptr[CHUNK_DEREF_OFFSET] = derefs;
     cptr[CHUNK_MEDIUM_LEN_LSB_OFFSET] = len & 0xff;
     memcpy(cptr + CHUNK_MEDIUM_DATA_OFFSET, data, data_len);
   } else {
     /* chunk is long */
-    uint16_t len = full_len - CHUNK_LONG_DATA_OFFSET;
+    uint32_t len = full_len - CHUNK_LONG_DATA_OFFSET;
     cptr[0] = CHUNK_USED + CHUNK_TAG1_LONG + CHUNK_TAG2_LONG;
     cptr[CHUNK_DEREF_OFFSET] = derefs;
     cptr[CHUNK_LONG_LEN_MSB_OFFSET] = len >> 8;
@@ -1215,8 +1215,8 @@ write_used_chunk(uint16_t region, uint16_t offset, uint16_t full_len,
  * \param next the offset for the next free chunk.
  */
 static void
-write_free_chunk(uint16_t region, uint16_t offset, uint16_t full_len,
-                 uint16_t next)
+write_free_chunk(uint32_t region, uint32_t offset, uint32_t full_len,
+                 uint32_t next)
 {
   char *cptr = ChunkPointer(region, offset);
   if (full_len <= MAX_SHORT_CHUNK_LEN + CHUNK_SHORT_DATA_OFFSET) {
@@ -1227,14 +1227,14 @@ write_free_chunk(uint16_t region, uint16_t offset, uint16_t full_len,
     cptr[CHUNK_DEREF_OFFSET] = next & 0xff;
   } else if (full_len <= MAX_MEDIUM_CHUNK_LEN + CHUNK_MEDIUM_DATA_OFFSET) {
     /* chunk is medium */
-    uint16_t len = full_len - CHUNK_MEDIUM_DATA_OFFSET;
+    uint32_t len = full_len - CHUNK_MEDIUM_DATA_OFFSET;
     cptr[0] = (len >> 8) + CHUNK_FREE + CHUNK_TAG1_MEDIUM + CHUNK_TAG2_MEDIUM;
     cptr[CHUNK_MEDIUM_LEN_LSB_OFFSET] = len & 0xff;
     cptr[CHUNK_MEDIUM_DATA_OFFSET] = next >> 8;
     cptr[CHUNK_DEREF_OFFSET] = next & 0xff;
   } else {
     /* chunk is long */
-    uint16_t len = full_len - CHUNK_LONG_DATA_OFFSET;
+    uint32_t len = full_len - CHUNK_LONG_DATA_OFFSET;
     cptr[0] = CHUNK_FREE + CHUNK_TAG1_LONG + CHUNK_TAG2_LONG;
     cptr[CHUNK_LONG_LEN_MSB_OFFSET] = len >> 8;
     cptr[CHUNK_LONG_LEN_LSB_OFFSET] = len & 0xff;
@@ -1249,7 +1249,7 @@ write_free_chunk(uint16_t region, uint16_t offset, uint16_t full_len,
  * \param next the offset for the next free chunk.
  */
 static void
-write_next_free(uint16_t region, uint16_t offset, uint16_t next)
+write_next_free(uint32_t region, uint32_t offset, uint32_t next)
 {
   char *cptr = ChunkPointer(region, offset);
   if (ChunkIsShort(region, offset)) {
@@ -1273,10 +1273,10 @@ write_next_free(uint16_t region, uint16_t offset, uint16_t next)
  * \param offset the offset of the left-hand chunk to coalesce.
  */
 static void
-coalesce_frees(uint16_t region, uint16_t offset)
+coalesce_frees(uint32_t region, uint32_t offset)
 {
   Region *rp = regions + region;
-  uint16_t full_len, next;
+  uint32_t full_len, next;
   full_len = ChunkFullLen(region, offset);
   next = ChunkNextFree(region, offset);
   if (offset + full_len == next) {
@@ -1294,10 +1294,10 @@ coalesce_frees(uint16_t region, uint16_t offset)
  * \param offset the offset of the chunk to free.
  */
 static void
-free_chunk(uint16_t region, uint16_t offset)
+free_chunk(uint32_t region, uint32_t offset)
 {
   Region *rp = regions + region;
-  uint16_t full_len, left;
+  uint32_t full_len, left;
 
   full_len = ChunkFullLen(region, offset);
   rp->total_derefs -= ChunkDerefs(region, offset);
@@ -1331,7 +1331,7 @@ free_chunk(uint16_t region, uint16_t offset)
     rp->in_memory->first_free = offset;
     left = 0;
   } else {
-    uint16_t next;
+    uint32_t next;
     next = ChunkNextFree(region, left);
     while (next && next < offset) {
       left = next;
@@ -1349,11 +1349,11 @@ free_chunk(uint16_t region, uint16_t offset)
  * \param region the region to search for a large hole in.
  * \return the size of the largest free chunk.
  */
-static uint16_t
-largest_hole(uint16_t region)
+static uint32_t
+largest_hole(uint32_t region)
 {
-  uint16_t size;
-  uint16_t offset;
+  uint32_t size;
+  uint32_t offset;
   size = 0;
   for (offset = regions[region].in_memory->first_free; offset;
        offset = ChunkNextFree(region, offset))
@@ -1372,11 +1372,11 @@ largest_hole(uint16_t region)
  * \param align the alignment to use: 0 = easiest, 1 = left, 2 = right.
  * \return the offset of the allocated space.
  */
-static uint16_t
-split_hole(uint16_t region, uint16_t offset, uint16_t full_len, int align)
+static uint32_t
+split_hole(uint32_t region, uint32_t offset, uint32_t full_len, int align)
 {
   Region *rp = regions + region;
-  uint16_t hole_len = ChunkFullLen(region, offset);
+  uint32_t hole_len = ChunkFullLen(region, offset);
 
   rp->used_count++;
   if (full_len <= MAX_SHORT_CHUNK_LEN + CHUNK_SHORT_DATA_OFFSET) {
@@ -1399,7 +1399,7 @@ split_hole(uint16_t region, uint16_t offset, uint16_t full_len, int align)
     if (rp->in_memory->first_free == offset)
       rp->in_memory->first_free = ChunkNextFree(region, offset);
     else {
-      uint16_t hole;
+      uint32_t hole;
       for (hole = rp->in_memory->first_free; hole;
            hole = ChunkNextFree(region, hole))
         if (ChunkNextFree(region, hole) == offset)
@@ -1426,7 +1426,7 @@ split_hole(uint16_t region, uint16_t offset, uint16_t full_len, int align)
     if (rp->in_memory->first_free == offset)
       rp->in_memory->first_free += full_len;
     else {
-      uint16_t hole;
+      uint32_t hole;
       for (hole = rp->in_memory->first_free; hole;
            hole = ChunkNextFree(region, hole))
         if (ChunkNextFree(region, hole) == offset)
@@ -1457,7 +1457,7 @@ split_hole(uint16_t region, uint16_t offset, uint16_t full_len, int align)
  * \param region region to read
  */
 static void
-read_cache_region(fd_type fd, RegionHeader *rhp, uint16_t region)
+read_cache_region(fd_type fd, RegionHeader *rhp, uint32_t region)
 {
   off_t file_offset = region * REGION_SIZE;
   int j;
@@ -1522,7 +1522,7 @@ read_cache_region(fd_type fd, RegionHeader *rhp, uint16_t region)
  * \param region region to write
  */
 static void
-write_cache_region(fd_type fd, RegionHeader *rhp, uint16_t region)
+write_cache_region(fd_type fd, RegionHeader *rhp, uint32_t region)
 {
   off_t file_offset = region * REGION_SIZE;
   int j;
@@ -1668,7 +1668,7 @@ find_available_cache_region(void)
  * \param region the region to bring in.
  */
 static void
-bring_in_region(uint16_t region)
+bring_in_region(uint32_t region)
 {
   Region *rp = regions + region;
   RegionHeader *rhp, *prev, *next;
@@ -1735,10 +1735,10 @@ bring_in_region(uint16_t region)
  * Recycle an empty region if possible.
  * \return the region id for the new region.
  */
-static uint16_t
+static uint32_t
 create_region(void)
 {
-  uint16_t region;
+  uint32_t region;
 
   for (region = 0; region < region_count; region++)
     if (regions[region].used_count == 0)
@@ -1780,11 +1780,11 @@ create_region(void)
  * \param region the region to search in.
  */
 static void
-find_oddballs(uint16_t region)
+find_oddballs(uint32_t region)
 {
   Region *rp = regions + region;
   int j, d1, d2;
-  uint16_t offset, len;
+  uint32_t offset, len;
   int mean;
 
   for (j = 0; j < NUM_ODDBALLS; j++)
@@ -1828,10 +1828,10 @@ find_oddballs(uint16_t region)
  * \param old_region the region the chunk was in before (if any).
  * \return the region id for the least unhappy region.
  */
-static uint16_t
-find_best_region(uint16_t full_len, int derefs, uint16_t old_region)
+static uint32_t
+find_best_region(uint32_t full_len, int derefs, uint32_t old_region)
 {
-  uint16_t best_region, region;
+  uint32_t best_region, region;
   int best_score, score;
   int free_bytes;
   Region *rp;
@@ -1886,11 +1886,11 @@ find_best_region(uint16_t full_len, int derefs, uint16_t old_region)
  * \param old_region the region the chunk was in before (if any).
  * \param old_offset the offset the chunk was at before (if any).
  */
-static uint16_t
-find_best_offset(uint16_t full_len, uint16_t region, uint16_t old_region,
-                 uint16_t old_offset)
+static uint32_t
+find_best_offset(uint32_t full_len, uint32_t region, uint32_t old_region,
+                 uint32_t old_offset)
 {
-  uint16_t fits, offset;
+  uint32_t fits, offset;
 
   bring_in_region(region);
 
@@ -1978,7 +1978,7 @@ chunk_statistics(dbref player)
   int free_large = 0;
   int used_count = 0;
   int used_bytes = 0;
-  uint16_t rid;
+  uint32_t rid;
 
   for (rid = 0; rid < region_count; rid++) {
     free_count += regions[rid].free_count;
@@ -2052,7 +2052,7 @@ chunk_page_stats(dbref player)
 static void
 chunk_region_statistics(dbref player)
 {
-  uint16_t rid;
+  uint32_t rid;
 
   if (!GoodObject(player)) {
     do_rawlog(LT_TRACE, "---- Region statistics");
@@ -2181,10 +2181,10 @@ migrate_sort(void)
  * \param which the index (in the migration arrays) of the chunk to move.
  */
 static void
-migrate_slide(uint16_t region, uint16_t offset, int which)
+migrate_slide(uint32_t region, uint32_t offset, int which)
 {
   Region *rp = regions + region;
-  uint16_t o_len, len, next, other, prev, o_off, o_oth;
+  uint32_t o_len, len, next, other, prev, o_off, o_oth;
 
   debug_log("migrate_slide %d (%08x) to %04x%04x", which,
             m_references[which][0], region, offset);
@@ -2252,10 +2252,10 @@ migrate_slide(uint16_t region, uint16_t offset, int which)
  * \param which the index (in the migration arrays) of the chunk to move.
  */
 static void
-migrate_move(uint16_t region, uint16_t offset, int which, int align)
+migrate_move(uint32_t region, uint32_t offset, int which, int align)
 {
   Region *rp = regions + region;
-  uint16_t s_reg, s_off, s_len, o_off, length;
+  uint32_t s_reg, s_off, s_len, o_off, length;
   Region *srp;
 
   debug_log("migrate_move %d (%08x) to %04x%04x, alignment %d", which,
@@ -2315,11 +2315,11 @@ migrate_move(uint16_t region, uint16_t offset, int which, int align)
 }
 
 static void
-migrate_region(uint16_t region)
+migrate_region(uint32_t region)
 {
   chunk_reference_t high, low;
   int j, derefs;
-  uint16_t offset, length, best_region, best_offset;
+  uint32_t offset, length, best_region, best_offset;
 
   bring_in_region(region);
 
@@ -2343,9 +2343,9 @@ migrate_region(uint16_t region)
 }
 
 static chunk_reference_t
-acc_chunk_create(char const *data, uint16_t len, uint8_t derefs)
+acc_chunk_create(char const *data, uint32_t len, uint8_t derefs)
 {
-  uint16_t full_len, region, offset;
+  uint32_t full_len, region, offset;
 
   if (len < MIN_CHUNK_LEN || len > MAX_CHUNK_LEN)
     mush_panicf("Illegal chunk length requested: %d bytes", len);
@@ -2375,7 +2375,7 @@ acc_chunk_create(char const *data, uint16_t len, uint8_t derefs)
 static void
 acc_chunk_delete(chunk_reference_t reference)
 {
-  uint16_t region, offset;
+  uint32_t region, offset;
   region = ChunkReferenceToRegion(reference);
   offset = ChunkReferenceToOffset(reference);
   ASSERT(region < region_count);
@@ -2392,10 +2392,10 @@ acc_chunk_delete(chunk_reference_t reference)
   stat_delete++;
 }
 
-static uint16_t
-acc_chunk_fetch(chunk_reference_t reference, char *buffer, uint16_t buffer_len)
+static uint32_t
+acc_chunk_fetch(chunk_reference_t reference, char *buffer, uint32_t buffer_len)
 {
-  uint16_t region, offset, len;
+  uint32_t region, offset, len;
   region = ChunkReferenceToRegion(reference);
   offset = ChunkReferenceToOffset(reference);
   ASSERT(region < region_count);
@@ -2417,7 +2417,7 @@ acc_chunk_fetch(chunk_reference_t reference, char *buffer, uint16_t buffer_len)
   return len;
 }
 
-static uint16_t
+static uint32_t
 acc_chunk_len(chunk_reference_t reference)
 {
   return acc_chunk_fetch(reference, NULL, 0);
@@ -2426,7 +2426,7 @@ acc_chunk_len(chunk_reference_t reference)
 static uint8_t
 acc_chunk_derefs(chunk_reference_t reference)
 {
-  uint16_t region, offset;
+  uint32_t region, offset;
   region = ChunkReferenceToRegion(reference);
   offset = ChunkReferenceToOffset(reference);
   ASSERT(region < region_count);
@@ -2442,7 +2442,7 @@ acc_chunk_migration(int count, chunk_reference_t **references)
 {
   int k, l;
   unsigned total;
-  uint16_t region, offset;
+  uint32_t region, offset;
 
   debug_log("*** chunk_migration starts, count = %d", count);
 
@@ -2500,7 +2500,7 @@ static int
 acc_chunk_num_swapped(void)
 {
   int count;
-  uint16_t region;
+  uint32_t region;
   count = 0;
   for (region = 0; region < region_count; region++)
     if (!regions[region].in_memory)
@@ -2585,7 +2585,7 @@ acc_chunk_new_period(void)
 {
   RegionHeader *rhp;
   Region *rp;
-  uint16_t region, offset;
+  uint32_t region, offset;
   int shift;
 
 #ifdef LOG_CHUNK_STATS
@@ -2756,10 +2756,10 @@ acc_chunk_fork_done(void)
 #endif /* !WIN32 */
 
 struct ac_funcs {
-  chunk_reference_t (*chunk_create)(char const *, uint16_t, uint8_t);
+  chunk_reference_t (*chunk_create)(char const *, uint32_t, uint8_t);
   void (*chunk_delete)(chunk_reference_t);
-  uint16_t (*fetch)(chunk_reference_t, char *, uint16_t);
-  uint16_t (*len)(chunk_reference_t);
+  uint32_t (*fetch)(chunk_reference_t, char *, uint32_t);
+  uint32_t (*len)(chunk_reference_t);
   uint8_t (*derefs)(chunk_reference_t);
   void (*migration)(int, chunk_reference_t **);
   int (*num_swapped)(void);
@@ -2797,7 +2797,7 @@ static struct ac_funcs *chunker = NULL;
  * \return the chunk reference for retrieving (or deleting) the data.
  */
 chunk_reference_t
-chunk_create(char const *data, uint16_t len, uint8_t derefs)
+chunk_create(char const *data, uint32_t len, uint8_t derefs)
 {
   return chunker->chunk_create(data, len, derefs);
 }
@@ -2821,8 +2821,8 @@ chunk_delete(chunk_reference_t reference)
  * \param buffer_len the length of the buffer.
  * \return the length of the data.
  */
-uint16_t
-chunk_fetch(chunk_reference_t reference, char *buffer, uint16_t buffer_len)
+uint32_t
+chunk_fetch(chunk_reference_t reference, char *buffer, uint32_t buffer_len)
 {
   return chunker->fetch(reference, buffer, buffer_len);
 }
@@ -2834,7 +2834,7 @@ chunk_fetch(chunk_reference_t reference, char *buffer, uint16_t buffer_len)
  * \param reference the reference to the chunk to be queried.
  * \return the length of the data.
  */
-uint16_t
+uint32_t
 chunk_len(chunk_reference_t reference)
 {
   return chunker->len(reference);

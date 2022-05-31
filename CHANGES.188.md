@@ -32,6 +32,7 @@ Fixes
 -----
 * `udefault` only accepted 12 arguments, not the documented 32. [MG]
 * ``MOGRIFY`FORMAT`` was not being passed the mogrified channel name from ``MOGRIFY`CHANNAME`` as it should. Reported by Xperta [MT]
+* Fixed `MAX_COMMAND_LEN` alteration support, by improving the stability of the chunk system. Patch by Mercutio. [1336]
 
 Version 1.8.8 patchlevel 0 Apr 20 2020
 ======================================

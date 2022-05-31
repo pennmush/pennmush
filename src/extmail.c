@@ -1639,7 +1639,7 @@ real_send_mail(dbref player, dbref target, char *subject, char *message,
     size_t len = strlen(message) + 1;
     newp->msgid = chunk_create(message, len, 1);
   } else {
-    uint16_t len;
+    uint32_t len;
     char *text;
     char buff[BUFFER_LEN], newmsg[BUFFER_LEN], *nm = newmsg;
 

@@ -23,15 +23,16 @@ Version 1.8.8 patchlevel 1 ??? ?? 202?
 Minor changes
 -------------
 
-* Sqlite updated to 3.34.1. [SW]
+* Sqlite updated to 3.36.0. [SW]
 * cJSON updated to 1.7.13 [SW]
-* PCRE updated to 10.35 [SW]
+* PCRE updated to 10.39 [SW]
 * New `--version` option to the netmush binary to display the version and exit. [SW]
 
 Fixes
 -----
 * `udefault` only accepted 12 arguments, not the documented 32. [MG]
-* MOGRIFY`FORMAT was not being passed the mogrified channel name from MOGRIFY`CHANNAME as it should. Reported by Xperta [MT]
+* ``MOGRIFY`FORMAT`` was not being passed the mogrified channel name from ``MOGRIFY`CHANNAME`` as it should. Reported by Xperta [MT]
+* Fixed `MAX_COMMAND_LEN` alteration support, by improving the stability of the chunk system. Patch by Mercutio. [1336]
 
 Softcode
 --------

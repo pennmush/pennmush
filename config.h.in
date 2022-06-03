@@ -387,6 +387,7 @@ typedef bool _Bool;
 #define SQLITE_SOUNDEX 1
 #define SQLITE_DEFAULT_WAL_SYNCHRONOUS 1
 #define SQLITE_ENABLE_UPDATE_DELETE_LIMIT 1
+#define SQLITE_ENABLE_MATH_FUNCTIONS 1
 #ifdef HAVE_LIBZ
 #define SQLITE_HAVE_ZLIB 1
 #endif
@@ -493,4 +494,4 @@ typedef bool _Bool;
 #include "win32_vers.h"
 #endif
 
-#endif /* __CONFIG_H */ 
+#endif /* __CONFIG_H */

@@ -350,7 +350,7 @@ See also: PARENTS, ORPHAN
 
   You must control an object in order to set attributes on it.
 
-See also: @atrlock, @atrchown, ATTRIBUTES
+See also: @atrlock, @atrchown, owner(), ATTRIBUTES
 & ATTRIBUTES
 & ATTRIBUTES LIST
 & ATTRIBUTE LIST

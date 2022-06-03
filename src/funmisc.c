@@ -1661,10 +1661,8 @@ FUNCTION(fun_http)
 
     if (verb == HTTP_POST) {
       curl_easy_setopt(handle, CURLOPT_POST, 1);
-    } else if (verb == HTTP_PUT) {
-      curl_easy_setopt(handle, CURLOPT_CUSTOMREQUEST, "PUT");
-    } else if (verb == HTTP_DELETE ) {
-      curl_easy_setopt(handle, CURLOPT_CUSTOMREQUEST, "DELETE");
+    } else {
+      curl_easy_setopt(handle, CURLOPT_CUSTOMREQUEST, http_verb_name[verb]);
     }
 
     postdata = nargs > 3 && (bool)*args[3];
@@ -1699,6 +1697,7 @@ FUNCTION(fun_http)
   if (curl_status == CURLE_OK) {
     long respcode;
     char *contenttype;
+    char rbuff[BUFFER_LEN];
     struct urlreq *resp;
     bool is_utf8 = 0;
 
@@ -1721,7 +1720,6 @@ FUNCTION(fun_http)
         }
       }
       if (resp->body && sqlite3_str_length(resp->body) > 0) {
-        char rbuff[BUFFER_LEN];
         char *body = NULL;
         char *latin1 = NULL;
         int len;
@@ -1742,9 +1740,6 @@ FUNCTION(fun_http)
           }
         }
         pe_regs_setenv(resp->pe_regs, 0, latin1);
-
-        call_ufun(&ufun, rbuff, executor, enactor, pe_info, resp->pe_regs);
-        safe_str(rbuff, buff, bp);
         
         if (is_utf8) {
           mush_free(latin1, "string.httpfun.received");
@@ -1757,6 +1752,10 @@ FUNCTION(fun_http)
         pe_regs_set_int(pe_info->regvals, PE_REGS_Q, "http-overflow", 1);
         notify(resp->thing, T("Too much HTTP data received; excess truncated."));
       }
+
+      call_ufun(&ufun, rbuff, executor, enactor, pe_info, resp->pe_regs);
+      safe_str(rbuff, buff, bp);
+
     } else {
       pe_regs_set(pe_info->regvals, PE_REGS_Q, "http-error", curl_easy_strerror(curl_status));
     }

@@ -28,6 +28,11 @@ Minor changes
 * PCRE updated to 10.39 [SW]
 * New `--version` option to the netmush binary to display the version and exit. [SW]
 
+Softcode
+--------
+
+* `chain()` for function chaining functionality. Patch by Mercutio.
+
 Fixes
 -----
 * `udefault` only accepted 12 arguments, not the documented 32. [MG]

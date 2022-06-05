@@ -126,15 +126,15 @@ See also: Dbref functions
 & List functions
   List functions take at least one list of elements and return transformed lists or one or more members of those lists. Most of these functions can take an arbitrary <delimiter> argument to specify what delimits list elements; if none is provided, a space is used by default.
 
-  elements()    extract()     filter()      filterbool()  first()
-  fold()        grab()        graball()     index()       itemize()
-  items()       iter()        last()        ldelete()     linsert()
-  lreplace()    lockfilter()  map()         match()       matchall()
-  member()      mix()         munge()       namegrab()    namegraball()
-  randword()    remove()      rest()        revwords()    setdiff()
-  setinter()    setunion()    shuffle()     sort()        sortby()
-  sortkey()     splice()      step()        table()       unique()
-  wordpos()     words()
+  chain()       elements()    extract()     filter()      filterbool()  
+  first()       fold()        grab()        graball()     index()       
+  itemize()     items()       iter()        last()        ldelete()
+  linsert()     lreplace()    lockfilter()  map()         match()       
+  matchall()    member()      mix()         munge()       namegrab()    
+  namegraball() randword()    remove()      rest()        revwords()    
+  setdiff()     setinter()    setunion()    shuffle()     sort()        
+  sortby()      sortkey()     splice()      step()        table()       
+  unique()      wordpos()     words()
 
 See also: LISTS
 & Math functions
@@ -560,6 +560,88 @@ See also: ANSI, COLOR, @sockset, colorstyle, colors()
   Returns the absolute possessive pronoun - his/hers/its/theirs - for an object. The %a substitution returns the absolute possessive pronoun of the enactor.
 
 See also: obj(), poss(), subj()
+& CHAIN()
+  chain(<attribute list>, <base case>[, ..., <argN>])
+
+  Passes the base case through each [<object>/]<attribute> in the space delimited attribute list.
+  The result of each evaluation is passed to the next attribute, serving a similar purpose as fold().
+
+  Examples:
+    > &JSON`ADDNAME me=json_mod(%0,set,$.name,json(string,%1))
+    > &JSON`SET_CHA me=json_mod(%0,set,$.stats.charisma.val,%2)
+    > &JSON`SET_CHA_MODIFIER me=json_mod(%0,set,$.stats.charisma.mod,div(sub(%2,10),2))
+    > say chain(JSON`ADDNAME JSON`SET_CHA JSON`SET_CHA_MODIFIER,json(object),%N,13)
+    You say, "{"name":"One","stats":{"charisma":{"val":13,"mod":1}}}"
+
+    > &type me=farmer
+    > &FUN`HERO`GOLD me=json_mod(%0,set,$.gold,5)
+    > &FUN`HERO`SKILL`SWORD me=json_mod(%0,set,$.skill.sword,2)
+    > &FUN`HERO`SKILL me=%0
+    > &FUN`FARMER`GOLD me=json_mod(%0,set,$.gold,1)
+    > &FUN`FARMER`SKILL`FARM me=json_mod(%0,set,$.skill.farming,10)
+    > &FUN`FARMER`SKILL me=%0
+    > say chain(lattr(me/FUN`[v(type)]`**),json(object))
+    You say, "{"gold":1,"skill":{"farming":10}}"
+
+  See 'help chain2' for more examples.
+
+See also: fold(), map(), iter()
+& CHAIN2
+  Examples:
+    > &FUN`TESTING me=iter(lattr(%=`),\[TEST\] %i0: [chain(%i0`setup fun`wrap fun`storeresult %i0`validate fun`testoutput,u(%i0`args`0),u(%i0`args`1),u(%i0`args`2))],,%r)
+    > &FUN`STORERESULT me=setr(Result,%0)
+    > &FUN`WRAP me=u(me/chainfun,%0)
+    > &FUN`TESTOUTPUT me=if(%0,ansi(hg,Success),ansi(hr,Test failed\, output failed. Output was: '%q<Result>'))
+    
+    > &FUN`TESTING`1`ARGS`0 me=meow
+    > &FUN`TESTING`1`SETUP me=setq(1,woof)%0
+    > &FUN`TESTING`1`VALIDATE me=strmatch(%0,woof)
+    
+    > &FUN`TESTING`2`ARGS`0 me=meow
+    > &FUN`TESTING`2`SETUP me=setq(1,0)%0
+    > &FUN`TESTING`2`VALIDATE me=strmatch(%0,woof)
+    > th u(fun`testing)
+    [TEST] FUN`TESTING`1: Success
+    [TEST] FUN`TESTING`2: Test failed, output failed. Output was: 'meow'
+
+  See 'help chain3' for implementation examples.
+
+See also: fold(), map(), iter()
+& CHAIN3
+  Examples:
+    Discord Example: Create an automatic avatar for a user.
+    > &email me=test@test.com
+    > &fn`discord`5.avatar`1.prepare me=setq(Avatar.Name,name(%0),Avatar.Email,get(%0/email),Avatar.Size,%1,Avatar.Foreground,colors(%2,hex),Avatar.Background,colors(%3,hex))
+    > &fn`discord`5.avatar`2.clean me=setq(Avatar.Email,lcstr(trim(%q<Avatar.Email>)),Avatar.Foreground,edit(%q<Avatar.Foreground>,#,),Avatar.Background,edit(%q<Avatar.Background>,#,))
+    > &fn`discord`5.avatar`3.ui-avatar me=https://ui-avatars.com/api/%q<Avatar.Name>/%q<Avatar.Size>/%q<Avatar.Background>/%q<Avatar.Foreground>/2/0.5/true/true/true/png
+    > &fn`discord`5.avatar`4.gravatar me=https://www.gravatar.com/avatar/[digest(md5,strfirstof(%q<Avatar.Email>,%q<Avatar.Name>))]?size=%q<Size>&d=[urlencode(%0)]
+    > &fn`discord`5.avatar`5.clear me=unsetq(Avatar.)%0
+
+    > say chain(sort(lattr(%!/fn`discord`5.avatar`),m),%:,300,hw,+blue)
+    You say, "https://www.gravatar.com/avatar/b642b4217b34b1e8d3bd915fc65c4452?size=&d=https%3A%2F%2Fui-avatars.com%2Fapi%2FOne%2F300%2F0000ff%2Fffffff%2F2%2F0.5%2Ftrue%2Ftrue%2Ftrue%2Fpng"
+
+    Discord Example: Combine to create a webhook json
+    > &data`discord`size me=300
+    > &data`discord`foreground me=hr
+    > &data`discord`background me=+grey
+    > &fn`discord me=chain(sort(lattr(%!/fn`discord`),m),json(object),%0,%1,%2)
+    > &fn`discord`1.ready me=setq(Discord.Player,%1,Discord.User,name(%1),Discord.Title,%2,Discord.Content,%3,Discord.Timestamp,timefmt($Y-$m-$dT$H:$M:$S.000Z))%0
+    > &fn`discord`2.title me=json_mod(%0,set,$.title,json(string,%q<Discord.Title>))
+    > &fn`discord`3.content me=json_mod(%0,set,$.content,json(string,%q<Discord.Content>))
+    > &fn`discord`4.timestamp me=json_mod(%0,set,$.timestamp,json(string,%q<Discord.Timestamp>))
+    > &fn`discord`5.avatar me=json_mod(%0,set,$.avatar_url,json(string,chain(sort(lattr(%!/fn`discord`5.avatar`),m),%q<Discord.Player>,v(data`discord`size),v(data`discord`foreground),v(data`discord`background))))
+    > &fn`discord`6.username me=json_mod(%0,set,$.username,json(string,%q<Discord.User>))
+    > &fn`discord`7.clear me=unsetq(Discord.)%0
+    
+    > th u(fn`discord,%:,Some Title,This is content.)
+    {"title":"Some Title","content":"This is content.","timestamp":"2021-10-13T20:40:23.000Z","avatar_url":"https://www.gravatar.com/avatar/b642b4217b34b1e8d3bd915fc65c4452?size=&d=https%3A%2F%2Fui-avatars.com%2Fapi%2FOne%2F300%2Fbebebe%2Fff0000%2F2%2F0.5%2Ftrue%2Ftrue%2Ftrue%2Fpng","username":"One"}
+
+    Discord Example: Post it to a webhook.
+    > &test me=say %q<Status>
+    > @http/post %!/test me=https://discordapp.com/api/webhooks/YOURWEBHOOKHERE,u(fn`discord,%:,Some Title,This is Content.)
+    You say, "204"
+
+    See also: @http, json(), json_mod(), setq(), unsetq(), sort(), lattr()
 & ART()
   art(<string>)
 

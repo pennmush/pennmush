@@ -392,6 +392,7 @@ FUNTAB flist[] = {
   {"CDESC", fun_cinfo, 1, 1, FN_REG},
   {"CEMIT", fun_cemit, 2, 3, FN_REG},
   {"CFLAGS", fun_cflags, 1, 2, FN_REG | FN_STRIPANSI},
+  {"CHAIN", fun_chain, 2, MAX_STACK_ARGS + 2, FN_REG},
   {"CHANNELS", fun_channels, 0, 2, FN_REG | FN_STRIPANSI},
   {"CLFLAGS", fun_cflags, 1, 2, FN_REG | FN_STRIPANSI},
   {"CLOCK", fun_clock, 1, 2, FN_REG | FN_STRIPANSI},

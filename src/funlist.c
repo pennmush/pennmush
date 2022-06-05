@@ -465,6 +465,63 @@ FUNCTION(fun_graball)
 }
 
 /* ARGSUSED */
+FUNCTION(fun_chain)
+{
+  /* iteratively evaluates a list of attributes, with a single argument 
+   * and optional arguments. It passes the result of each result to the 
+   * next attribute as %0, similar to fold, but carries all optional argument
+   * info down each level. Repeat until there are no attributes left in the 
+   * list. Fails if there is no argument.
+   */
+
+  PE_REGS *pe_regs;
+  int funccount, per;
+  char result[BUFFER_LEN];
+  char *list[MAX_SORTSIZE];
+  ufun_attrib ufun;
+  ufun_attrib *ufun_list;
+  int n;
+
+  n = list2arr_ansi(list, MAX_SORTSIZE, args[0], ' ', 0);
+  ufun_list = mush_calloc(n, sizeof(ufun_attrib), "fun_chain_array");
+
+  for(int i = 0; i < n; i++) {
+    if (!fetch_ufun_attrib(list[i], executor, &ufun_list[i], UFUN_OBJECT))
+    {
+      mush_free(ufun_list, "fun_chain_array");
+      return;
+    }
+  }
+
+  freearr(list, n);
+
+  mush_strncpy(result, args[1], sizeof result);
+
+  pe_regs = pe_regs_create(PE_REGS_ARG, "fun_chain");
+  pe_regs_setenv(pe_regs, 0, result);
+  for(int ai = 2, pei = 1; ai < nargs; ai++, pei++)
+  {
+    pe_regs_setenv_nocopy(pe_regs, pei, args[ai]);
+  }
+
+  funccount = pe_info->fun_invocations;
+  
+  for (int i = 0; i < n; i++) {
+    ufun = ufun_list[i];
+    per = call_ufun(&ufun, result, executor, enactor, pe_info, pe_regs);
+    pe_regs_setenv(pe_regs, 0, result);
+    if (per || (pe_info->fun_invocations >= FUNCTION_LIMIT &&
+                pe_info->fun_invocations == funccount))
+      break;
+    funccount = pe_info->fun_invocations;
+  }
+
+  pe_regs_free(pe_regs);
+  mush_free(ufun_list, "fun_chain_array");
+  safe_str(result, buff, bp);
+}
+
+/* ARGSUSED */
 FUNCTION(fun_fold)
 {
   /* iteratively evaluates an attribute with a list of arguments and

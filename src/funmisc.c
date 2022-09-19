@@ -1510,6 +1510,7 @@ FUNCTION(fun_cache)
     goto cleanup;
   }
   
+  upcasestr(xargs[1]);
   if (!good_atr_name(xargs[1])) {
     notify(executor, T("Invalid attribute name."));
     return;

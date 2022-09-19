@@ -1510,8 +1510,10 @@ FUNCTION(fun_cache)
     goto cleanup;
   }
   
-  if (!good_atr_name(xargs[1]))
-    return AE_BADNAME;
+  if (!good_atr_name(xargs[1])) {
+    notify(executor, T("Invalid attribute name."));
+    return;
+  }
 
   if(!( controls(executor, thing) && can_edit_attr(executor, thing, xargs[1]))) {
     safe_str(T("#-1 That attribute cannot be changed by you."), buff, bp);

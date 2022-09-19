@@ -34,6 +34,11 @@ Fixes
 * ``MOGRIFY`FORMAT`` was not being passed the mogrified channel name from ``MOGRIFY`CHANNAME`` as it should. Reported by Xperta [MT]
 * Fixed `MAX_COMMAND_LEN` alteration support, by improving the stability of the chunk system. Patch by Mercutio. [1336]
 
+Softcode
+--------
+* `@http` now supports all other HTTP Verbs. Patch by Mercutio.
+* `@http` now stores information on overflow into a register. Patch by Mercutio.
+
 Version 1.8.8 patchlevel 0 Apr 20 2020
 ======================================
 

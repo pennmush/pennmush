@@ -1509,6 +1509,9 @@ FUNCTION(fun_cache)
     safe_str(T(e_notvis), buff, bp);
     goto cleanup;
   }
+  
+  if (!good_atr_name(xargs[1]))
+    return AE_BADNAME;
 
   if(!( controls(executor, thing) && can_edit_attr(executor, thing, xargs[1]))) {
     safe_str(T("#-1 That attribute cannot be changed by you."), buff, bp);
@@ -1520,6 +1523,7 @@ FUNCTION(fun_cache)
   char cache_entry[BUFFER_LEN];
   char *cache_entry_bp = cache_entry;
   safe_str(do_get_attrib(executor, thing, xargs[1]), cache_entry, &cache_entry_bp);
+  *cache_entry_bp = '\0';
   char *cache_result = strchr(cache_entry, ' ');
   int cache_secs = -1;
   

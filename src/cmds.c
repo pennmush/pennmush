@@ -55,6 +55,7 @@
 #include "version.h"
 #include "mushsql.h"
 #include "charconv.h"
+#include "sort.h"
 
 /* External Stuff */
 void do_poor(dbref player, char *arg1);
@@ -1833,13 +1834,16 @@ COMMAND(cmd_fetch)
   CURL *handle;
   struct curl_slist *headers = NULL;
   dbref thing;
-  char *s;
+  int switch_cnt = 0, headerslot = 0, numargs, nptrs;
+  char *s, *cp, *header_key, *header_value;
+  char **ptrs;
+  char *args[MAX_STACK_ARGS];
   const char *userpass;
-  const char *authorize;
+  const char *contenttype;
   char tbuf[BUFFER_LEN];
+  char cur_header[BUFFER_LEN];
   int queue_type = QUEUE_DEFAULT | (queue_entry->queue_type & QUEUE_EVENT);
   enum http_verb verb = HTTP_GET;
-  int switch_cnt = 0;
 
   if (!Wizard(executor) && !has_power_by_name(executor, "Can_HTTP", NOTYPE)) {
     notify(executor, T("Permission denied."));
@@ -1850,6 +1854,10 @@ COMMAND(cmd_fetch)
     notify(executor, T("What do you want to query?"));
     return;
   }
+
+  for (numargs = 1; args_right[numargs] && numargs < (MAX_ARG);
+       numargs++)
+    ;
 
   if (SW_ISSET(sw, SWITCH_POST)) {
     verb = HTTP_POST;
@@ -1936,24 +1944,49 @@ COMMAND(cmd_fetch)
   curl_easy_setopt(handle, CURLOPT_FOLLOWLOCATION, 1);
   curl_easy_setopt(handle, CURLOPT_MAXREDIRS, 5);
 
+
+  if(numargs > 1 && verb == HTTP_GET) {
+    headerslot = 2;
+  }
+  else if( numargs > 2 && verb != HTTP_GET) {
+    headerslot = 3;
+  }
+
   userpass = pe_regs_get(req->pe_regs, PE_REGS_Q, "userpass");
   if (userpass) {
     curl_easy_setopt(handle, CURLOPT_USERPWD, userpass);
     curl_easy_setopt(handle, CURLOPT_HTTPAUTH, CURLAUTH_ANY);
   }
   
-  authorize = pe_regs_get(req->pe_regs, PE_REGS_Q, "authorization");
-  if(authorize)
+  if(headerslot)
   {
-      char auth_header[BUFFER_LEN];
-      snprintf(auth_header, sizeof auth_header, "Authorization: %s", authorize);
-      headers = curl_slist_append(headers, auth_header);
+
+    cp = remove_markup(args_right[headerslot], NULL);
+    ptrs = mush_calloc(MAX_SORTSIZE, sizeof(char *), "ptrarray");
+    nptrs = list2arr_ansi(ptrs, MAX_SORTSIZE, cp, '\n', 1);
+    
+    for(int i = 0; i < nptrs; i++) {
+      char* cur_line = ptrs[i];
+      header_key = split_token(&cur_line,':');
+      header_value = cur_line;
+
+      if(header_key == NULL || header_value == NULL) {
+        notify(executor, T("Header value has a bad key:value set. Aborting."));
+        return;
+      }
+
+      if(comp_gencomp(executor, header_key, "Content-Type", INSENS_ALPHANUM_LIST) == 0) {
+        contenttype = header_value;
+        continue;
+      }
+
+      snprintf(cur_header, sizeof cur_header, "%s: %s", header_key, header_value);
+      headers = curl_slist_append(headers, cur_header);
+    }
   }
-  
 
   if (verb != HTTP_GET) {
     bool postdata;
-    const char *contenttype;
 
     if (verb == HTTP_POST) {
       curl_easy_setopt(handle, CURLOPT_POST, 1);
@@ -1963,7 +1996,7 @@ COMMAND(cmd_fetch)
 
     postdata = args_right[2] && *args_right[2];
 
-    contenttype = pe_regs_get(req->pe_regs, PE_REGS_Q, "content-type");
+    contenttype = headerslot ? contenttype : pe_regs_get(req->pe_regs, PE_REGS_Q, "content-type");
     if (contenttype) {
       char ct_header[BUFFER_LEN];
       snprintf(ct_header, sizeof ct_header, "Content-Type: %s", contenttype);

@@ -853,6 +853,14 @@ gencomp(dbref player, char *a, char *b, SortType sort_type)
   return result;
 }
 
+int
+comp_gencomp(dbref executor, char *left, char *right, const char *type)
+{
+  int c;
+  c = gencomp(executor, left, right, type);
+  return (c > 0 ? 1 : (c < 0 ? -1 : 0)) * sort_order;
+}
+
 /**
  * Given a player dbref (For use with viewing permissions for attrs, etc),
  * list of keys, list of strings it maps to (sortkey()-style),

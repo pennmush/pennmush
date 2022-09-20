@@ -1835,6 +1835,7 @@ COMMAND(cmd_fetch)
   dbref thing;
   char *s;
   const char *userpass;
+  const char *authorize;
   char tbuf[BUFFER_LEN];
   int queue_type = QUEUE_DEFAULT | (queue_entry->queue_type & QUEUE_EVENT);
   enum http_verb verb = HTTP_GET;
@@ -1940,6 +1941,15 @@ COMMAND(cmd_fetch)
     curl_easy_setopt(handle, CURLOPT_USERPWD, userpass);
     curl_easy_setopt(handle, CURLOPT_HTTPAUTH, CURLAUTH_ANY);
   }
+  
+  authorize = pe_regs_get(req->pe_regs, PE_REGS_Q, "authorize");
+  if(authorize)
+  {
+      char auth_header[BUFFER_LEN];
+      snprintf(auth_header, sizeof auth_header, "Authorize: %s", authorize);
+      headers = curl_slist_append(headers, auth_header);
+  }
+  
 
   if (verb != HTTP_GET) {
     bool postdata;

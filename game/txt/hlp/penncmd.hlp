@@ -1272,6 +1272,7 @@ See also: TRANSPARENT, @conformat, @nameformat, @descformat
   The POST switch makes it do a HTTP POST request instead of the default GET, (And PUT and DELETE do the obvious). With these, the 'content-type' q-register controls the type of data; it defaults to 'application/x-www-form-urlencoded'.` If it contains the string "charset=utf-8", <data> will be converted to UTF-8, otherwise it is assumed to be Latin-1.
 
   If the q-register 'userpass' is set when running @http, it should hold a string of the form user:password and will be used if needed for HTTP authentication.
+  If the q-register 'authorize' is set when running @http, it will set the Authorize header, which will be used during the HTTP authentication.
 
   Restricted to objects set Wizard or with the Can_HTTP @Power.
 

@@ -1855,7 +1855,7 @@ COMMAND(cmd_fetch)
     return;
   }
 
-  for (numargs = 0; args_right[numargs] && numargs < (MAX_ARG);
+  for (numargs = 1; args_right[numargs] && numargs < (MAX_ARG);
        numargs++)
     ;
 
@@ -1945,10 +1945,10 @@ COMMAND(cmd_fetch)
   curl_easy_setopt(handle, CURLOPT_MAXREDIRS, 5);
 
 
-  if(numargs > 1 && verb == HTTP_GET) {
+  if(numargs > 2 && verb == HTTP_GET) {
     headerslot = 2;
   }
-  else if( numargs > 2 && verb != HTTP_GET) {
+  else if( numargs > 3 && verb != HTTP_GET) {
     headerslot = 3;
   }
 

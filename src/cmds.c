@@ -1942,11 +1942,11 @@ COMMAND(cmd_fetch)
     curl_easy_setopt(handle, CURLOPT_HTTPAUTH, CURLAUTH_ANY);
   }
   
-  authorize = pe_regs_get(req->pe_regs, PE_REGS_Q, "authorize");
+  authorize = pe_regs_get(req->pe_regs, PE_REGS_Q, "authorization");
   if(authorize)
   {
       char auth_header[BUFFER_LEN];
-      snprintf(auth_header, sizeof auth_header, "Authorize: %s", authorize);
+      snprintf(auth_header, sizeof auth_header, "Authorization: %s", authorize);
       headers = curl_slist_append(headers, auth_header);
   }
   

@@ -38,7 +38,7 @@ Softcode
 --------
 * `@http` now supports all other HTTP Verbs. Patch by Mercutio.
 * `@http` now stores information on overflow into a register. Patch by Mercutio.
-* `@http` now allows setting the `Authorize` HTTP header. Patch by Mercutio.
+* `@http` now allows setting the `Authorization` HTTP header. Patch by Mercutio.
 
 Version 1.8.8 patchlevel 0 Apr 20 2020
 ======================================

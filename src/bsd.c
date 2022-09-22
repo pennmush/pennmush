@@ -1187,9 +1187,10 @@ handle_curl_msg(CURLMsg *msg)
         }
       }
       if (resp->too_big) {
-        pe_regs_set_int(resp->pe_regs, PE_REGS_Q, "http-overflow", 1);
         notify(resp->thing, "Too much HTTP data received; excess truncated.");
       }
+      pe_regs_set_int(resp->pe_regs, PE_REGS_Q, "http-overflow", resp->too_big ? "1" : "0");
+      
       queue_attribute_base_priv(resp->thing, resp->attrname, resp->enactor, 0,
                                 resp->pe_regs, resp->queue_type, resp->thing,
                                 NULL, NULL);

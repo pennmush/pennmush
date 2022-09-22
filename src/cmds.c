@@ -1837,9 +1837,8 @@ COMMAND(cmd_fetch)
   int switch_cnt = 0, headerslot = 0, numargs, nptrs;
   char *s, *cp, *header_key, *header_value;
   char **ptrs;
-  char *args[MAX_STACK_ARGS];
   const char *userpass;
-  const char *contenttype;
+  const char *contenttype = NULL;
   char tbuf[BUFFER_LEN];
   char cur_header[BUFFER_LEN];
   int queue_type = QUEUE_DEFAULT | (queue_entry->queue_type & QUEUE_EVENT);
@@ -1983,6 +1982,8 @@ COMMAND(cmd_fetch)
       snprintf(cur_header, sizeof cur_header, "%s: %s", header_key, header_value);
       headers = curl_slist_append(headers, cur_header);
     }
+
+    mush_free(ptrs, "ptrarray");
   }
 
   if (verb != HTTP_GET) {

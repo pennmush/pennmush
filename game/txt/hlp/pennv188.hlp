@@ -20,6 +20,8 @@ Minor changes:
 * cJSON updated to 1.7.13 [SW]
 * PCRE updated to 10.35 [SW]
 * New [1m--version[0m option to the netmush binary to display the version and exit. [SW]
+* Fix setsymdiff missing from 'help function list'. PR by Jules@M*U*S*H.
+* Add 'owner()' to help files dealing with attribute ownership. PR by Jules@M*U*S*H.
 
 Fixes:
 

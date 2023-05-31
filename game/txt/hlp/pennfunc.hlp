@@ -132,9 +132,9 @@ See also: Dbref functions
   lreplace()    lockfilter()  map()         match()       matchall()
   member()      mix()         munge()       namegrab()    namegraball()
   randword()    remove()      rest()        revwords()    setdiff()
-  setinter()    setunion()    shuffle()     sort()        sortby()
-  sortkey()     splice()      step()        table()       unique()
-  wordpos()     words()
+  setinter()    setsymdiff()  setunion()    shuffle()     sort()
+  sortby()      sortkey()     splice()      step()        table()
+  unique()      wordpos()     words()
 
 See also: LISTS
 & Math functions

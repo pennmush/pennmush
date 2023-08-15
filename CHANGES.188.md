@@ -33,6 +33,8 @@ Fixes
 * `udefault` only accepted 12 arguments, not the documented 32. [MG]
 * ``MOGRIFY`FORMAT`` was not being passed the mogrified channel name from ``MOGRIFY`CHANNAME`` as it should. Reported by Xperta [MT]
 * Fixed `MAX_COMMAND_LEN` alteration support, by improving the stability of the chunk system. Patch by Mercutio. [1336]
+* `oob()` failed if used with just two arguments. From a report by Ben Gunderson. [1407, MG]
+* Telnet subnegotations displayed the subnegotation end character (SE) visibly for clients which had negotiated a unicode character set. Reported by Ben Gunderson. [1407, MG]
 
 Version 1.8.8 patchlevel 0 Apr 20 2020
 ======================================
@@ -41,7 +43,9 @@ WARNING! With the removal of the object queue, please be careful when upgrading 
 
 As an example, this used to be a common way to ensure something was executed once per second:
 
+```
   &gt; &amp;everysecond object=do some ; updates ; @trigger me/everysecond
+```
 
 This will now happen up to several thousand times per second! Add in an @wait 1, and it'll work as expected!
 

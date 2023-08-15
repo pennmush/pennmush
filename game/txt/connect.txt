@@ -10,7 +10,7 @@ TTTTTTTTTT FFFFFFFFF    GGGGG
    TTTT he FFFF airy    GGGGG arden
 /|/||\\\|////\\|\|\|||////|/||/|\|/|\|/|\/|\/|//\|\/||//||/\\/|\|\/\///|//|\/\/\
 
-PennMUSH 1.8.8p0 59cb199c04e83e5f04bd5bb7da2902d62356ef29
+PennMUSH 1.8.8p0 152acc58d59765dcb93555a65b80d5fdb7592326
 In-game Contact: Alara
 -_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-
 

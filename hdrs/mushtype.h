@@ -58,7 +58,7 @@ typedef struct lock_list lock_list;
 #define MAX_ITERS 100
 
 /* max length of command argument to process_command */
-#define MAX_COMMAND_LEN 4096*4
+#define MAX_COMMAND_LEN 4096
 #define BUFFER_LEN ((MAX_COMMAND_LEN) *2)
 #define MAX_ARG 63
 

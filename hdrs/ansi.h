@@ -191,7 +191,7 @@ typedef struct _ansi_string {
   int len;                    /**< Length of the string */
   char *source;               /**< Original source of string */
   uint32_t flags;             /**< Bitwise or of AS_<foo> flags */
-  int16_t *markup;            /**< Indexes of markup, if it has any. */
+  int32_t *markup;            /**< Indexes of markup, if it has any. */
   new_markup_information *mi; /**< Markup information */
   StrTree *tags;              /**< Tags. */
   int micount;                /**< # of used markup information in ->mi */

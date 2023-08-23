@@ -23,7 +23,7 @@ C_FILES=access.c atr_tab.c attrib.c boolexp.c bsd.c bufferq.c		\
 	extchat.c extmail.c filecopy.c flaglocal.c flags.c funcrypt.c	\
 	function.c fundb.c funjson.c funlist.c funlocal.c funmath.c	\
 	funmisc.c funstr.c funtime.c funufun.c game.c hash_function.c	\
-	help.c htab.c intmap.c local.c lock.c log.c look.c malias.c	\
+	help.c htab.c http.c intmap.c local.c lock.c log.c look.c malias.c	\
 	map_file.c markup.c match.c memcheck.c move.c mycrypt.c		\
 	mymalloc.c mysocket.c myrlimit.c myssl.c notify.c parse.c	\
 	pcg_basic.c player.c plyrlist.c predicat.c privtab.c		\
@@ -41,7 +41,7 @@ O_FILES=access.o atr_tab.o attrib.o boolexp.o bsd.o bufferq.o		\
 	extchat.o extmail.o filecopy.o flaglocal.o flags.o funcrypt.o	\
 	function.o fundb.o funjson.o funlist.o funlocal.o funmath.o	\
 	funmisc.o funstr.o funtime.o funufun.o game.o hash_function.o	\
-	help.o htab.o intmap.o local.o lock.o log.o look.o malias.o	\
+	help.o htab.o http.o intmap.o local.o lock.o log.o look.o malias.o	\
 	map_file.o markup.o match.o memcheck.o move.o mycrypt.o		\
 	mymalloc.o mysocket.o myrlimit.o myssl.o notify.o parse.o	\
 	pcg_basic.o player.o plyrlist.o predicat.o privtab.o		\

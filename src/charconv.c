@@ -109,7 +109,7 @@ latin1_to_utf8_tn(const char *restrict latin1, int len, int *outlen,
         while (latin1[i] != SE) {
           utf8[o++] = latin1[i++];
         }
-        utf8[o++] = SE;
+        utf8[o++] = latin1[i++];
         break;
       case DO:
       case DONT:

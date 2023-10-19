@@ -383,6 +383,7 @@ FUNTAB flist[] = {
   {"BXOR", fun_bxor, 1, INT_MAX, FN_REG | FN_STRIPANSI},
   {"CAND", fun_cand, 2, INT_MAX, FN_NOPARSE | FN_STRIPANSI},
   {"NCAND", fun_cand, 1, INT_MAX, FN_NOPARSE | FN_STRIPANSI},
+  {"CACHE", fun_cache, 3, 5, FN_NOPARSE},
   {"CAPSTR", fun_capstr, 1, -1, FN_REG},
   {"CASE", fun_switch, 3, INT_MAX, FN_NOPARSE},
   {"CASEALL", fun_switch, 3, INT_MAX, FN_NOPARSE},

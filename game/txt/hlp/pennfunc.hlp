@@ -49,14 +49,14 @@ See also: MUSHCODE, FUNCTION LIST
 & Attribute functions
   These functions can access or alter information stored in attributes on objects.
 
-  aposs()        attrib_set()   default()      edefault()     eval()
-  flags()        get()          grep()         grepi()        hasattr()
-  hasattrp()     hasattrval()   hasflag()      lattr()        lflags()
-  nattr()        obj()          owner()        pfun()         poss()
-  reglattr()     regrep()       regrepi()      regxattr()     set()
-  subj()         udefault()     ufun()         ulambda()      uldefault()
-  ulocal()       v()            wildgrep()     wildgrepi()    xattr()
-  xget()         zfun()
+  aposs()        attrib_set()   cache()        default()      edefault()     
+  eval()         flags()        get()          grep()         grepi()
+  hasattr()      hasattrp()     hasattrval()   hasflag()      lattr()        
+  lflags()       nattr()        obj()          owner()        pfun()         
+  poss()         reglattr()     regrep()       regrepi()      regxattr()
+  set()          subj()         udefault()     ufun()         ulambda()
+  uldefault()    ulocal()       v()            wildgrep()     wildgrepi()
+  xattr()        xget()         zfun()
 
 See also: ATTRIBUTES, NON-STANDARD ATTRIBUTES
 & Bitwise functions
@@ -1056,6 +1056,57 @@ See also: inc(), sub()
     This is \[a%b[ansi(y,test)]\] %b%b
 
 See also: @decompile2, escape(), secure(), ]
+& CACHE()
+  cache(<obj>, <attr>, <value>[, <window>[, <sliding?>]])
+
+  This function writes the current UTC timestamp and the result of evaluating <value> to <obj>/<attr> and returns the <value>. Howver, if the <attribute> already exists with an existing timestamp of less than 3600 seconds ago, it will return the <value> piece of <obj>/<attr> as if retrieved via the get() function.
+
+  If <window> is passed, the time check is within <window> seconds, instead of the default 3600 seconds. If an invalid number is given, it will assume the time is lapsed. 
+  If <sliding?> evaluates to a true boolean, then the timestamp will be reset on the attribute if it was recent. This can lead to a cache that doesn't expire, if the value is retrieved through cache() often enough.
+
+  This is useful for reducing the impact of longer running functions on PennMUSH performance. It's intended for code that needs to return a value that isn't likely to change on the short term, but does change over the long term, such as sql queries, or lsearch() calls for a fairly unchanging value. 
+
+  This function requires you control the object you are trying to write to, and are able to write to the attribute. Otherwise, it will return a #-1 error.
+
+  See 'help cache2' for examples.
+
+See also: get(), edefault(), udefault(), uldefault(), default()
+& CACHE2
+
+  Examples:
+    > @dol lnum(1,6)=@wait ##=th cache(%!,cache`rand,rand(),2)
+    One/CACHE`RAND - Set.
+    0.859889
+    0.859889
+    0.859889
+    One/CACHE`RAND - Set.
+    0.341317
+    0.341317
+    0.341317
+
+    > @dol lnum(1,6)=@wait ##=th cache(%!,cache`rand,rand(),2,1)
+    One/CACHE`RAND - Set.
+    0.993514
+    One/CACHE`RAND - Set.
+    0.993514
+    One/CACHE`RAND - Set.
+    0.993514
+    One/CACHE`RAND - Set.
+    0.993514
+    One/CACHE`RAND - Set.
+    0.993514
+    One/CACHE`RAND - Set.
+    0.993514
+
+    > th cache(#1,cache`foo,pemit(%#,dog)5)
+    dog
+    One/CACHE`FOO - Set.
+    5
+    > th cache(#1,cache`foo,pemit(%#,dog)4)
+    5
+
+
+See also: get(), edefault(), udefault(), uldefault(), default()
 & DEFAULT()
   default([<obj>/]<attr>[, ... ,[<objN>]/<attrN>], <default>)
 

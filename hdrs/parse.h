@@ -394,18 +394,4 @@ NEW_PE_INFO *pe_info_from(NEW_PE_INFO *old_pe_info, int flags,
 extern void start_cpu_timer(void);
 extern void reset_cpu_timer(void);
 
-#ifdef HAVE_LIBCURL
-/* Data for successfull @fetch commands */
-struct urlreq {
-  dbref thing;
-  dbref enactor;
-  int queue_type;
-  int too_big;
-  PE_REGS *pe_regs;
-  char *attrname;
-  sqlite3_str *body;
-  void *header_slist;
-};
-#endif
-
 #endif /* !_PARSE_H_ */

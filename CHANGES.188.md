@@ -36,6 +36,12 @@ Fixes
 * `oob()` failed if used with just two arguments. From a report by Ben Gunderson. [1407, MG]
 * Telnet subnegotations displayed the subnegotation end character (SE) visibly for clients which had negotiated a unicode character set. Reported by Ben Gunderson. [1407, MG]
 
+Softcode
+--------
+* `http()` for local small http calls. Patch by Mercutio.
+* `@http` and `http()` now support all other HTTP Verbs. Patch by Mercutio.
+* `@http` and `http()` now store information on overflow into a register. Patch by Mercutio.
+
 Version 1.8.8 patchlevel 0 Apr 20 2020
 ======================================
 

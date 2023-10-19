@@ -258,6 +258,8 @@ COMLIST commands[] = {
 
   {"@PEMIT", "LIST CONTENTS SILENT NOISY NOEVAL PORT SPOOF", cmd_pemit,
    CMD_T_ANY | CMD_T_EQSPLIT | CMD_T_NOGAGGED, 0, 0},
+  {"@PLUGIN", "ACTIVE INFO LIST LOAD RELOAD UNLOAD", cmd_plugin, CMD_T_PLAYER, "WIZARD", 0},
+  {"@PLUGINS", NULL, cmd_plugins, CMD_T_PLAYER, "WIZARD", 0},
   {"@POLL", "CLEAR", cmd_poll, CMD_T_ANY, 0, 0},
   {"@POOR", NULL, cmd_poor, CMD_T_ANY, 0, 0},
   {"@POWER",

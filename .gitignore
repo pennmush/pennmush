@@ -64,3 +64,5 @@ dbtools/grepdb
 dbtools/pwutil
 pcre2
 pcre2-10.*
+game/reboot.db
+plugins/math.so

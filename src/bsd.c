@@ -118,9 +118,12 @@
 #include "tests.h"
 #include "websock.h"
 #include "log.h"
+#include "plugin.h"
 
 #ifndef WIN32
 #include "wait.h"
+#include <dlfcn.h>
+#include <dirent.h>
 #ifdef INFO_SLAVE
 #include "lookup.h"
 #endif
@@ -839,6 +842,8 @@ main(int argc, char **argv)
   /* start up anything 'external' */
   ext_startup();
 
+  load_plugins();
+
   /* Enter the main game loop */
   gameloop();
 
@@ -884,6 +889,7 @@ main(int argc, char **argv)
   dump_database();
 
   local_shutdown();
+  unload_plugins();
 
 #ifdef HAVE_LIBCURL
   curl_global_cleanup();
@@ -7709,6 +7715,7 @@ do_reboot(dbref player, int flag)
   kill_info_slave();
 #endif
   local_shutdown();
+  unload_plugins();
   shutdown_conndb(1);
   close_help_files();
   end_all_logs();

@@ -10,6 +10,7 @@
 #include "copyrite.h"
 
 #include <string.h>
+#include <dlfcn.h>
 
 #include "command.h"
 #include "conf.h"
@@ -127,7 +128,6 @@ local_dbck(void)
 bool
 local_timer(void *data __attribute__((__unused__)))
 {
-
   /* The callback has to be set back up or it'll only run once. */
   return false;
 }

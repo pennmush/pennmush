@@ -1,0 +1,427 @@
+/**
+ * \file plugin.c
+ *
+ * \brief Plugin support for PennMUSH.
+ *
+ * Provides plugin support with all associated commands
+ * and functions necessary for the server and in-game
+ *
+ *
+ */
+
+#include "copyrite.h"
+#include "cmds.h"
+#include "command.h"
+#include "conf.h"
+#include "log.h"
+#include "mymalloc.h"
+#include "notify.h"
+#include "plugin.h"
+
+#include <dlfcn.h>
+#include <dirent.h>
+#include <stdlib.h>
+#include <string.h>
+#include <sys/stat.h>
+
+HASHTAB plugins;
+
+/**
+ * Free the memory being used by a plugin when removing
+ * it from the hashtab
+ * 
+ * \param ptr pointer to the struct to free
+ */
+void free_plugin(void *ptr) {
+    PENN_PLUGIN *p = (PENN_PLUGIN *) ptr;
+    mush_free(p, "penn_plugin");
+}
+
+/**
+ * @brief Resequence all the plugin ids for currently
+ * loaded plugins so that they go 1...n without having gaps
+ * 
+ */
+void resequence_plugin_ids() {
+    PENN_PLUGIN *plugin;
+    int id = 1;
+
+    for (plugin = hash_firstentry(&plugins); plugin; plugin = hash_nextentry(&plugins)) {
+        plugin->id = id;
+        id++;
+    }
+}
+
+/**
+ * Helper function for unloading a plugin.
+ * 
+ * Function gets called by do_unload_plugin,
+ * do_reload_plugin, and unload_plugins.
+ * 
+ * \param plugin A pointer to the plugin to be unloaded.
+ */
+void do_real_unload_plugin(PENN_PLUGIN *plugin) {
+    dlclose(plugin->handle);
+    hash_delete(&plugins, plugin->file);
+}
+
+/**
+ * Helper function for loading a plugin.
+ * 
+ * Function gets called by do_load_plugin,
+ * do_reload_plugin, and load_plugins.
+ * 
+ * \param filename The filename of the plugin you want to load. eg. ../plugins/test.so
+ * \return int 0 for plugin loaded, -1 for plugin not loaded
+ */
+char *do_real_load_plugin(char filename[256]) {
+    typedef int plugin_init();
+    typedef void *get_plugin();
+
+    char plugin_file[256];
+
+    void *handle;
+    plugin_init *init_plugin;
+    get_plugin *info_plugin;
+
+    char *errorVal;
+
+    PENN_PLUGIN *plugin;
+
+    int plugin_name_return = 0;
+
+    errorVal = mush_malloc(sizeof(char *), "plugin_error_string");
+
+    memset(plugin_file, 0, strlen(plugin_file));
+    plugin_name_return = snprintf(plugin_file, sizeof(plugin_file), "%s/%s", options.plugins_dir, filename);
+    if (plugin_name_return < 0) return NULL;
+
+    do_rawlog(LT_ERR, "Found plugin: %s ", plugin_file);
+
+    handle = dlopen(plugin_file, RTLD_LAZY);
+    if (handle == NULL) {
+        strcpy(errorVal, dlerror());
+        do_rawlog(LT_ERR, "Could not load plugin: %s", plugin_file);
+        do_rawlog(LT_ERR, "Reason: %s", errorVal);
+        return errorVal;
+    }
+
+    do_rawlog(LT_ERR, "Opened plugin: %s", plugin_file);
+
+    dlerror(); /* Clear any existing error */
+
+    info_plugin = dlsym(handle, "get_plugin");
+    if (info_plugin == NULL) {
+        strcpy(errorVal, dlerror());
+        do_rawlog(LT_ERR, "Missing get_plugin: %s", plugin_file);
+        dlclose(handle);
+        return errorVal;
+    }
+
+    dlerror(); /* Clear any existing error */
+
+    init_plugin = dlsym(handle, "plugin_init");
+    if (init_plugin == NULL) {
+        strcpy(errorVal, dlerror());
+        do_rawlog(LT_ERR, "Missing plugin_init: %s", plugin_file);
+        dlclose(handle);
+        return errorVal;
+    }
+
+    dlerror(); /* Clear any existing error */
+
+    plugin = mush_malloc(sizeof(PENN_PLUGIN), "penn_plugin");
+    plugin->handle = &handle;
+
+    plugin->info = mush_malloc(sizeof(PLUGIN_INFO), "plugin_info");
+    plugin->info = info_plugin();
+
+    plugin->name = mush_malloc(sizeof(char *), "plugin_name");
+    plugin->name = plugin->info->name;
+    strcpy(plugin->file, filename);
+
+    do_rawlog(LT_ERR, "Plugin: %s by %s version %s", plugin->info->name, plugin->info->author, plugin->info->app_version);
+
+    hash_add(&plugins, filename, plugin);
+
+    resequence_plugin_ids();
+
+    init_plugin();
+
+    return NULL;
+}
+
+/** 
+ * Loop through all the .so files found in the
+ * plugins directory, and for each one found
+ * attempt to open it, check for the plugin information
+ * and run the plugin.
+ * 
+ * The first step is to try and open a handle to the plugin,
+ * if a valid handle can't be created then we ignore this plugin.
+ * 
+ * Second step is to get a handle to the plugin_info() function
+ * found in the plugin, if the function can't be found then we
+ * ignore this plugin, as it doesn't meet the requirements.
+ * 
+ * Third step is to get a handle to the plugin_init() function,
+ * if we can't find the function then we ignore the plugin.
+ * 
+ * Fourth step is to keep track of the plugin we just opened so that
+ * we can close it later on (or run further functions on it).
+ * 
+ * Final step is to actually run the plugin_init() function on the
+ * plugin which will allow the function to set up anything it needs.
+ *
+ */
+void load_plugins() {
+  DIR *pluginsDir;
+  struct dirent *in_file;
+  char *errorVal = "\0";
+
+  hash_init(&plugins, 1, free_plugin);
+
+  if (NULL != (pluginsDir = opendir(options.plugins_dir))) {
+    while ((in_file = readdir(pluginsDir))) {
+      if (!strcmp(in_file->d_name, ".")) continue;
+      if (!strcmp(in_file->d_name, "..")) continue;
+      if (!strstr(in_file->d_name, ".so")) continue;
+
+      errorVal = do_real_load_plugin(in_file->d_name);
+    }
+
+    closedir(pluginsDir);
+  }
+}
+
+/**
+ * Loop through all currently loaded plugins and close
+ * their respective handles.
+ * 
+ * Once we have closed all the plugin handles then we free
+ * the structure that was used for keeping track of them and
+ * reset the plugin_count back to 0.
+ * 
+ * If this is a full shutdown then none of this really matters,
+ * but if it is an @shutdown/reboot then we need to make sure
+ * everything is clean for when load_plugins() runs again.
+ */
+void unload_plugins()
+{
+  PENN_PLUGIN *plugin;
+
+  for (plugin = hash_firstentry(&plugins); plugin; plugin = hash_nextentry(&plugins)) {
+    if (plugin->handle) do_real_unload_plugin(plugin);
+  }
+}
+
+
+/**
+ * Get the plugin by its id.
+ *
+ * \param id The id of the plugin
+ * \return plugin The plugin found or null if it can't be found
+ */
+PENN_PLUGIN* get_plugin_by_id(int id) {
+    PENN_PLUGIN *plugin = NULL;
+
+    if (id == 0) return NULL; /* ID of 0 means the plugin hasn't been loaded into penn */
+
+    for (plugin = hash_firstentry(&plugins); plugin; plugin = hash_nextentry(&plugins)) {
+        if ( plugin->id == id ) {
+            break;
+        }
+    }
+
+    return plugin;
+}
+
+/**
+ * List all the plugins found in the plugins directory,
+ * whether they have been loaded or not.
+ * 
+ * \param executor Who ran the @plugin command
+ */
+void do_list_plugins(dbref executor) {
+    PENN_PLUGIN *plugin;
+    DIR *pluginsDir;
+    struct dirent *in_file;
+
+    notify_format(executor, "ID Plugin Name                       Description                              ");
+
+    if (NULL != (pluginsDir = opendir(options.plugins_dir))) {
+        while ((in_file = readdir(pluginsDir))) {
+            if (!strcmp(in_file->d_name, ".")) continue;
+            if (!strcmp(in_file->d_name, "..")) continue;
+            if (!strstr(in_file->d_name, ".so")) continue;
+
+            plugin = hashfind(in_file->d_name, &plugins);
+            if (!plugin) {
+                notify_format(executor, "%2d %-33s %-41s", 0, in_file->d_name, "** NOT CURRENTLY LOADED **");
+            } else {
+                notify_format(executor, "%2d %-33s %-41s", plugin->id, plugin->name, plugin->info->shortdesc);
+            }
+        }
+
+        closedir(pluginsDir);
+    }
+}
+
+/**
+ * @brief Load a plugin into the game using the @plugin/load command
+ * 
+ * @param executor Dbref of the person executing @plugin/load
+ * @param filename The filename of the plugin that we want to load, eg. math.so
+ */
+void do_load_plugin(dbref executor, char filename[256]) {
+    char fullpath[256];
+    char *errorVal = "\0";
+    int retval;
+
+    if (!strstr(filename, ".so")) { filename = strcat(filename, ".so"); }
+
+    memset(fullpath, 0, sizeof(fullpath));
+    retval = snprintf(fullpath, sizeof(fullpath), "%s/%s", options.plugins_dir, filename);
+    if ( retval < 0 ) return;
+
+    struct stat buffer;
+    retval = stat(fullpath, &buffer);
+
+    if ( retval != 0 ) return;
+
+    errorVal = do_real_load_plugin(filename);
+
+    if (errorVal == NULL) {
+        notify(executor, "Plugin loaded!");
+    } else {
+        notify(executor, errorVal);
+    }
+}
+
+/**
+ * Display the information for a particular plugin by id
+ *
+ * \param executor Who ran the @plugin command
+ * \param id The id of the plugin as found in @plugin/list
+ */
+void show_plugin_info(dbref executor, int id) {
+    PENN_PLUGIN *plugin = get_plugin_by_id(id);
+
+    if (!plugin) { notify(executor, T("No plugin found!")); return; }
+    if (!plugin->info) { notify(executor, T("Plugin has no information associated with it!")); return; }
+
+    if (plugin && plugin->info) {
+        notify_format(executor, "%13s %-65s", "Name:", plugin->info->name);
+        notify_format(executor, "%13s %-65s", "Version:", plugin->info->app_version);
+        notify_format(executor, "%13s %-65s", "Author:", plugin->info->author);
+        notify_format(executor, "%13s %-65s", "Description:", plugin->info->description);
+        notify_format(executor, "%13s %-65s", "File:", plugin->file);
+    }
+}
+
+/**
+ * Reload an already loaded plugin. Can be because of changes
+ * made to the plugin itself, or because the plugin was unloaded
+ * in order to disable it.
+ * 
+ * \param executor Who ran the @plugin command
+ * \param id The id of the plugin as found in @plugin/list
+ */
+void do_reload_plugin(dbref executor, int id) {
+    PENN_PLUGIN *plugin = get_plugin_by_id(id);
+    char file[256];
+    char *errorVal = "\0";
+
+    if (!plugin) { notify(executor, T("No plugin found!")); return; }
+    if (!plugin->info) { notify(executor, T("Plugin has no information associated with it!")); return; }
+
+    strcpy(file, plugin->file);
+
+    /* Close the handle to the plugin and delete it from the hashtab */
+    do_real_unload_plugin(plugin);
+
+    /* Open a new handle to the plugin and add it to the hashtab */
+    errorVal = do_real_load_plugin(file);
+
+    if (errorVal == NULL) {
+        resequence_plugin_ids();
+        notify(executor, "Plugin reloaded!");
+    }
+}
+
+/**
+ * Unload a specific plugin.
+ * 
+ * \param executor Who ran the @plugin command
+ * \param id The id of the plugin as found in @plugin/list
+ */
+void do_unload_plugin(dbref executor, int id) {
+    PENN_PLUGIN *plugin = get_plugin_by_id(id);
+    char file[256];
+
+    if (!plugin) { notify(executor, T("No plugin found!")); return; }
+    if (!plugin->info) { notify(executor, T("Plugin has no information associated with it!")); return; }
+
+    strcpy(file, plugin->file);
+
+    /* Close the handle to the plugin and delete it from the hashtab */
+    do_real_unload_plugin(plugin);
+
+    resequence_plugin_ids();
+    notify(executor, "Plugin unloaded!");
+}
+
+/**
+ * In-game command for dealing with plugins.
+ * 
+ * Command will deal with the following things:
+ *  - info - Display information about a plugin that has been loaded
+ *  - list - List all plugins in the plugins directory
+ *  - load - Load a plugin
+ *  - reload - Reload a previously loaded plugin (combines unload and load together)
+ *  - unload - Unload a loaded plugin
+ * 
+ * Arguments for commands:
+ *  - info requires the plugin name (as found in 'list')
+ *  - list requires no arguments
+ *  - load requires the plugin name (as found in 'list')
+ *  - reload requires the plugin name (as found in 'list')
+ *  - unload requires the plugin name (as found in 'list')
+ */
+COMMAND(cmd_plugin) {
+    int plugin_id;
+
+    if (SW_ISSET(sw, SWITCH_INFO)) {
+        if (sscanf(arg_left, "%d", &plugin_id) != 1) {
+            notify(executor, T("Invalid plugin id!"));
+        } else {
+            show_plugin_info(executor, plugin_id);
+        }
+    } else if (SW_ISSET(sw, SWITCH_LIST)) {
+      do_list_plugins(executor);
+    } else if (SW_ISSET(sw, SWITCH_LOAD)) {
+        do_load_plugin(executor, arg_left);
+    } else if (SW_ISSET(sw, SWITCH_RELOAD)) {
+        if (sscanf(arg_left, "%d", &plugin_id) != 1) {
+            notify(executor, T("Invalid plugin id!"));
+        } else {
+            do_reload_plugin(executor, plugin_id);
+        }
+    } else if (SW_ISSET(sw, SWITCH_UNLOAD)) {
+        if (sscanf(arg_left, "%d", &plugin_id) != 1) {
+            notify(executor, T("Invalid plugin id!"));
+        } else {
+            do_unload_plugin(executor, plugin_id);
+        }
+    } else {
+        if (sscanf(arg_left, "%d", &plugin_id) != 1) {
+            notify(executor, T("Invalid plugin id!"));
+        } else {
+            show_plugin_info(executor, plugin_id);
+        }
+    }
+}
+
+COMMAND(cmd_plugins) {
+    do_list_plugins(executor);
+}

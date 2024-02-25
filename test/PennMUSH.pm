@@ -67,6 +67,7 @@ sub start {
   copy("../game/alias.cnf", "testgame/alias.cnf");
   copy("../game/names.cnf", "testgame/names.cnf");
   copy("../game/restrict.cnf", "testgame/restrict.cnf");
+  copy("../game/txt/colors.json", "testgame/txt/colors.json");
   my $file;
   foreach $file (glob("../game/txt/*.txt")) {
     my $target = $file;

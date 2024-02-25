@@ -412,11 +412,12 @@ else
  fi
 fi
 AC_MSG_NOTICE([Configuring PCRE2])
-PCRE2_VERSION="pcre2-10.39"
-PCRE2_TARBALL="${PCRE2_VERSION}.tar.gz"
-PCRE2_URL="https://github.com/PhilipHazel/pcre2/releases/download/${PCRE2_VERSION}/${PCRE2_TARBALL}"
-AC_MSG_CHECKING([for ${PCRE2_VERSION}])
-if test -d ${PCRE2_VERSION} ; then
+PCRE2_VERSION="10.43"
+PCRE2_TARBALL="pcre2-${PCRE2_VERSION}.tar.gz"
+PCRE2_URL="https://github.com/PhilipHazel/pcre2/releases/download/pcre2-${PCRE2_VERSION}/${PCRE2_TARBALL}"
+PCRE2_DIR=./pcre2-${PCRE2_VERSION}
+AC_MSG_CHECKING([for PCRE ${PCRE2_VERSION}])
+if test -d ${PCRE2_DIR} ; then
    AC_MSG_RESULT([found])
 else
    AC_MSG_RESULT([not found])
@@ -431,10 +432,10 @@ else
          AC_MSG_ERROR([Unable to automatically fetch file. Download it manually and try again.])
       fi
    fi
-   perl -pi -e 's/\Qif (separator != CHAR_SLASH && separator != CHAR_BACKSLASH &&\E/$& separator != CHAR_GRAVE_ACCENT &&/' "${PCRE2_VERSION}/src/pcre2_context.c"
+   perl -pi -e 's/\Qif (separator != CHAR_SLASH && separator != CHAR_BACKSLASH &&\E/$& separator != CHAR_GRAVE_ACCENT &&/' "${PCRE2_DIR}/src/pcre2_context.c"
 fi
 
-(cd ${PCRE2_VERSION} && ./configure ${PCRE2_OPTIONS})
+(cd ${PCRE2_DIR} && ./configure ${PCRE2_OPTIONS})
 if test -d pcre2 ; then
    rm -rf pcre2/
 fi

@@ -1729,3 +1729,238 @@ When the MUSH is compiled with the ICU library (See @config compile), additional
     lcstr2()     ucstr2()
 
 When using these functions, do not assume that they return the same number of characters as their argument.
+&VA  
+
+VA is a special attributes that dates from the days before you could set non-standard attributes with any name you wanted. These are the attributes VA-VZ, WA-WZ, XA-XZ. These attributes have no pre-set effects, and were just to allow players to store any text or MUSHcode that they wished in those attributes. Now that non-standard attributes are available, it is highly recommended that you instead use them, since you can use longer and descriptive names for attributes, which makes it much easier to examine and work on objects.
+&VB  
+
+VB is a special attributes that dates from the days before you could set non-standard attributes with any name you wanted. These are the attributes VA-VZ, WA-WZ, XA-XZ. These attributes have no pre-set effects, and were just to allow players to store any text or MUSHcode that they wished in those attributes. Now that non-standard attributes are available, it is highly recommended that you instead use them, since you can use longer and descriptive names for attributes, which makes it much easier to examine and work on objects.
+&VC  
+
+VC is a special attributes that dates from the days before you could set non-standard attributes with any name you wanted. These are the attributes VA-VZ, WA-WZ, XA-XZ. These attributes have no pre-set effects, and were just to allow players to store any text or MUSHcode that they wished in those attributes. Now that non-standard attributes are available, it is highly recommended that you instead use them, since you can use longer and descriptive names for attributes, which makes it much easier to examine and work on objects.
+&VD  
+
+VD is a special attributes that dates from the days before you could set non-standard attributes with any name you wanted. These are the attributes VA-VZ, WA-WZ, XA-XZ. These attributes have no pre-set effects, and were just to allow players to store any text or MUSHcode that they wished in those attributes. Now that non-standard attributes are available, it is highly recommended that you instead use them, since you can use longer and descriptive names for attributes, which makes it much easier to examine and work on objects.
+&VE  
+
+VE is a special attributes that dates from the days before you could set non-standard attributes with any name you wanted. These are the attributes VA-VZ, WA-WZ, XA-XZ. These attributes have no pre-set effects, and were just to allow players to store any text or MUSHcode that they wished in those attributes. Now that non-standard attributes are available, it is highly recommended that you instead use them, since you can use longer and descriptive names for attributes, which makes it much easier to examine and work on objects.
+&VF  
+
+VF is a special attributes that dates from the days before you could set non-standard attributes with any name you wanted. These are the attributes VA-VZ, WA-WZ, XA-XZ. These attributes have no pre-set effects, and were just to allow players to store any text or MUSHcode that they wished in those attributes. Now that non-standard attributes are available, it is highly recommended that you instead use them, since you can use longer and descriptive names for attributes, which makes it much easier to examine and work on objects.
+&VG  
+
+VG is a special attributes that dates from the days before you could set non-standard attributes with any name you wanted. These are the attributes VA-VZ, WA-WZ, XA-XZ. These attributes have no pre-set effects, and were just to allow players to store any text or MUSHcode that they wished in those attributes. Now that non-standard attributes are available, it is highly recommended that you instead use them, since you can use longer and descriptive names for attributes, which makes it much easier to examine and work on objects.
+&VH  
+
+VH is a special attributes that dates from the days before you could set non-standard attributes with any name you wanted. These are the attributes VA-VZ, WA-WZ, XA-XZ. These attributes have no pre-set effects, and were just to allow players to store any text or MUSHcode that they wished in those attributes. Now that non-standard attributes are available, it is highly recommended that you instead use them, since you can use longer and descriptive names for attributes, which makes it much easier to examine and work on objects.
+&VI  
+
+VI is a special attributes that dates from the days before you could set non-standard attributes with any name you wanted. These are the attributes VA-VZ, WA-WZ, XA-XZ. These attributes have no pre-set effects, and were just to allow players to store any text or MUSHcode that they wished in those attributes. Now that non-standard attributes are available, it is highly recommended that you instead use them, since you can use longer and descriptive names for attributes, which makes it much easier to examine and work on objects.
+&VJ  
+
+VJ is a special attributes that dates from the days before you could set non-standard attributes with any name you wanted. These are the attributes VA-VZ, WA-WZ, XA-XZ. These attributes have no pre-set effects, and were just to allow players to store any text or MUSHcode that they wished in those attributes. Now that non-standard attributes are available, it is highly recommended that you instead use them, since you can use longer and descriptive names for attributes, which makes it much easier to examine and work on objects.
+&VK
+
+VK is a special attributes that dates from the days before you could set non-standard attributes with any name you wanted. These are the attributes VA-VZ, WA-WZ, XA-XZ. These attributes have no pre-set effects, and were just to allow players to store any text or MUSHcode that they wished in those attributes. Now that non-standard attributes are available, it is highly recommended that you instead use them, since you can use longer and descriptive names for attributes, which makes it much easier to examine and work on objects.
+&VL  
+
+VL is a special attributes that dates from the days before you could set non-standard attributes with any name you wanted. These are the attributes VA-VZ, WA-WZ, XA-XZ. These attributes have no pre-set effects, and were just to allow players to store any text or MUSHcode that they wished in those attributes. Now that non-standard attributes are available, it is highly recommended that you instead use them, since you can use longer and descriptive names for attributes, which makes it much easier to examine and work on objects.
+&VM
+
+VM is a special attributes that dates from the days before you could set non-standard attributes with any name you wanted. These are the attributes VA-VZ, WA-WZ, XA-XZ. These attributes have no pre-set effects, and were just to allow players to store any text or MUSHcode that they wished in those attributes. Now that non-standard attributes are available, it is highly recommended that you instead use them, since you can use longer and descriptive names for attributes, which makes it much easier to examine and work on objects.
+&VN
+
+VN is a special attributes that dates from the days before you could set non-standard attributes with any name you wanted. These are the attributes VA-VZ, WA-WZ, XA-XZ. These attributes have no pre-set effects, and were just to allow players to store any text or MUSHcode that they wished in those attributes. Now that non-standard attributes are available, it is highly recommended that you instead use them, since you can use longer and descriptive names for attributes, which makes it much easier to examine and work on objects.
+&VO
+
+VO is a special attributes that dates from the days before you could set non-standard attributes with any name you wanted. These are the attributes VA-VZ, WA-WZ, XA-XZ. These attributes have no pre-set effects, and were just to allow players to store any text or MUSHcode that they wished in those attributes. Now that non-standard attributes are available, it is highly recommended that you instead use them, since you can use longer and descriptive names for attributes, which makes it much easier to examine and work on objects.
+&VP
+
+VP is a special attributes that dates from the days before you could set non-standard attributes with any name you wanted. These are the attributes VA-VZ, WA-WZ, XA-XZ. These attributes have no pre-set effects, and were just to allow players to store any text or MUSHcode that they wished in those attributes. Now that non-standard attributes are available, it is highly recommended that you instead use them, since you can use longer and descriptive names for attributes, which makes it much easier to examine and work on objects.
+&VQ 
+ 
+VQ is a special attributes that dates from the days before you could set non-standard attributes with any name you wanted. These are the attributes VA-VZ, WA-WZ, XA-XZ. These attributes have no pre-set effects, and were just to allow players to store any text or MUSHcode that they wished in those attributes. Now that non-standard attributes are available, it is highly recommended that you instead use them, since you can use longer and descriptive names for attributes, which makes it much easier to examine and work on objects.
+&VR
+
+VR is a special attributes that dates from the days before you could set non-standard attributes with any name you wanted. These are the attributes VA-VZ, WA-WZ, XA-XZ. These attributes have no pre-set effects, and were just to allow players to store any text or MUSHcode that they wished in those attributes. Now that non-standard attributes are available, it is highly recommended that you instead use them, since you can use longer and descriptive names for attributes, which makes it much easier to examine and work on objects.
+&VS
+
+VS is a special attributes that dates from the days before you could set non-standard attributes with any name you wanted. These are the attributes VA-VZ, WA-WZ, XA-XZ. These attributes have no pre-set effects, and were just to allow players to store any text or MUSHcode that they wished in those attributes. Now that non-standard attributes are available, it is highly recommended that you instead use them, since you can use longer and descriptive names for attributes, which makes it much easier to examine and work on objects.
+&VT
+
+VT is a special attributes that dates from the days before you could set non-standard attributes with any name you wanted. These are the attributes VA-VZ, WA-WZ, XA-XZ. These attributes have no pre-set effects, and were just to allow players to store any text or MUSHcode that they wished in those attributes. Now that non-standard attributes are available, it is highly recommended that you instead use them, since you can use longer and descriptive names for attributes, which makes it much easier to examine and work on objects.
+&VU
+
+VU is a special attributes that dates from the days before you could set non-standard attributes with any name you wanted. These are the attributes VA-VZ, WA-WZ, XA-XZ. These attributes have no pre-set effects, and were just to allow players to store any text or MUSHcode that they wished in those attributes. Now that non-standard attributes are available, it is highly recommended that you instead use them, since you can use longer and descriptive names for attributes, which makes it much easier to examine and work on objects.
+&VV
+
+VV is a special attributes that dates from the days before you could set non-standard attributes with any name you wanted. These are the attributes VA-VZ, WA-WZ, XA-XZ. These attributes have no pre-set effects, and were just to allow players to store any text or MUSHcode that they wished in those attributes. Now that non-standard attributes are available, it is highly recommended that you instead use them, since you can use longer and descriptive names for attributes, which makes it much easier to examine and work on objects.
+&VW
+
+VW is a special attributes that dates from the days before you could set non-standard attributes with any name you wanted. These are the attributes VA-VZ, WA-WZ, XA-XZ. These attributes have no pre-set effects, and were just to allow players to store any text or MUSHcode that they wished in those attributes. Now that non-standard attributes are available, it is highly recommended that you instead use them, since you can use longer and descriptive names for attributes, which makes it much easier to examine and work on objects.
+&VX
+
+VX is a special attributes that dates from the days before you could set non-standard attributes with any name you wanted. These are the attributes VA-VZ, WA-WZ, XA-XZ. These attributes have no pre-set effects, and were just to allow players to store any text or MUSHcode that they wished in those attributes. Now that non-standard attributes are available, it is highly recommended that you instead use them, since you can use longer and descriptive names for attributes, which makes it much easier to examine and work on objects.
+&VY
+
+VY is a special attributes that dates from the days before you could set non-standard attributes with any name you wanted. These are the attributes VA-VZ, WA-WZ, XA-XZ. These attributes have no pre-set effects, and were just to allow players to store any text or MUSHcode that they wished in those attributes. Now that non-standard attributes are available, it is highly recommended that you instead use them, since you can use longer and descriptive names for attributes, which makes it much easier to examine and work on objects.
+&VZ 
+
+VZ is a special attributes that dates from the days before you could set non-standard attributes with any name you wanted. These are the attributes VA-VZ, WA-WZ, XA-XZ. These attributes have no pre-set effects, and were just to allow players to store any text or MUSHcode that they wished in those attributes. Now that non-standard attributes are available, it is highly recommended that you instead use them, since you can use longer and descriptive names for attributes, which makes it much easier to examine and work on objects.
+&WA
+
+WA is a special attributes that dates from the days before you could set non-standard attributes with any name you wanted. These are the attributes VA-VZ, WA-WZ, XA-XZ. These attributes have no pre-set effects, and were just to allow players to store any text or MUSHcode that they wished in those attributes. Now that non-standard attributes are available, it is highly recommended that you instead use them, since you can use longer and descriptive names for attributes, which makes it much easier to examine and work on objects.
+&WB  
+
+WB is a special attributes that dates from the days before you could set non-standard attributes with any name you wanted. These are the attributes VA-VZ, WA-WZ, XA-XZ. These attributes have no pre-set effects, and were just to allow players to store any text or MUSHcode that they wished in those attributes. Now that non-standard attributes are available, it is highly recommended that you instead use them, since you can use longer and descriptive names for attributes, which makes it much easier to examine and work on objects.
+&WC  
+
+WC is a special attributes that dates from the days before you could set non-standard attributes with any name you wanted. These are the attributes VA-VZ, WA-WZ, XA-XZ. These attributes have no pre-set effects, and were just to allow players to store any text or MUSHcode that they wished in those attributes. Now that non-standard attributes are available, it is highly recommended that you instead use them, since you can use longer and descriptive names for attributes, which makes it much easier to examine and work on objects.
+&WD  
+
+WD is a special attributes that dates from the days before you could set non-standard attributes with any name you wanted. These are the attributes VA-VZ, WA-WZ, XA-XZ. These attributes have no pre-set effects, and were just to allow players to store any text or MUSHcode that they wished in those attributes. Now that non-standard attributes are available, it is highly recommended that you instead use them, since you can use longer and descriptive names for attributes, which makes it much easier to examine and work on objects.
+&WE  
+
+WE is a special attributes that dates from the days before you could set non-standard attributes with any name you wanted. These are the attributes VA-VZ, WA-WZ, XA-XZ. These attributes have no pre-set effects, and were just to allow players to store any text or MUSHcode that they wished in those attributes. Now that non-standard attributes are available, it is highly recommended that you instead use them, since you can use longer and descriptive names for attributes, which makes it much easier to examine and work on objects.
+&WF  
+
+WF is a special attributes that dates from the days before you could set non-standard attributes with any name you wanted. These are the attributes VA-VZ, WA-WZ, XA-XZ. These attributes have no pre-set effects, and were just to allow players to store any text or MUSHcode that they wished in those attributes. Now that non-standard attributes are available, it is highly recommended that you instead use them, since you can use longer and descriptive names for attributes, which makes it much easier to examine and work on objects.
+&WG  
+
+WG is a special attributes that dates from the days before you could set non-standard attributes with any name you wanted. These are the attributes VA-VZ, WA-WZ, XA-XZ. These attributes have no pre-set effects, and were just to allow players to store any text or MUSHcode that they wished in those attributes. Now that non-standard attributes are available, it is highly recommended that you instead use them, since you can use longer and descriptive names for attributes, which makes it much easier to examine and work on objects.
+&WH  
+
+WH is a special attributes that dates from the days before you could set non-standard attributes with any name you wanted. These are the attributes VA-VZ, WA-WZ, XA-XZ. These attributes have no pre-set effects, and were just to allow players to store any text or MUSHcode that they wished in those attributes. Now that non-standard attributes are available, it is highly recommended that you instead use them, since you can use longer and descriptive names for attributes, which makes it much easier to examine and work on objects.
+&WI  
+
+WI is a special attributes that dates from the days before you could set non-standard attributes with any name you wanted. These are the attributes VA-VZ, WA-WZ, XA-XZ. These attributes have no pre-set effects, and were just to allow players to store any text or MUSHcode that they wished in those attributes. Now that non-standard attributes are available, it is highly recommended that you instead use them, since you can use longer and descriptive names for attributes, which makes it much easier to examine and work on objects.
+&WJ  
+
+WJ is a special attributes that dates from the days before you could set non-standard attributes with any name you wanted. These are the attributes VA-VZ, WA-WZ, XA-XZ. These attributes have no pre-set effects, and were just to allow players to store any text or MUSHcode that they wished in those attributes. Now that non-standard attributes are available, it is highly recommended that you instead use them, since you can use longer and descriptive names for attributes, which makes it much easier to examine and work on objects.
+&WK  
+
+WK is a special attributes that dates from the days before you could set non-standard attributes with any name you wanted. These are the attributes VA-VZ, WA-WZ, XA-XZ. These attributes have no pre-set effects, and were just to allow players to store any text or MUSHcode that they wished in those attributes. Now that non-standard attributes are available, it is highly recommended that you instead use them, since you can use longer and descriptive names for attributes, which makes it much easier to examine and work on objects.
+&WL  
+
+WL is a special attributes that dates from the days before you could set non-standard attributes with any name you wanted. These are the attributes VA-VZ, WA-WZ, XA-XZ. These attributes have no pre-set effects, and were just to allow players to store any text or MUSHcode that they wished in those attributes. Now that non-standard attributes are available, it is highly recommended that you instead use them, since you can use longer and descriptive names for attributes, which makes it much easier to examine and work on objects.
+&WM  
+
+WM is a special attributes that dates from the days before you could set non-standard attributes with any name you wanted. These are the attributes VA-VZ, WA-WZ, XA-XZ. These attributes have no pre-set effects, and were just to allow players to store any text or MUSHcode that they wished in those attributes. Now that non-standard attributes are available, it is highly recommended that you instead use them, since you can use longer and descriptive names for attributes, which makes it much easier to examine and work on objects.
+&WN  
+
+WN is a special attributes that dates from the days before you could set non-standard attributes with any name you wanted. These are the attributes VA-VZ, WA-WZ, XA-XZ. These attributes have no pre-set effects, and were just to allow players to store any text or MUSHcode that they wished in those attributes. Now that non-standard attributes are available, it is highly recommended that you instead use them, since you can use longer and descriptive names for attributes, which makes it much easier to examine and work on objects.
+&WO  
+
+WO is a special attributes that dates from the days before you could set non-standard attributes with any name you wanted. These are the attributes VA-VZ, WA-WZ, XA-XZ. These attributes have no pre-set effects, and were just to allow players to store any text or MUSHcode that they wished in those attributes. Now that non-standard attributes are available, it is highly recommended that you instead use them, since you can use longer and descriptive names for attributes, which makes it much easier to examine and work on objects.
+&WP  
+
+WP is a special attributes that dates from the days before you could set non-standard attributes with any name you wanted. These are the attributes VA-VZ, WA-WZ, XA-XZ. These attributes have no pre-set effects, and were just to allow players to store any text or MUSHcode that they wished in those attributes. Now that non-standard attributes are available, it is highly recommended that you instead use them, since you can use longer and descriptive names for attributes, which makes it much easier to examine and work on objects.
+&WQ  
+
+WQ is a special attributes that dates from the days before you could set non-standard attributes with any name you wanted. These are the attributes VA-VZ, WA-WZ, XA-XZ. These attributes have no pre-set effects, and were just to allow players to store any text or MUSHcode that they wished in those attributes. Now that non-standard attributes are available, it is highly recommended that you instead use them, since you can use longer and descriptive names for attributes, which makes it much easier to examine and work on objects.
+&WR  
+
+WR is a special attributes that dates from the days before you could set non-standard attributes with any name you wanted. These are the attributes VA-VZ, WA-WZ, XA-XZ. These attributes have no pre-set effects, and were just to allow players to store any text or MUSHcode that they wished in those attributes. Now that non-standard attributes are available, it is highly recommended that you instead use them, since you can use longer and descriptive names for attributes, which makes it much easier to examine and work on objects.
+&WS  
+
+WS is a special attributes that dates from the days before you could set non-standard attributes with any name you wanted. These are the attributes VA-VZ, WA-WZ, XA-XZ. These attributes have no pre-set effects, and were just to allow players to store any text or MUSHcode that they wished in those attributes. Now that non-standard attributes are available, it is highly recommended that you instead use them, since you can use longer and descriptive names for attributes, which makes it much easier to examine and work on objects.
+&WT  
+
+WT is a special attributes that dates from the days before you could set non-standard attributes with any name you wanted. These are the attributes VA-VZ, WA-WZ, XA-XZ. These attributes have no pre-set effects, and were just to allow players to store any text or MUSHcode that they wished in those attributes. Now that non-standard attributes are available, it is highly recommended that you instead use them, since you can use longer and descriptive names for attributes, which makes it much easier to examine and work on objects.
+&WU  
+
+WU is a special attributes that dates from the days before you could set non-standard attributes with any name you wanted. These are the attributes VA-VZ, WA-WZ, XA-XZ. These attributes have no pre-set effects, and were just to allow players to store any text or MUSHcode that they wished in those attributes. Now that non-standard attributes are available, it is highly recommended that you instead use them, since you can use longer and descriptive names for attributes, which makes it much easier to examine and work on objects.
+&WV  
+
+WV is a special attributes that dates from the days before you could set non-standard attributes with any name you wanted. These are the attributes VA-VZ, WA-WZ, XA-XZ. These attributes have no pre-set effects, and were just to allow players to store any text or MUSHcode that they wished in those attributes. Now that non-standard attributes are available, it is highly recommended that you instead use them, since you can use longer and descriptive names for attributes, which makes it much easier to examine and work on objects.
+&WW  
+
+WW is a special attributes that dates from the days before you could set non-standard attributes with any name you wanted. These are the attributes VA-VZ, WA-WZ, XA-XZ. These attributes have no pre-set effects, and were just to allow players to store any text or MUSHcode that they wished in those attributes. Now that non-standard attributes are available, it is highly recommended that you instead use them, since you can use longer and descriptive names for attributes, which makes it much easier to examine and work on objects.
+&WX  
+
+WX is a special attributes that dates from the days before you could set non-standard attributes with any name you wanted. These are the attributes VA-VZ, WA-WZ, XA-XZ. These attributes have no pre-set effects, and were just to allow players to store any text or MUSHcode that they wished in those attributes. Now that non-standard attributes are available, it is highly recommended that you instead use them, since you can use longer and descriptive names for attributes, which makes it much easier to examine and work on objects.
+&WY  
+
+WY is a special attributes that dates from the days before you could set non-standard attributes with any name you wanted. These are the attributes VA-VZ, WA-WZ, XA-XZ. These attributes have no pre-set effects, and were just to allow players to store any text or MUSHcode that they wished in those attributes. Now that non-standard attributes are available, it is highly recommended that you instead use them, since you can use longer and descriptive names for attributes, which makes it much easier to examine and work on objects.
+&WZ  
+
+WZ is a special attributes that dates from the days before you could set non-standard attributes with any name you wanted. These are the attributes VA-VZ, WA-WZ, XA-XZ. These attributes have no pre-set effects, and were just to allow players to store any text or MUSHcode that they wished in those attributes. Now that non-standard attributes are available, it is highly recommended that you instead use them, since you can use longer and descriptive names for attributes, which makes it much easier to examine and work on objects.
+
+&XA
+
+XA is a special attributes that dates from the days before you could set non-standard attributes with any name you wanted. These are the attributes VA-VZ, WA-WZ, XA-XZ. These attributes have no pre-set effects, and were just to allow players to store any text or MUSHcode that they wished in those attributes. Now that non-standard attributes are available, it is highly recommended that you instead use them, since you can use longer and descriptive names for attributes, which makes it much easier to examine and work on objects.
+&XB
+
+XB is a special attributes that dates from the days before you could set non-standard attributes with any name you wanted. These are the attributes VA-VZ, WA-WZ, XA-XZ. These attributes have no pre-set effects, and were just to allow players to store any text or MUSHcode that they wished in those attributes. Now that non-standard attributes are available, it is highly recommended that you instead use them, since you can use longer and descriptive names for attributes, which makes it much easier to examine and work on objects.
+&XC  
+
+XC is a special attributes that dates from the days before you could set non-standard attributes with any name you wanted. These are the attributes VA-VZ, WA-WZ, XA-XZ. These attributes have no pre-set effects, and were just to allow players to store any text or MUSHcode that they wished in those attributes. Now that non-standard attributes are available, it is highly recommended that you instead use them, since you can use longer and descriptive names for attributes, which makes it much easier to examine and work on objects.
+&XD  
+
+XD is a special attributes that dates from the days before you could set non-standard attributes with any name you wanted. These are the attributes VA-VZ, WA-WZ, XA-XZ. These attributes have no pre-set effects, and were just to allow players to store any text or MUSHcode that they wished in those attributes. Now that non-standard attributes are available, it is highly recommended that you instead use them, since you can use longer and descriptive names for attributes, which makes it much easier to examine and work on objects.
+&XE  
+
+XE is a special attributes that dates from the days before you could set non-standard attributes with any name you wanted. These are the attributes VA-VZ, WA-WZ, XA-XZ. These attributes have no pre-set effects, and were just to allow players to store any text or MUSHcode that they wished in those attributes. Now that non-standard attributes are available, it is highly recommended that you instead use them, since you can use longer and descriptive names for attributes, which makes it much easier to examine and work on objects.
+&XF  
+
+XF is a special attributes that dates from the days before you could set non-standard attributes with any name you wanted. These are the attributes VA-VZ, WA-WZ, XA-XZ. These attributes have no pre-set effects, and were just to allow players to store any text or MUSHcode that they wished in those attributes. Now that non-standard attributes are available, it is highly recommended that you instead use them, since you can use longer and descriptive names for attributes, which makes it much easier to examine and work on objects.
+&XG  
+
+XG is a special attributes that dates from the days before you could set non-standard attributes with any name you wanted. These are the attributes VA-VZ, WA-WZ, XA-XZ. These attributes have no pre-set effects, and were just to allow players to store any text or MUSHcode that they wished in those attributes. Now that non-standard attributes are available, it is highly recommended that you instead use them, since you can use longer and descriptive names for attributes, which makes it much easier to examine and work on objects.
+&XH  
+
+XH is a special attributes that dates from the days before you could set non-standard attributes with any name you wanted. These are the attributes VA-VZ, WA-WZ, XA-XZ. These attributes have no pre-set effects, and were just to allow players to store any text or MUSHcode that they wished in those attributes. Now that non-standard attributes are available, it is highly recommended that you instead use them, since you can use longer and descriptive names for attributes, which makes it much easier to examine and work on objects.
+&XI  
+
+XI is a special attributes that dates from the days before you could set non-standard attributes with any name you wanted. These are the attributes VA-VZ, WA-WZ, XA-XZ. These attributes have no pre-set effects, and were just to allow players to store any text or MUSHcode that they wished in those attributes. Now that non-standard attributes are available, it is highly recommended that you instead use them, since you can use longer and descriptive names for attributes, which makes it much easier to examine and work on objects.
+&XJ  
+
+XJ is a special attributes that dates from the days before you could set non-standard attributes with any name you wanted. These are the attributes VA-VZ, WA-WZ, XA-XZ. These attributes have no pre-set effects, and were just to allow players to store any text or MUSHcode that they wished in those attributes. Now that non-standard attributes are available, it is highly recommended that you instead use them, since you can use longer and descriptive names for attributes, which makes it much easier to examine and work on objects.
+&XK  
+
+XK is a special attributes that dates from the days before you could set non-standard attributes with any name you wanted. These are the attributes VA-VZ, WA-WZ, XA-XZ. These attributes have no pre-set effects, and were just to allow players to store any text or MUSHcode that they wished in those attributes. Now that non-standard attributes are available, it is highly recommended that you instead use them, since you can use longer and descriptive names for attributes, which makes it much easier to examine and work on objects.
+&XL  
+
+XL is a special attributes that dates from the days before you could set non-standard attributes with any name you wanted. These are the attributes VA-VZ, WA-WZ, XA-XZ. These attributes have no pre-set effects, and were just to allow players to store any text or MUSHcode that they wished in those attributes. Now that non-standard attributes are available, it is highly recommended that you instead use them, since you can use longer and descriptive names for attributes, which makes it much easier to examine and work on objects.
+&XM  
+
+XM is a special attributes that dates from the days before you could set non-standard attributes with any name you wanted. These are the attributes VA-VZ, WA-WZ, XA-XZ. These attributes have no pre-set effects, and were just to allow players to store any text or MUSHcode that they wished in those attributes. Now that non-standard attributes are available, it is highly recommended that you instead use them, since you can use longer and descriptive names for attributes, which makes it much easier to examine and work on objects.
+&XN  
+
+XN is a special attributes that dates from the days before you could set non-standard attributes with any name you wanted. These are the attributes VA-VZ, WA-WZ, XA-XZ. These attributes have no pre-set effects, and were just to allow players to store any text or MUSHcode that they wished in those attributes. Now that non-standard attributes are available, it is highly recommended that you instead use them, since you can use longer and descriptive names for attributes, which makes it much easier to examine and work on objects.
+&XO  
+
+XO is a special attributes that dates from the days before you could set non-standard attributes with any name you wanted. These are the attributes VA-VZ, WA-WZ, XA-XZ. These attributes have no pre-set effects, and were just to allow players to store any text or MUSHcode that they wished in those attributes. Now that non-standard attributes are available, it is highly recommended that you instead use them, since you can use longer and descriptive names for attributes, which makes it much easier to examine and work on objects.
+&XP  
+
+XP is a special attributes that dates from the days before you could set non-standard attributes with any name you wanted. These are the attributes VA-VZ, WA-WZ, XA-XZ. These attributes have no pre-set effects, and were just to allow players to store any text or MUSHcode that they wished in those attributes. Now that non-standard attributes are available, it is highly recommended that you instead use them, since you can use longer and descriptive names for attributes, which makes it much easier to examine and work on objects.
+&XQ  
+
+XQ is a special attributes that dates from the days before you could set non-standard attributes with any name you wanted. These are the attributes VA-VZ, WA-WZ, XA-XZ. These attributes have no pre-set effects, and were just to allow players to store any text or MUSHcode that they wished in those attributes. Now that non-standard attributes are available, it is highly recommended that you instead use them, since you can use longer and descriptive names for attributes, which makes it much easier to examine and work on objects.
+&XR  
+
+XR is a special attributes that dates from the days before you could set non-standard attributes with any name you wanted. These are the attributes VA-VZ, WA-WZ, XA-XZ. These attributes have no pre-set effects, and were just to allow players to store any text or MUSHcode that they wished in those attributes. Now that non-standard attributes are available, it is highly recommended that you instead use them, since you can use longer and descriptive names for attributes, which makes it much easier to examine and work on objects.
+&XS  
+
+XS is a special attributes that dates from the days before you could set non-standard attributes with any name you wanted. These are the attributes VA-VZ, WA-WZ, XA-XZ. These attributes have no pre-set effects, and were just to allow players to store any text or MUSHcode that they wished in those attributes. Now that non-standard attributes are available, it is highly recommended that you instead use them, since you can use longer and descriptive names for attributes, which makes it much easier to examine and work on objects.
+&XT  
+
+XT is a special attributes that dates from the days before you could set non-standard attributes with any name you wanted. These are the attributes VA-VZ, WA-WZ, XA-XZ. These attributes have no pre-set effects, and were just to allow players to store any text or MUSHcode that they wished in those attributes. Now that non-standard attributes are available, it is highly recommended that you instead use them, since you can use longer and descriptive names for attributes, which makes it much easier to examine and work on objects.
+&XU  
+
+XU is a special attributes that dates from the days before you could set non-standard attributes with any name you wanted. These are the attributes VA-VZ, WA-WZ, XA-XZ. These attributes have no pre-set effects, and were just to allow players to store any text or MUSHcode that they wished in those attributes. Now that non-standard attributes are available, it is highly recommended that you instead use them, since you can use longer and descriptive names for attributes, which makes it much easier to examine and work on objects.
+&XV  
+
+XV is a special attributes that dates from the days before you could set non-standard attributes with any name you wanted. These are the attributes VA-VZ, WA-WZ, XA-XZ. These attributes have no pre-set effects, and were just to allow players to store any text or MUSHcode that they wished in those attributes. Now that non-standard attributes are available, it is highly recommended that you instead use them, since you can use longer and descriptive names for attributes, which makes it much easier to examine and work on objects.
+&XW  
+
+XW is a special attributes that dates from the days before you could set non-standard attributes with any name you wanted. These are the attributes VA-VZ, WA-WZ, XA-XZ. These attributes have no pre-set effects, and were just to allow players to store any text or MUSHcode that they wished in those attributes. Now that non-standard attributes are available, it is highly recommended that you instead use them, since you can use longer and descriptive names for attributes, which makes it much easier to examine and work on objects.
+&XX  
+
+XX is a special attributes that dates from the days before you could set non-standard attributes with any name you wanted. These are the attributes VA-VZ, WA-WZ, XA-XZ. These attributes have no pre-set effects, and were just to allow players to store any text or MUSHcode that they wished in those attributes. Now that non-standard attributes are available, it is highly recommended that you instead use them, since you can use longer and descriptive names for attributes, which makes it much easier to examine and work on objects.
+&XY  
+
+XY is a special attributes that dates from the days before you could set non-standard attributes with any name you wanted. These are the attributes VA-VZ, WA-WZ, XA-XZ. These attributes have no pre-set effects, and were just to allow players to store any text or MUSHcode that they wished in those attributes. Now that non-standard attributes are available, it is highly recommended that you instead use them, since you can use longer and descriptive names for attributes, which makes it much easier to examine and work on objects.
+&XZ  
+
+XZ is a special attributes that dates from the days before you could set non-standard attributes with any name you wanted. These are the attributes VA-VZ, WA-WZ, XA-XZ. These attributes have no pre-set effects, and were just to allow players to store any text or MUSHcode that they wished in those attributes. Now that non-standard attributes are available, it is highly recommended that you instead use them, since you can use longer and descriptive names for attributes, which makes it much easier to examine and work on objects.

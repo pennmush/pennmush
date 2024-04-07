@@ -15,10 +15,8 @@
 #endif
 #ifdef HAVE_SYS_TIME_H
 #include <sys/time.h>
-#ifdef TIME_WITH_SYS_TIME
+#endif
 #include <time.h>
-#endif
-#endif
 #ifdef HAVE_SYS_TYPES_H
 #include <sys/types.h>
 #endif

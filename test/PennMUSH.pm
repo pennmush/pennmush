@@ -3,15 +3,16 @@ use strict;
 use warnings;
 use File::Copy;
 use File::Path;
+use List::Util qw/any/;
 use MUSHConnection;
 use POSIX qw/:sys_wait_h/;
 use feature qw/say/;
-no if $] >= 5.017011, warnings => 'experimental::smartmatch'; # Don't blow up on Perls older than 5.18
+
 my @pids = ();
 
 $SIG{"CHLD"} = sub  {
   while ((my $child = waitpid(-1, WNOHANG))  > 0) {
-    if ($child ~~ @pids) {
+    if (any { $_ == $child } @pids) {
       my $status = ${^CHILD_ERROR_NATIVE};
       my $errmsg = "Child PennMUSH process $child exited: ";
       if (WIFEXITED($status)) {
@@ -66,6 +67,7 @@ sub start {
   copy("../game/alias.cnf", "testgame/alias.cnf");
   copy("../game/names.cnf", "testgame/names.cnf");
   copy("../game/restrict.cnf", "testgame/restrict.cnf");
+  copy("../game/txt/colors.json", "testgame/txt/colors.json");
   my $file;
   foreach $file (glob("../game/txt/*.txt")) {
     my $target = $file;

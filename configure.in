@@ -20,7 +20,6 @@ AC_LANG(C)
 
 AC_PATH_PROG(CAT, cat)
 AC_PROG_CC([gcc clang])
-AC_PROG_CC_C99([gcc clang])
 AC_PATH_PROG(CHMOD, chmod)
 AC_PATH_PROG(CP, cp)
 AC_PATH_PROG(ECHO, echo)
@@ -137,10 +136,8 @@ AC_DEFINE_UNQUOTED([SQLITE_DEFAULT_WORKER_THREADS], $CPU_COUNT)
 # Usually there's no need to check for standard C89 headers.
 
 # <stdint.h> is checked by this.
-AC_HEADER_STDC
 AC_HEADER_STDBOOL
 AC_HEADER_SYS_WAIT
-AC_HEADER_TIME
 AC_CHECK_HEADERS([sys/stat.h sys/time.h sys/types.h sys/eventfd.h])
 AC_CHECK_HEADERS([sys/socket.h arpa/inet.h libintl.h netdb.h netinet/tcp.h])
 AC_CHECK_HEADERS([netinet/in.h sys/un.h sys/resource.h sys/event.h sys/uio.h])
@@ -374,14 +371,15 @@ AC_CHECK_TYPES([struct sockaddr_in6, struct xucred], [], [], [
 
 # Will toupper()ing an already uppercase character be a problem?
 AC_MSG_CHECKING([if it is safe to toupper uppers])
-AC_TRY_COMPILE(
-[#include <ctype.h>],
-[
+AC_COMPILE_IFELSE(
+[AC_LANG_SOURCE([#include <ctype.h>
+int main(void) {
 if (toupper('A') == 'A')
 	return 0;
 else
 	return 1;
-], ac_safe_toupper=yes, ac_safe_toupper=no)
+}
+])], ac_safe_toupper=yes, ac_safe_toupper=no)
 AC_MSG_RESULT([$ac_safe_toupper])
 if test "x$ac_safe_toupper" = xyes; then
 	AC_DEFINE(HAVE_SAFE_TOUPPER)
@@ -414,11 +412,12 @@ else
  fi
 fi
 AC_MSG_NOTICE([Configuring PCRE2])
-PCRE2_VERSION="pcre2-10.39"
-PCRE2_TARBALL="${PCRE2_VERSION}.tar.gz"
-PCRE2_URL="https://github.com/PhilipHazel/pcre2/releases/download/${PCRE2_VERSION}/${PCRE2_TARBALL}"
-AC_MSG_CHECKING([for ${PCRE2_VERSION}])
-if test -d ${PCRE2_VERSION} ; then
+PCRE2_VERSION="10.43"
+PCRE2_TARBALL="pcre2-${PCRE2_VERSION}.tar.gz"
+PCRE2_URL="https://github.com/PhilipHazel/pcre2/releases/download/pcre2-${PCRE2_VERSION}/${PCRE2_TARBALL}"
+PCRE2_DIR=./pcre2-${PCRE2_VERSION}
+AC_MSG_CHECKING([for PCRE ${PCRE2_VERSION}])
+if test -d ${PCRE2_DIR} ; then
    AC_MSG_RESULT([found])
 else
    AC_MSG_RESULT([not found])
@@ -433,10 +432,10 @@ else
          AC_MSG_ERROR([Unable to automatically fetch file. Download it manually and try again.])
       fi
    fi
-   perl -pi -e 's/\Qif (separator != CHAR_SLASH && separator != CHAR_BACKSLASH &&\E/$& separator != CHAR_GRAVE_ACCENT &&/' "${PCRE2_VERSION}/src/pcre2_context.c"
+   perl -pi -e 's/\Qif (separator != CHAR_SLASH && separator != CHAR_BACKSLASH &&\E/$& separator != CHAR_GRAVE_ACCENT &&/' "${PCRE2_DIR}/src/pcre2_context.c"
 fi
 
-(cd ${PCRE2_VERSION} && ./configure ${PCRE2_OPTIONS})
+(cd ${PCRE2_DIR} && ./configure ${PCRE2_OPTIONS})
 if test -d pcre2 ; then
    rm -rf pcre2/
 fi

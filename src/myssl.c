@@ -26,12 +26,8 @@ void shutdown_checkpoint(void);
 #else /* !WIN32 */
 #ifdef HAVE_SYS_TIME_H
 #include <sys/time.h>
-#ifdef TIME_WITH_SYS_TIME
-#include <time.h>
 #endif
-#else
 #include <time.h>
-#endif
 #include <sys/ioctl.h>
 #include <errno.h>
 #ifdef HAVE_SYS_SOCKET_H
@@ -203,7 +199,7 @@ ssl_init(char *private_key_file, char *certificate_file, char *ca_file, char *ca
   pcg32_random_t rand_state;
   uint64_t seeds[2];
   bool seeded = false;
-  
+
   bool foundKey = false;
   bool foundCert = false;
 
@@ -275,7 +271,7 @@ ssl_init(char *private_key_file, char *certificate_file, char *ca_file, char *ca
         foundCert = true;
       }
     }
-    
+
     if (!foundKey) {
       if (SSL_CTX_use_PrivateKey_file(ctx, certificate_file, SSL_FILETYPE_PEM)) {
         foundKey = true;
@@ -288,11 +284,11 @@ ssl_init(char *private_key_file, char *certificate_file, char *ca_file, char *ca
     ssl_errordump("Unable to load server certificate - only anonymous "
                   "ciphers supported.");
   }
-  
+
   if (!foundKey) {
     ssl_errordump("Unable to load private key - only anonymous ciphers supported.");
   }
-  
+
   /* Load trusted CAs */
   if ((ca_file && *ca_file) || (ca_dir && *ca_dir)) {
     if (!SSL_CTX_load_verify_locations(ctx,

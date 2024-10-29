@@ -2,7 +2,7 @@
 Welcome to:
 
 TTTTTTTTTT FFFFFFFFF    GGGGG
-    TT      FF    FF   GG   GG
+T   TT   T  FF    FF   GG   GG
     TT      FF  F     GG
     TT      FFFFF     GG  GGGG
     TT      FF  F     GG    GG
@@ -10,7 +10,7 @@ TTTTTTTTTT FFFFFFFFF    GGGGG
    TTTT he FFFF airy    GGGGG arden
 /|/||\\\|////\\|\|\|||////|/||/|\|/|\|/|\/|\/|//\|\/||//||/\\/|\|\/\///|//|\/\/\
 
-PennMUSH 1.8.8p0 152acc58d59765dcb93555a65b80d5fdb7592326
+PennMUSH 1.8.8p0 3401d1bfe9ec8fd69402ae9bfd5d2e84ea877697
 In-game Contact: Alara
 -_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-
 

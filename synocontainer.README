@@ -30,3 +30,47 @@ Repeat running until warnings and errors are resolved:
 ./configure --with-mysql
 make
 ```
+
+Step by step how-to:
+2024-10-31
+
+Let's assume you have a docker container created, using the image ubuntu/ubuntu-latest.
+
+- You've set it up with a volume to `/volume1/docker/mush/pennmush_NAS:/mush:rw`
+- The default path is set to `/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin`
+- You have no ports, but instead given your container host privileges.
+
+Open the container terminal and navigate to /mush
+
+```
+apt update
+apt upgrade
+apt install sudo nano git
+apt install libssl-dev
+apt install gcc make
+apt install pkg-config libpq-dev
+apt install libevent-dev curl ntp libcurlpp-dev
+apt install mysql-client libmysqlclient-dev
+apt install libgccjit0
+
+ln -s /usr/bin/pkg-config /usr/bin/icu-config
+
+git pull https://www.github.com/pennmush/pennmush .
+
+./configure --with-mysql
+make
+make install
+
+useradd daniel
+passwd daniel
+```
+
+Next find the hostname of the container:
+`cat /etc/hostname`
+
+Update your hosts file to get rid of the 'unable to resolve host <hostname>: Name or service not known' when running sudo.
+```
+127.0.0.1       ubuntu-latest
+::1             ubuntu-latest
+```
+

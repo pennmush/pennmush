@@ -1,0 +1,32 @@
+This guide is to assist in compiling PennMUSH under the `ubuntu-latest` Docker image for Synology Container Manager.
+
+Because updating the general ubuntu image via Docker or Container Manager will wipe the entire OS except for mounted volumes, it will be necessary reinstall packages and libraries to recompile ./netmush each time. Lame. We can probably create a docker image that self-contains all necessary libraries, but I don't know Docker well enough to do so myself.
+
+So instead, the following procedure is my manual method of updating and reinstantiating the Ubuntu docker image.
+
+Download `ubuntu/ubuntu-latest` image and create a new container for it.
+Create a new container with the ubuntu-latest image.
+Create a volume with your MUSH package mapped to a local /mush folder within the container.
+Set the container network as `host`.
+
+Install all packages and libraries per https://github.com/pennmush/pennmush/blob/master/INSTALL.md
+
+To enable ICU support on modern versions of Ubuntu:
+```
+apt install pkg-config libpq-dev
+ln -s /usr/bin/pkg-config /usr/bin/icu-config
+```
+
+Correct the timezone data by installing tzdata or ntp:
+`apt install ntp`
+
+Install an SQL library (usually `libmysql-dev`, `libmariadb-dev` or something):
+`apt-cache search mysql`
+
+Your Synology can be running MariaDB from the package manager in DSM and with the host type network connection the MUSH will be able to create connections DSM.
+
+Repeat running until warnings and errors are resolved:
+```
+./configure --with-mysql
+make
+```

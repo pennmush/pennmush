@@ -41,6 +41,7 @@ game/save
 game/*.crt
 game/*.csr
 game/*.key
+game/*.pem
 game/*.stackdump
 hdrs/buildinf.h
 hdrs/cmds.h

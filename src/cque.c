@@ -2186,7 +2186,7 @@ do_halt(dbref owner, const char *ncom, dbref victim)
   }
   /* remove wait q stuff */
   for (point = qwait; point; point = next) {
-    if (((point->executor == player) || (Owner(point->executor) == player))) {
+    if (((point->executor == player) || (GoodObject(point->executor) && (Owner(point->executor) == player)))) {
       num--;
       giveto(player, QUEUE_COST);
       if (trail)

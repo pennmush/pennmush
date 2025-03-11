@@ -477,6 +477,11 @@ typedef bool _Bool;
 #define HAVE_SSSE3
 #endif
 
+#undef HAVE_SSE41
+#ifdef __SSE4_1__
+#define HAVE_SSE41
+#endif
+
 #undef HAVE_SSE42
 #ifdef __SSE4_2__
 #define HAVE_SSE42

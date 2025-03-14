@@ -1476,6 +1476,107 @@ tsc_diff_to_microseconds(uint64_t start, uint64_t end)
 #endif
 }
 
+/*
+ * Like fun_default, but also sets the attribute, and has timeout logic
+ * around the timestamp it puts into the attribute.
+ */
+/* ARGSUSED */
+FUNCTION(fun_cache)
+{
+  if (!FUNCTION_SIDE_EFFECTS) {
+    safe_str(T(e_disabled), buff, bp);
+    return;
+  }
+
+  char ** xargs = mush_calloc(nargs, sizeof(char *), "fun_cache.xargs");
+  char * dp;
+  char const * sp;
+  for(int i = 0; i < nargs; i++) {
+      if(i != 2) {
+        xargs[i] = mush_malloc(BUFFER_LEN, "fun_cache.xarg.item");
+        dp = xargs[i];
+        sp = args[i];
+        if (process_expression(xargs[i], &dp, &sp, executor, caller, enactor, eflags, PT_DEFAULT, pe_info)) {
+          goto cleanup;
+        }
+        *dp = '\0';
+      }
+  }
+  
+  dbref thing;
+  thing = match_thing(executor, xargs[0]);
+  if (!GoodObject(thing)) {
+    safe_str(T(e_notvis), buff, bp);
+    goto cleanup;
+  }
+  
+  upcasestr(xargs[1]);
+  if (!good_atr_name(xargs[1])) {
+    notify(executor, T("Invalid attribute name."));
+    return;
+  }
+
+  if(!( controls(executor, thing) && can_edit_attr(executor, thing, xargs[1]))) {
+    safe_str(T("#-1 That attribute cannot be changed by you."), buff, bp);
+    goto cleanup;
+  }
+
+  bool slide = (nargs >= 5 && is_boolean(xargs[4])) ? parse_boolean(xargs[4]) : false;
+  time_t exp_secs = mudtime - (nargs >= 4 && is_number(xargs[3]) ? (time_t)parse_number(xargs[3]) : (time_t)3600);
+  char cache_entry[BUFFER_LEN];
+  char *cache_entry_bp = cache_entry;
+  safe_str(do_get_attrib(executor, thing, xargs[1]), cache_entry, &cache_entry_bp);
+  *cache_entry_bp = '\0';
+  char *cache_result = strchr(cache_entry, ' ');
+  int cache_secs = -1;
+  
+  if(cache_result) {
+    *cache_result++ = '\0';
+    cache_secs = is_number(cache_entry) ? parse_number(cache_entry) : -1;
+    *cache_entry_bp = '\0';
+  }
+
+  if(cache_secs >= exp_secs) { // Cache Hit
+    if(slide) {
+      char new_cache_entry[BUFFER_LEN];
+      char *new_cache_entry_bp = new_cache_entry;
+
+      safe_time_t(mudtime, new_cache_entry, &new_cache_entry_bp);
+      safe_str(" ", new_cache_entry, &new_cache_entry_bp);
+      safe_str(cache_result, new_cache_entry, &new_cache_entry_bp);
+      *new_cache_entry_bp = '\0';
+
+      do_set_atr(thing, xargs[1], new_cache_entry, executor, 1);
+    }
+    safe_str(cache_result, buff, bp);
+  }
+  else { // Cache Miss
+    char new_cache_entry[BUFFER_LEN];
+    char *new_cache_entry_bp = new_cache_entry;
+    char const *p;
+    p = args[2];
+
+    safe_time_t(mudtime, new_cache_entry, &new_cache_entry_bp);
+    safe_str(" ", new_cache_entry, &new_cache_entry_bp);
+
+    char *new_cache_value_bp = new_cache_entry_bp;
+    if(process_expression(new_cache_entry, &new_cache_entry_bp, &p, executor, caller, enactor, eflags, PT_DEFAULT, pe_info)) {
+      goto cleanup;
+    }
+    *new_cache_entry_bp = '\0';
+    do_set_atr(thing, xargs[1], new_cache_entry, executor, 1);
+    safe_str(new_cache_value_bp, buff, bp);
+  }
+  
+  cleanup: 
+  for(int i = 0; i < nargs; i++) {
+      if(i != 2 && xargs[i] != NULL) {
+        mush_free(xargs[i], "fun_cache.xarg.item");
+      }
+  }
+  mush_free(xargs, "fun_cache.xargs");
+}
+
 extern int global_fun_invocations; /* From parse.c */
 
 /* ARGSUSED */

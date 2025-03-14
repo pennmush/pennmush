@@ -6041,3 +6041,20 @@ See also: urlencode(), @http
   lZj9lZYz8qZKfX6YWWZ3SqbzNLyALlszAXcuyO1u7Vo=
 
 See also: digest()
+& HTTP()
+  http(<obj>/<attr>,<verb>,<URL>[,<data>])
+
+  Attempts to retrieve URL with a HTTP GET request, and upon doing so, evaluates <obj>/<attr>. The body of the reply from the remote web server is passed as %0, with the HTTP status in %q<status> and the Content-Type header in %q<content-type>. If it runs into an error trying to create the request, it stores it in %q<http-error>.
+
+  The verb can be any of: POST, GET, PUT, PATCH, HEAD, CONNECT, TRACE, OPTIONS or DELETE, defaulting to GET. With these, the 'content-type' q-register controls the type of data; it defaults to 'application/x-www-form-urlencoded'.` If it contains the string "charset=utf-8", <data> will be converted to UTF-8, otherwise it is assumed to be Latin-1.
+
+  If the q-register 'userpass' is set when running @http, it should hold a string of the form user:password and will be used if needed for HTTP authentication.
+
+  It is recommended to use @http instead of http() for any remote or long calls, as http() runs with a connection timeout equal to half the time limit of a function call.
+
+  Restricted to objects set Wizard or with the Can_HTTP @Power.
+
+  Note: The response body has the same 8k limit as other MUSH strings. Anything longer is truncated; this command is best used with APIs that provide short responses. The register 'http-overflow' will be set to 1 if the response is too large.
+
+See also: urlencode(), urldecode(), @http
+

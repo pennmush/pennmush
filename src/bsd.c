@@ -70,7 +70,7 @@
 #include <poll.h>
 #endif
 #ifdef HAVE_LIBCURL
-#include <curl/curl.h>
+#include "http.h"
 #endif
 #include <openssl/rand.h>
 
@@ -1122,19 +1122,6 @@ int ncurl_queries = 0;
 CURLM *curl_handle = NULL;
 
 static void
-free_urlreq(struct urlreq *req)
-{
-  pe_regs_free(req->pe_regs);
-  if (req->body) {
-    sqlite3_str_reset(req->body);
-    sqlite3_str_finish(req->body);
-  }
-  mush_free(req->attrname, "urlreq.attrname");
-  curl_slist_free_all(req->header_slist);
-  mush_free(req, "urlreq");
-}
-
-static void
 handle_curl_msg(CURLMsg *msg)
 {
   if (!msg) {
@@ -1198,11 +1185,14 @@ handle_curl_msg(CURLMsg *msg)
         }
       }
       if (resp->too_big) {
+        pe_regs_set_int(resp->pe_regs, PE_REGS_Q, "http-overflow", 1);
         notify(resp->thing, "Too much HTTP data received; excess truncated.");
       }
+
       queue_attribute_base_priv(resp->thing, resp->attrname, resp->enactor, 0,
                                 resp->pe_regs, resp->queue_type, resp->thing,
                                 NULL, NULL);
+
     } else {
       notify_format(resp->thing, "Request failed: %s",
                     curl_easy_strerror(msg->data.result));
@@ -1513,8 +1503,7 @@ check_sockets(uint32_t msec_timeout)
   }
 
 #ifdef HAVE_LIBCURL
-  curl_status =
-    curl_multi_wait(curl_handle, fds, fds_used, msec_timeout, &found);
+  curl_status = curl_multi_wait(curl_handle, fds, fds_used, msec_timeout, &found);
 
   if (curl_status != CURLM_OK) {
     do_rawlog(LT_ERR, "curl_multi_wait: %s", curl_multi_strerror(curl_status));

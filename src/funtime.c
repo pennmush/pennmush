@@ -171,11 +171,11 @@ FUNCTION(fun_convsecs)
   struct tm *ttm;
   bool utc = 0;
 
-  if (!is_integer(args[0])) {
+  if (!is_strict_int64(args[0])) {
     safe_str(T(e_int), buff, bp);
     return;
   }
-  tt = parse_integer(args[0]);
+  tt = parse_int64(args[0], NULL, 10);
   if (errno == ERANGE) {
     safe_str(T(e_range), buff, bp);
     return;

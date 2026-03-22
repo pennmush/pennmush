@@ -35,6 +35,7 @@ Fixes
 * Fixed `MAX_COMMAND_LEN` alteration support, by improving the stability of the chunk system. Patch by Mercutio. [1336]
 * `oob()` failed if used with just two arguments. From a report by Ben Gunderson. [1407, MG]
 * Telnet subnegotations displayed the subnegotation end character (SE) visibly for clients which had negotiated a unicode character set. Reported by Ben Gunderson. [1407, MG]
+* Repeating telnet characterset negotiation for a connection which had already negotiated as UTF-8 could cause a crash. From a report from Volund. [MG]
 
 Version 1.8.8 patchlevel 0 Apr 20 2020
 ======================================

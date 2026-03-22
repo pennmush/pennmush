@@ -228,6 +228,9 @@ static int handle_telnet(DESC *d, char **q, char *qend);
 static void set_ttype(DESC *d, char *value);
 bool http_finished_wrapper(void *data);
 
+/* Note a telnet handler must never send (queue_newwrite) a telnet
+ * response which contains SB but not SE, for the benefit of the
+ * UTF-8 parser (latin1_to_utf8_tn) which expects the full response */
 typedef void (*telnet_handler)(DESC *d, char *cmd, int len);
 #define TELNET_HANDLER(x)                                                      \
   void x(DESC *d __attribute__((__unused__)),                                  \
@@ -1807,7 +1810,6 @@ new_connection(int oldsock, int *result, conn_source source)
     int remote_pid = -1;
     int remote_uid = -1;
     bool good_to_read = 1;
-
     /* As soon as the SSL slave opens a new connection to the mush, it
        writes a string of the format 'IP^HOSTNAME\r\n'. This will thus
        not block unless somebody's being naughty. People obviously can
@@ -2817,22 +2819,29 @@ TELNET_HANDLER(telnet_charset)
    * currently running in (if known, and not "C"),
    * and UTF-8, and plain ol' ascii. */
   /* IAC SB CHARSET REQUEST ";" <charset-list> IAC SE */
-  static const char reply_prefix[4] = {IAC, SB, TN_CHARSET,
-                                       TN_SB_CHARSET_REQUEST};
-  static const char reply_suffix[2] = {IAC, SE};
+  char reply[BUFFER_LEN];
+  char *bp;
+  bp = reply;
+
+  /* Only respond on DO */
+  if (*cmd != DO)
+    return;
+
+  /* Add the response prefix to the buffer */
+  safe_chr((char) IAC, reply, &bp);
+  safe_chr((char) SB, reply, &bp);
+  safe_chr((char) TN_CHARSET, reply, &bp);
+  safe_chr((char) TN_SB_CHARSET_REQUEST, reply, &bp);
+
 #ifndef _MSC_VER
 /* Offer a selection of possible delimiters, to avoid it appearing
  * in a charset name */
 #ifdef HAVE_NL_LANGINFO
   static const char *delim_list = "; +=/!", *delim_curr;
 #endif /* HAVE_NL_LANGINFO */
-  char delim[2] = {';', '\0'};
+  char delim = ';';
   char *curr_locale = NULL;
 
-  if (*cmd != DO)
-    return;
-
-  queue_newwrite(d, reply_prefix, 4);
 #ifdef HAVE_NL_LANGINFO
   curr_locale = nl_langinfo(CODESET);
   if (curr_locale && *curr_locale && strcmp(curr_locale, "C") &&
@@ -2842,26 +2851,25 @@ TELNET_HANDLER(telnet_charset)
         break;
     }
     if (*delim_curr) {
-      delim[0] = *delim_curr;
+      delim = *delim_curr;
     } else {
-      delim[0] = ';'; /* fall back on ; */
+      delim = ';'; /* fall back on ; */
     }
   }
 #endif /* HAVE_NL_LANGINFO */
-  queue_newwrite(d, delim, 1);
-  queue_newwrite(d, "UTF-8", 5);
-  queue_newwrite(d, delim, 1);
+  safe_chr(delim, reply, &bp);
   if (curr_locale && strlen(curr_locale)) {
-    queue_newwrite(d, curr_locale, strlen(curr_locale));
-    queue_newwrite(d, delim, 1);
+    safe_str(curr_locale, reply, &bp);
+    safe_chr(delim, reply, &bp);
   }
-  queue_newwrite(d, "US-ASCII", 8);
-  queue_newwrite(d, delim, 1);
-  queue_newwrite(d, "ASCII", 5);
-  queue_newwrite(d, delim, 1);
-  queue_newwrite(d, "x-penn-def", 10);
+  safe_strl("US-ASCII", 8, reply, &bp);
+  safe_chr(delim, reply, &bp);
+  safe_strl("ASCII", 5, reply, &bp);
+  safe_chr(delim, reply, &bp);
+  safe_strl("UTF-8", 5, reply, &bp);
+  safe_chr(delim, reply, &bp);
+  safe_strl("x-penn-def", 10, reply, &bp);
 
-  queue_newwrite(d, reply_suffix, 2);
 #else  /* _MSC_VER */
   /* MSVC doesn't have langinfo.h, and doesn't support nl_langinfo().
    * As a temporary work-around, offer ISO-8859-1 as a hardcoded option
@@ -2869,15 +2877,16 @@ TELNET_HANDLER(telnet_charset)
    * but it's unlikely to contain a valid charset name, so probably
    * wouldn't help anyway.) */
 
-  if (*cmd != DO)
-    return;
-
-  queue_newwrite(d, reply_prefix, 4);
-  queue_newwrite(d, ";UTF-8", 6);
-  queue_newwrite(d, ";ISO-8859-1", 11);
-  queue_newwrite(d, ";US-ASCII;ASCII;x-win-def", 25);
-  queue_newwrite(d, reply_suffix, 2);
+  safe_strl(";ISO-8859-1", 11, reply, &bp);
+  safe_strl(";US-ASCII;ASCII", 15, reply, &bp);
+  safe_strl(";UTF-8;x-win-def", 16, reply, &bp);
 #endif /* _MSC_VER */
+
+  /* Add response suffix and write response */
+  safe_chr((char) IAC, reply, &bp);
+  safe_chr((char) SE, reply, &bp);
+  *bp = '\0';
+  queue_newwrite(d, reply, strlen(reply));
 }
 
 /* Handle CHARSET subnegotiation */

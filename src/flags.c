@@ -22,12 +22,8 @@
 
 #ifdef HAVE_SYS_TIME_H
 #include <sys/time.h>
-#ifdef TIME_WITH_SYS_TIME
-#include <time.h>
 #endif
-#else
 #include <time.h>
-#endif
 #include <string.h>
 #include <stdlib.h>
 #ifdef HAVE_INTTYPES_H

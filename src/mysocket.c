@@ -69,12 +69,8 @@
 
 #ifdef HAVE_SYS_TIME_H
 #include <sys/time.h>
-#ifdef TIME_WITH_SYS_TIME
-#include <time.h>
 #endif
-#else
 #include <time.h>
-#endif
 
 #ifdef HAVE_POLL_H
 #include <poll.h>

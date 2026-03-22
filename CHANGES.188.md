@@ -23,9 +23,9 @@ Version 1.8.8 patchlevel 1 ??? ?? 202?
 Minor changes
 -------------
 
-* Sqlite updated to 3.36.0. [SW]
-* cJSON updated to 1.7.13 [SW]
-* PCRE updated to 10.39 [SW]
+* Sqlite updated to 3.45.1. [SW]
+* cJSON updated to 1.7.17 [SW]
+* PCRE updated to 10.43 [SW]
 * New `--version` option to the netmush binary to display the version and exit. [SW]
 
 Fixes
@@ -35,6 +35,7 @@ Fixes
 * Fixed `MAX_COMMAND_LEN` alteration support, by improving the stability of the chunk system. Patch by Mercutio. [1336]
 * `oob()` failed if used with just two arguments. From a report by Ben Gunderson. [1407, MG]
 * Telnet subnegotations displayed the subnegotation end character (SE) visibly for clients which had negotiated a unicode character set. Reported by Ben Gunderson. [1407, MG]
+* Fix for crashbug in @halt [1424,MT]
 * Repeating telnet characterset negotiation for a connection which had already negotiated as UTF-8 could cause a crash. From a report from Volund. [MG]
 
 Version 1.8.8 patchlevel 0 Apr 20 2020

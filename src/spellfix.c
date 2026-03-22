@@ -125,9 +125,9 @@ static const unsigned char midClass[] = {
  /* u */ CCLASS_VOWEL,    /* v */ CCLASS_B,       /* w */ CCLASS_B,
  /* x */ CCLASS_C,        /* y */ CCLASS_VOWEL,   /* z */ CCLASS_C,
  /* { */ CCLASS_OTHER,    /* | */ CCLASS_OTHER,   /* } */ CCLASS_OTHER,
- /* ~ */ CCLASS_OTHER,    /*   */ CCLASS_OTHER,   
+ /* ~ */ CCLASS_OTHER,    /*   */ CCLASS_OTHER,
 };
-/* 
+/*
 ** This tables gives the character class for ASCII characters that form the
 ** initial character of a word.  The only difference from midClass is with
 ** the letters H, W, and Y.
@@ -175,7 +175,7 @@ static const unsigned char initClass[] = {
  /* u */ CCLASS_VOWEL,    /* v */ CCLASS_B,       /* w */ CCLASS_B,
  /* x */ CCLASS_C,        /* y */ CCLASS_Y,       /* z */ CCLASS_C,
  /* { */ CCLASS_OTHER,    /* | */ CCLASS_OTHER,   /* } */ CCLASS_OTHER,
- /* ~ */ CCLASS_OTHER,    /*   */ CCLASS_OTHER,   
+ /* ~ */ CCLASS_OTHER,    /*   */ CCLASS_OTHER,
 };
 
 /*
@@ -199,7 +199,7 @@ static const unsigned char className[] = ".ABCDHLRMY9 ?";
 **
 ** Space to hold the result is obtained from sqlite3_malloc()
 **
-** Return NULL if memory allocation fails.  
+** Return NULL if memory allocation fails.
 */
 static unsigned char *phoneticHash(const unsigned char *zIn, int nIn){
   unsigned char *zOut = sqlite3_malloc64( nIn + 1 );
@@ -212,7 +212,7 @@ static unsigned char *phoneticHash(const unsigned char *zIn, int nIn){
   if( zOut==0 ) return 0;
   if( nIn>2 ){
     switch( zIn[0] ){
-      case 'g': 
+      case 'g':
       case 'k': {
         if( zIn[1]=='n' ){ zIn++; nIn--; }
         break;
@@ -233,7 +233,7 @@ static unsigned char *phoneticHash(const unsigned char *zIn, int nIn){
     if( c==CCLASS_OTHER && cPrev!=CCLASS_DIGIT ) continue;
     aClass = midClass;
     if( c==CCLASS_VOWEL && (cPrevX==CCLASS_R || cPrevX==CCLASS_L) ){
-       continue; /* No vowels beside L or R */ 
+       continue; /* No vowels beside L or R */
     }
     if( (c==CCLASS_R || c==CCLASS_L) && cPrevX==CCLASS_VOWEL ){
        nOut--;   /* No vowels beside L or R */
@@ -361,7 +361,7 @@ static int substituteCost(char cPrev, char cFrom, char cTo){
 ** Negative values indicate an error:
 **    -1  One of the inputs is NULL
 **    -2  Non-ASCII characters on input
-**    -3  Unable to allocate memory 
+**    -3  Unable to allocate memory
 **
 ** If pnMatch is not NULL, then *pnMatch is set to the number of bytes
 ** of zB that matched the pattern in zA. If zA does not end with a '*',
@@ -542,7 +542,7 @@ static void editdistSqlFunc(
     }else{
       sqlite3_result_error(context, "NULL input to editdist()", -1);
     }
-  }else{ 
+  }else{
     sqlite3_result_int(context, res);
   }
 }
@@ -576,7 +576,7 @@ struct EditDist3Cost {
 };
 
 /*
-** Edit costs for a particular language ID 
+** Edit costs for a particular language ID
 */
 struct EditDist3Lang {
   int iLang;             /* Language ID */
@@ -807,7 +807,7 @@ static int editDist3ConfigLoad(
       memcpy(pCost->a, zFrom, nFrom);
       memcpy(pCost->a + nFrom, zTo, nTo);
       pCost->pNext = pLang->pCost;
-      pLang->pCost = pCost; 
+      pLang->pCost = pCost;
     }
   }
   rc2 = sqlite3_finalize(pStmt);
@@ -976,7 +976,7 @@ static void updateCost(
 }
 
 /*
-** How much stack space (int bytes) to use for Wagner matrix in 
+** How much stack space (int bytes) to use for Wagner matrix in
 ** editDist3Core().  If more space than this is required, the entire
 ** matrix is taken from the heap.  To reduce the load on the memory
 ** allocator, make this value as large as practical for the
@@ -994,7 +994,7 @@ static void updateCost(
 ** (not bytes) in z2 that matched the search pattern in *pFrom. If pFrom does
 ** not contain the pattern for a prefix-search, then this is always the number
 ** of characters in z2. If pFrom does contain a prefix search pattern, then
-** it is the number of characters in the prefix of z2 that was deemed to 
+** it is the number of characters in the prefix of z2 that was deemed to
 ** match pFrom.
 */
 static int editDist3Core(
@@ -1134,7 +1134,7 @@ static int editDist3Core(
   if( f.isPrefix ){
     for(i2=1; i2<=n2; i2++){
       int b = m[szRow*i2-1];
-      if( b<=res ){ 
+      if( b<=res ){
         res = b;
         n = i2 - 1;
       }
@@ -1211,7 +1211,7 @@ static void editDist3SqlFunc(
     }else{
       sqlite3_result_int(context, dist);
     }
-  } 
+  }
 }
 
 /*
@@ -1865,7 +1865,7 @@ static int translen_to_charlen(const char *zIn, int nIn, int nTrans){
 /*
 **    spellfix1_translit(X)
 **
-** Convert a string that contains non-ASCII Roman characters into 
+** Convert a string that contains non-ASCII Roman characters into
 ** pure ASCII.
 */
 static void transliterateSqlFunc(
@@ -1996,7 +1996,7 @@ struct spellfix1_cursor {
     int iScore;                   /* Score for sorting */
     int iMatchlen;                /* Value of matchlen column (or -1) */
     char zHash[SPELLFIX_MX_HASH]; /* the phonehash used for this match */
-  } *a; 
+  } *a;
 };
 
 /*
@@ -2123,7 +2123,8 @@ static int spellfix1Init(
     if( pNew->zTableName==0 ){
       rc = SQLITE_NOMEM;
     }else{
-      rc = sqlite3_declare_vtab(db, 
+      sqlite3_vtab_config(db, SQLITE_VTAB_INNOCUOUS);
+      rc = sqlite3_declare_vtab(db,
            "CREATE TABLE x(word,rank,distance,langid, "
            "score, matchlen, phonehash HIDDEN, "
            "top HIDDEN, scope HIDDEN, srchcnt HIDDEN, "
@@ -2167,7 +2168,7 @@ static int spellfix1Init(
         continue;
       }
       *pzErr = sqlite3_mprintf("bad argument to spellfix1(): \"%s\"", argv[i]);
-      rc = SQLITE_ERROR; 
+      rc = SQLITE_ERROR;
     }
   }
 
@@ -2281,7 +2282,7 @@ static int spellfix1BestIndex(sqlite3_vtab *tab, sqlite3_index_info *pIdxInfo){
     if( pConstraint->usable==0 ) continue;
 
     /* Terms of the form:  word MATCH $str */
-    if( (iPlan & SPELLFIX_IDXNUM_MATCH)==0 
+    if( (iPlan & SPELLFIX_IDXNUM_MATCH)==0
      && pConstraint->iColumn==SPELLFIX_COL_WORD
      && pConstraint->op==SQLITE_INDEX_CONSTRAINT_MATCH
     ){
@@ -2518,7 +2519,7 @@ static void spellfix1RunQuery(MatchQuery *p, const char *zQuery, int nQuery){
       break;
     }
     pCur->nSearch++;
-    
+
     /* If there is a "distance < $dist" or "distance <= $dist" constraint,
     ** check if this row meets it. If not, jump back up to the top of the
     ** loop to process the next row. Otherwise, if the row does match the
@@ -2732,7 +2733,7 @@ static int spellfix1FilterForFullScan(
 ** prior to any spellfix1Column, spellfix1Rowid, or spellfix1Eof call.
 */
 static int spellfix1Filter(
-  sqlite3_vtab_cursor *cur, 
+  sqlite3_vtab_cursor *cur,
   int idxNum, const char *idxStr,
   int argc, sqlite3_value **argv
 ){
@@ -2935,7 +2936,7 @@ static int spellfix1Update(
       /* Inserts of the form:  INSERT INTO table(command) VALUES('xyzzy');
       ** cause zWord to be NULL, so we look at the "command" column to see
       ** what special actions to take */
-      const char *zCmd = 
+      const char *zCmd =
          (const char*)sqlite3_value_text(argv[SPELLFIX_COL_COMMAND+2]);
       if( zCmd==0 ){
         pVTab->zErrMsg = sqlite3_mprintf("NOT NULL constraint failed: %s.word",
@@ -3024,7 +3025,7 @@ static int spellfix1Rename(sqlite3_vtab *pVTab, const char *zNew){
   if( zNewName==0 ){
     return SQLITE_NOMEM;
   }
-  spellfix1DbExec(&rc, db, 
+  spellfix1DbExec(&rc, db,
      "ALTER TABLE \"%w\".\"%w_vocab\" RENAME TO \"%w_vocab\"",
      p->zDbName, p->zTableName, zNewName
   );
@@ -3062,6 +3063,11 @@ static sqlite3_module spellfix1Module = {
   0,                       /* xRollback */
   0,                       /* xFindMethod */
   spellfix1Rename,         /* xRename */
+  0,                       /* xSavepoint */
+  0,                       /* xRelease */
+  0,                       /* xRollbackTo */
+  0,                       /* xShadowName */
+  0                        /* xIntegrity */
 };
 
 /*
@@ -3112,8 +3118,8 @@ static int spellfix1Register(sqlite3 *db){
 __declspec(dllexport)
 #endif
 int sqlite3_spellfix_init(
-  sqlite3 *db, 
-  char **pzErrMsg, 
+  sqlite3 *db,
+  char **pzErrMsg,
   const sqlite3_api_routines *pApi
 ){
   SQLITE_EXTENSION_INIT2(pApi);

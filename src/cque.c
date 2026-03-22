@@ -16,12 +16,8 @@
 #include <stdarg.h>
 #ifdef HAVE_SYS_TIME_H
 #include <sys/time.h>
-#ifdef TIME_WITH_SYS_TIME
-#include <time.h>
 #endif
-#else
 #include <time.h>
-#endif
 #ifdef HAVE_STDINT_H
 #include <stdint.h>
 #endif
@@ -2190,7 +2186,7 @@ do_halt(dbref owner, const char *ncom, dbref victim)
   }
   /* remove wait q stuff */
   for (point = qwait; point; point = next) {
-    if (((point->executor == player) || (Owner(point->executor) == player))) {
+    if (((point->executor == player) || (GoodObject(point->executor) && (Owner(point->executor) == player)))) {
       num--;
       giveto(player, QUEUE_COST);
       if (trail)

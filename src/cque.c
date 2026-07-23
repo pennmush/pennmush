@@ -65,7 +65,7 @@ static int add_to_sem(dbref player, int am, const char *name);
 static int queue_limit(dbref player);
 void free_qentry(MQUE *point);
 static int pay_queue(dbref player, const char *command);
-void wait_que(dbref executor, int waittill, char *command, dbref enactor,
+void wait_que(dbref executor, time_t waittill, char *command, dbref enactor,
               dbref sem, const char *semattr, int until, MQUE *parent_queue);
 int que_next(void);
 
@@ -870,6 +870,24 @@ queue_attribute_useatr(dbref executor, ATTR *a, dbref enactor, PE_REGS *pe_regs,
   return 1;
 }
 
+/** Add a relative wait to a base time, saturating instead of
+ * overflowing time_t when the offset is absurdly large in either
+ * direction. Deadlines never go below 0.
+ */
+static time_t
+wait_deadline(time_t base, time_t offset)
+{
+  time_t max =
+    (sizeof(time_t) == 8) ? (time_t) INT64_MAX : (time_t) INT32_MAX;
+  if (offset > 0) {
+    if (base > max - offset)
+      return max;
+  } else if (offset < -base) {
+    return 0;
+  }
+  return base + offset;
+}
+
 /** Queue an entry on the wait or semaphore queues.
  * This function creates and adds a queue entry to the wait queue
  * or the semaphore queue. Wait queue entries are sorted by when
@@ -885,8 +903,8 @@ queue_attribute_useatr(dbref executor, ATTR *a, dbref enactor, PE_REGS *pe_regs,
  * \param parent_queue the queue entry the \@wait command was executed in
  */
 void
-wait_que(dbref executor, int waittill, char *command, dbref enactor, dbref sem,
-         const char *semattr, int until, MQUE *parent_queue)
+wait_que(dbref executor, time_t waittill, char *command, dbref enactor,
+         dbref sem, const char *semattr, int until, MQUE *parent_queue)
 {
   MQUE *tmp;
   NEW_PE_INFO *pe_info;
@@ -921,10 +939,10 @@ wait_que(dbref executor, int waittill, char *command, dbref enactor, dbref sem,
   tmp->queue_type |= queue_type;
 
   if (until) {
-    tmp->wait_until = (time_t) waittill;
+    tmp->wait_until = waittill;
   } else {
     if (waittill >= 0)
-      tmp->wait_until = mudtime + waittill;
+      tmp->wait_until = wait_deadline(mudtime, waittill);
     else
       tmp->wait_until = 0; /* semaphore wait without a timeout */
   }
@@ -1560,13 +1578,14 @@ do_wait(dbref executor, dbref enactor, char *arg1, const char *cmd, bool until,
 {
   dbref thing;
   char *tcount = NULL, *aname = NULL;
-  int waitfor, num;
+  time_t waitfor;
+  int num;
   ATTR *a;
 
-  if (is_strict_integer(arg1)) {
+  if (is_strict_int64(arg1)) {
     /* normal wait */
-    wait_que(executor, parse_integer(arg1), (char *) cmd, enactor, NOTHING,
-             NULL, until, parent_queue);
+    wait_que(executor, (time_t) parse_int64(arg1, NULL, 10), (char *) cmd,
+             enactor, NOTHING, NULL, until, parent_queue);
     return;
   }
   /* semaphore wait with optional timeout */
@@ -1588,7 +1607,7 @@ do_wait(dbref executor, dbref enactor, char *arg1, const char *cmd, bool until,
   if (aname) {
     tcount = strchr(aname, '/');
     if (!tcount) {
-      if (is_strict_integer(aname)) { /* Timeout */
+      if (is_strict_int64(aname)) { /* Timeout */
         tcount = aname;
         aname = (char *) "SEMAPHORE";
       } else { /* Attribute */
@@ -1609,7 +1628,7 @@ do_wait(dbref executor, dbref enactor, char *arg1, const char *cmd, bool until,
   }
   /* get timeout, default of -1 */
   if (tcount && *tcount)
-    waitfor = parse_integer(tcount);
+    waitfor = (time_t) parse_int64(tcount, NULL, 10);
   else
     waitfor = -1;
   add_to_sem(thing, 1, aname);
@@ -1664,34 +1683,31 @@ do_waitpid(dbref player, const char *pidstr, const char *timestr, bool until)
     return;
   }
 
-  if (!is_strict_integer(timestr)) {
+  if (!is_strict_int64(timestr)) {
     notify(player, T("That is not a valid timestamp."));
     return;
   }
 
   if (until) {
-    int when;
+    time_t when;
 
-    when = parse_integer(timestr);
+    when = (time_t) parse_int64(timestr, NULL, 10);
 
     if (when < 0)
       when = 0;
 
-    q->wait_until = (time_t) when;
+    q->wait_until = when;
 
   } else {
-    int offset = parse_integer(timestr);
+    time_t offset = (time_t) parse_int64(timestr, NULL, 10);
 
     /* If timestr looks like +NNN or -NNN, add or subtract a number
        of seconds to the current timeout. Otherwise, change timeout.
      */
     if (timestr[0] == '+' || timestr[0] == '-')
-      q->wait_until += offset;
+      q->wait_until = wait_deadline(q->wait_until, offset);
     else
-      q->wait_until = mudtime + offset;
-
-    if (q->wait_until < 0)
-      q->wait_until = 0;
+      q->wait_until = wait_deadline(mudtime, offset);
   }
 
   /* Now adjust it in the wait queue. Not a clever approach, but I

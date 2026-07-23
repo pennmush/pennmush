@@ -30,6 +30,7 @@ void test_trim_space_sep(int *, int *);
 void test_utf8_to_latin1(int *, int *);
 void test_utf8_to_latin1_us(int *, int *);
 void test_valid_utf8(int *, int *);
+void test_parse_objid(int *, int *);
 struct test_record {
     const char *name;
     void (*fun)(int *, int *);
@@ -73,5 +74,6 @@ static struct test_record tests[] = {
 {"utf8_to_latin1", test_utf8_to_latin1, "||", TEST_NOT_RUN},
 {"utf8_to_latin1_us", test_utf8_to_latin1_us, "||", TEST_NOT_RUN},
 {"valid_utf8", test_valid_utf8, "||", TEST_NOT_RUN},
+{"parse_objid", test_parse_objid, "||", TEST_NOT_RUN},
 {NULL, NULL, NULL, TEST_NOT_RUN}
 };

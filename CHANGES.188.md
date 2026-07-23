@@ -20,6 +20,14 @@ Numbers next to the developer credit refer to Github issue numbers.
 Version 1.8.8 patchlevel 1 ??? ?? 202?
 ======================================
 
+Major Changes
+-------------
+
+* Times past 2038 (the 32-bit epoch limit) are now handled safely. Prompted by a patch from kaledin. [1428, TK]
+    * Object creation and modification times survive database saves past 2038, and objids with post-2038 creation times parse correctly.
+    * The connlog database now stores 64-bit timestamps, and is upgraded automatically.
+    NOTE: this upgrade is one-way. If you downgrade to an older version of PennMUSH afterwards, the older binary will disable connection logging; existing data is preserved, and logging will resume after re-upgrading.
+
 Minor changes
 -------------
 

@@ -62,7 +62,7 @@ all: $(OUTFILES)
 netmud: $(O_FILES)
 	@echo "Making netmud."
 	-mv -f netmud netmud~
-	$(CC) $(CCFLAGS) -o netmud $(O_FILES) $(LDFLAGS) $(SQL_LDFLAGS) $(LIBS)
+	$(CC) $(CCFLAGS) -o netmud $(O_FILES) $(LDFLAGS) $(SQL_LDFLAGS) $(LIBS) $(SQL_LIBS)
 
 # We recompile mysocket.c instead of reusing mysocket.o because we
 # want to do some error handing differently for info_slave.

@@ -51,6 +51,11 @@ void shutdown_checkpoint(void);
 #ifdef HAVE_UNISTD_H
 #include <unistd.h>
 #endif
+#ifdef HAVE_SYS_RANDOM_H
+/* On macOS and some other systems, getentropy() is declared here
+   instead of in unistd.h */
+#include <sys/random.h>
+#endif
 #include <stdio.h>
 
 #include <openssl/bn.h>

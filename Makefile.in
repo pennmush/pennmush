@@ -19,10 +19,11 @@ CC=@PTHREAD_CC@
 
 SQL_CFLAGS=@MYSQL_CFLAGS@ @POSTGRESQL_CPPFLAGS@
 SQL_LDFLAGS=@MYSQL_LDFLAGS@ @POSTGRESQL_LDFLAGS@
+SQL_LIBS=@POSTGRESQL_LIBS@
 
 CCFLAGS=@CFLAGS@ -I.. -I../hdrs -include ../config.h -include ../confmagic.h -include ../options.h @PTHREAD_CFLAGS@ @CPPFLAGS@ @ICU_CPPFLAGS@ @OPENSSL_INCLUDES@ @CURL_CFLAGS@
 LDFLAGS=@LDFLAGS@  @OPENSSL_LDFLAGS@
-CLIBS=@PTHREAD_LIBS@ @LIBS@ @ICU_LIBS@ @OPENSSL_LIBS@ @POSTGRESQL_LIBS@ @CURL_LIBS@
+CLIBS=@PTHREAD_LIBS@ @LIBS@ @ICU_LIBS@ @OPENSSL_LIBS@ @CURL_LIBS@
 INSTALL=@INSTALL@
 INSTALLDIR=$installdir
 CP=@CP@
@@ -46,7 +47,7 @@ all: config.h autogen game/mush.cnf
 	(cd src; @MAKE@ all "CC=$(CC)" "CCFLAGS=$(CCFLAGS)" \
 	"LDFLAGS=$(LDFLAGS)" "CLIBS=$(CLIBS)" "MAKE=$(MAKE)" \
 	"MAKEFLAGS=$(MAKEFLAGS)" "SQL_CFLAGS=$(SQL_CFLAGS)" \
-	"SQL_LDFLAGS=$(SQL_LDFLAGS)")
+	"SQL_LDFLAGS=$(SQL_LDFLAGS)" "SQL_LIBS=$(SQL_LIBS)")
 	@echo "If the make was successful, use 'make install' to install links."
 
 config.h: configure
@@ -90,7 +91,7 @@ install: localized all
 netmud:
 	(cd src; @MAKE@ netmud "CC=$(CC)" "CCFLAGS=$(CCFLAGS)" \
 	"SQL_CFLAGS=$(SQL_CFLAGS)" "SQL_LDFLAGS=$(SQL_LDFLAGS)" \
-	"LDFLAGS=$(LDFLAGS)" "CLIBS=$(CLIBS)" )
+	"SQL_LIBS=$(SQL_LIBS)" "LDFLAGS=$(LDFLAGS)" "CLIBS=$(CLIBS)" )
 
 access:
 	utils/make_access_cnf.sh game

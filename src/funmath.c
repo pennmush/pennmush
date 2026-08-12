@@ -2185,7 +2185,7 @@ MATH_FUNC(math_floordiv)
       return;
     }
 
-    if (divresult == INT_MIN && temp == -1) {
+    if (divresult == INT64_MIN && temp == -1) {
       safe_str(T("#-1 DOMAIN ERROR"), buff, bp);
       return;
     }
@@ -2270,7 +2270,7 @@ MATH_FUNC(math_modulo)
       return;
     }
 
-    if (divresult == INT_MIN && temp == -1) {
+    if (divresult == INT64_MIN && temp == -1) {
       safe_str(T("#-1 DOMAIN ERROR"), buff, bp);
       return;
     }
@@ -2322,7 +2322,7 @@ MATH_FUNC(math_remainder)
       return;
     }
 
-    if (divresult == INT_MIN && temp == -1) {
+    if (divresult == INT64_MIN && temp == -1) {
       safe_str(T("#-1 DOMAIN ERROR"), buff, bp);
       return;
     }

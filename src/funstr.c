@@ -1994,6 +1994,10 @@ FUNCTION(fun_align)
   for (ptr = args[0]; *ptr; ptr++) {
     while (isspace(*ptr))
       ptr++;
+    if (ncols >= MAX_COLS) {
+      safe_str(T("#-1 TOO MANY COLUMNS FOR ALIGN"), buff, bp);
+      return;
+    }
     if (*ptr == '>') {
       calign[ncols] = AL_RIGHT;
       ptr++;

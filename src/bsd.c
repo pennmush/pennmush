@@ -5420,7 +5420,8 @@ report_mssp(DESC *d, char *buff, char **bp)
     /* Required by current spec, as of 2010-08-15 */
     queue_string_eol(d, "%s\t%s", "NAME", options.mud_name);
     queue_string_eol(d, "%s\t%d", "PLAYERS", count_players());
-    queue_string_eol(d, "%s\t%ld", "UPTIME", (long) globals.first_start_time);
+    queue_string_eol(d, "%s\t%s", "UPTIME",
+                     unparse_integer((intmax_t) globals.first_start_time));
     /* Not required, but we know anyway */
     queue_string_eol(d, "%s\t%d", "PORT", options.port);
     if (options.ssl_port) {
@@ -5438,8 +5439,8 @@ report_mssp(DESC *d, char *buff, char **bp)
                 options.mud_name);
     safe_format(buff, bp, "%c%s%c%d", MSSP_VAR, "PLAYERS", MSSP_VAL,
                 count_players());
-    safe_format(buff, bp, "%c%s%c%ld", MSSP_VAR, "UPTIME", MSSP_VAL,
-                (long) globals.first_start_time);
+    safe_format(buff, bp, "%c%s%c%s", MSSP_VAR, "UPTIME", MSSP_VAL,
+                unparse_integer((intmax_t) globals.first_start_time));
 
     safe_format(buff, bp, "%c%s%c%d", MSSP_VAR, "PORT", MSSP_VAL, options.port);
     if (options.ssl_port)
@@ -7405,14 +7406,14 @@ dump_reboot_db(void)
     putref(f, maxd);
     DESC_ITER (d) {
       putref(f, d->descriptor);
-      putref(f, d->connected_at);
+      putref_time(f, d->connected_at);
       putref(f, d->hide);
       putref(f, d->cmds);
       if (GoodObject(d->player))
         putref(f, d->player);
       else
         putref(f, -1);
-      putref(f, d->last_time);
+      putref_time(f, d->last_time);
       if (d->output_prefix)
         putstring(f, (char *) d->output_prefix);
       else
@@ -7438,7 +7439,7 @@ dump_reboot_db(void)
 
     putref(f, 0);
     putstring(f, poll_msg);
-    putref(f, globals.first_start_time);
+    putref_time(f, globals.first_start_time);
     putref(f, globals.reboot_count);
 #ifdef SSL_SLAVE
     putref(f, ssl_slave_pid);
@@ -7507,12 +7508,12 @@ load_reboot_db(void)
       d->http_request = NULL;
       d->closer = NOTHING;
       d->close_reason = "unknown";
-      d->connected_at = getref(f);
+      d->connected_at = getref_time(f);
       d->conn_timer = NULL;
       d->hide = getref(f);
       d->cmds = getref(f);
       d->player = getref(f);
-      d->last_time = getref(f);
+      d->last_time = getref_time(f);
       d->connected = (GoodObject(d->player) && IsPlayer(d->player))
                        ? CONN_PLAYER
                        : CONN_SCREEN;
@@ -7596,7 +7597,7 @@ load_reboot_db(void)
     } /* while loop */
 
     strcpy(poll_msg, getstring_noalloc(f));
-    globals.first_start_time = getref(f);
+    globals.first_start_time = getref_time(f);
     globals.reboot_count = getref(f) + 1;
 
 #ifndef SSL_SLAVE

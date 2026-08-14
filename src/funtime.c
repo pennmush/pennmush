@@ -48,11 +48,11 @@ FUNCTION(fun_timefmt)
 
   if (nargs >= 2 && args[1] && *args[1]) {
 
-    if (!is_integer(args[1])) {
+    if (!is_strict_int64(args[1])) {
       safe_str(T(e_int), buff, bp);
       return;
     }
-    tt = parse_integer(args[1]);
+    tt = (time_t) parse_int64(args[1], NULL, 10);
     if (errno == ERANGE) {
       safe_str(T(e_range), buff, bp);
       return;
@@ -171,11 +171,11 @@ FUNCTION(fun_convsecs)
   struct tm *ttm;
   bool utc = 0;
 
-  if (!is_integer(args[0])) {
+  if (!is_strict_int64(args[0])) {
     safe_str(T(e_int), buff, bp);
     return;
   }
-  tt = parse_integer(args[0]);
+  tt = (time_t) parse_int64(args[0], NULL, 10);
   if (errno == ERANGE) {
     safe_str(T(e_range), buff, bp);
     return;
@@ -696,11 +696,11 @@ FUNCTION(fun_isdaylight)
   time_t when = mudtime;
 
   if (nargs >= 1 && args[0] && *args[0]) {
-    if (!is_integer(args[0])) {
+    if (!is_strict_int64(args[0])) {
       safe_str(T(e_int), buff, bp);
       return;
     }
-    when = parse_integer(args[0]);
+    when = (time_t) parse_int64(args[0], NULL, 10);
     if (errno == ERANGE) {
       safe_str(T(e_range), buff, bp);
       return;

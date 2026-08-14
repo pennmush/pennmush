@@ -278,6 +278,22 @@ putref_u64(PENNFILE *f, uint64_t ref)
 #endif
 }
 
+/** Output a time_t to a file.
+ * Kept 64-bit even on platforms with a 32-bit long so that dates past
+ * 2038 survive serialization.
+ * \param f file pointer to write to.
+ * \param t value to write.
+ */
+void
+putref_time(PENNFILE *f, time_t t)
+{
+#ifdef WIN32
+  penn_fprintf(f, "%I64d\n", (int64_t) t);
+#else
+  penn_fprintf(f, "%" PRId64 "\n", (int64_t) t);
+#endif
+}
+
 /** Output a string to a file.
  * This function writes a string to a file, double-quoted,
  * appropriately escaping quotes and backslashes (the escape character).
@@ -597,6 +613,16 @@ db_write_labeled_int(PENNFILE *f, char const *label, int value)
 }
 
 void
+db_write_labeled_time(PENNFILE *f, char const *label, time_t value)
+{
+#ifdef WIN32
+  penn_fprintf(f, "%s %I64d\n", label, (int64_t) value);
+#else
+  penn_fprintf(f, "%s %" PRId64 "\n", label, (int64_t) value);
+#endif
+}
+
+void
 db_write_labeled_dbref(PENNFILE *f, char const *label, dbref value)
 {
   penn_fprintf(f, "%s #%d\n", label, value);
@@ -660,8 +686,8 @@ db_write_obj_basic(PENNFILE *f, dbref i, struct object *o)
   db_write_labeled_string(f, "powers",
                           bits_to_string("POWER", o->powers, GOD, NOTHING));
   db_write_labeled_string(f, "warnings", unparse_warnings(o->warnings));
-  db_write_labeled_int(f, "created", (int) o->creation_time);
-  db_write_labeled_int(f, "modified", (int) o->modification_time);
+  db_write_labeled_time(f, "created", o->creation_time);
+  db_write_labeled_time(f, "modified", o->modification_time);
 }
 
 /** Write out an object.
@@ -1016,7 +1042,7 @@ getref(PENNFILE *f)
     longjmp(db_err, 1);
   }
   dbline++;
-  return parse_integer(buf);
+  return (long) parse_int64(buf, NULL, 10);
 }
 
 /** Read in a uint32_t
@@ -1049,6 +1075,24 @@ getref_u64(PENNFILE *f)
   }
   dbline++;
   return parse_uint64(buf, NULL, 10);
+}
+
+/** Read in a time_t.
+ * Kept 64-bit even on platforms with a 32-bit long so that dates past
+ * 2038 survive serialization.
+ * \param f file pointer to read from.
+ * \return time_t read.
+ */
+time_t
+getref_time(PENNFILE *f)
+{
+  static char buf[BUFFER_LEN];
+  if (!penn_fgets(buf, sizeof(buf), f)) {
+    do_rawlog(LT_ERR, "Unexpected EOF at line %d", dbline);
+    longjmp(db_err, 1);
+  }
+  dbline++;
+  return (time_t) parse_int64(buf, NULL, 10);
 }
 
 /** Read in a string, into a static buffer.
@@ -1836,10 +1880,10 @@ db_read(PENNFILE *f)
             o->warnings = parse_warnings(NOTHING, value);
             break;
           case LBL_CREATED:
-            o->creation_time = (time_t) parse_integer(value);
+            o->creation_time = (time_t) parse_int64(value, NULL, 10);
             break;
           case LBL_MODIFIED:
-            o->modification_time = (time_t) parse_integer(value);
+            o->modification_time = (time_t) parse_int64(value, NULL, 10);
             break;
           case LBL_ATTRS: {
             int attrcount = parse_integer(value);

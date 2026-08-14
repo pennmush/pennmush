@@ -9,6 +9,7 @@
 
 #include <setjmp.h>
 #include <stdio.h>
+#include <time.h>
 #ifdef HAVE_LIBZ
 #include <zlib.h>
 #endif
@@ -46,9 +47,11 @@ int penn_feof(PENNFILE *);
 void putref(PENNFILE *f, long int ref);
 void putref_u32(PENNFILE *f, uint32_t ref);
 void putref_u64(PENNFILE *f, uint64_t ref);
+void putref_time(PENNFILE *f, time_t t);
 void putstring(PENNFILE *f, const char *s);
 void db_write_labeled_string(PENNFILE *f, char const *label, char const *value);
 void db_write_labeled_int(PENNFILE *f, char const *label, int value);
+void db_write_labeled_time(PENNFILE *f, char const *label, time_t value);
 void db_write_labeld_uint32(PENNFILE *, char const *, uint32_t);
 void db_write_labeled_dbref(PENNFILE *f, char const *label, dbref value);
 
@@ -60,6 +63,7 @@ char *getstring_noalloc(PENNFILE *f);
 long getref(PENNFILE *f);
 uint32_t getref_u32(PENNFILE *);
 uint64_t getref_u64(PENNFILE *f);
+time_t getref_time(PENNFILE *f);
 void db_read_this_labeled_string(PENNFILE *f, const char *label, char **val);
 void db_read_labeled_string(PENNFILE *f, char **label, char **val);
 void db_read_this_labeled_int(PENNFILE *f, const char *label, int *val);

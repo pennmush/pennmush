@@ -2423,7 +2423,7 @@ dump_mail(PENNFILE *fp)
   for (mp = HEAD; mp != NULL; mp = mp->next) {
     putref(fp, mp->to);
     putref(fp, mp->from);
-    putref(fp, mp->from_ctime);
+    putref_time(fp, mp->from_ctime);
     putstring(fp, show_time(mp->time, 0));
     if (mp->subject)
       putstring(fp, uncompress(mp->subject));
@@ -2575,7 +2575,7 @@ load_mail(PENNFILE *fp)
   mp->to = getref(fp);
   mp->from = getref(fp);
   if (mail_flags & MDBF_SENDERCTIME)
-    mp->from_ctime = (time_t) getref(fp);
+    mp->from_ctime = getref_time(fp);
   else
     mp->from_ctime = 0; /* No one will have this creation time */
 
@@ -2610,7 +2610,7 @@ load_mail(PENNFILE *fp)
     mp->to = getref(fp);
     mp->from = getref(fp);
     if (mail_flags & MDBF_SENDERCTIME)
-      mp->from_ctime = (time_t) getref(fp);
+      mp->from_ctime = getref_time(fp);
     else
       mp->from_ctime = 0; /* No one will have this creation time */
     if (do_convtime(getstring_noalloc(fp), &ttm))

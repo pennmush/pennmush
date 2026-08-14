@@ -199,9 +199,9 @@ real_parse_objid(char const *str, bool strict)
     if (GoodObject(it)) {
       time_t matchtime;
       p++;
-      if (!is_strict_integer(p))
+      if (!is_strict_int64(p))
         return NOTHING;
-      matchtime = parse_integer(p);
+      matchtime = (time_t) parse_int64(p, NULL, 10);
       return (CreTime(it) == matchtime) ? it : NOTHING;
     } else
       return NOTHING;
@@ -210,6 +210,19 @@ real_parse_objid(char const *str, bool strict)
   } else {
     return parse_dbref(str);
   }
+}
+
+TEST_GROUP(parse_objid)
+{
+  /* Objids must round-trip creation times past 2038 (the 32-bit epoch
+     limit). Runs with the game db loaded, so borrow God for a moment. */
+  time_t saved = CreTime(GOD);
+  CreTime(GOD) = 4102444800; /* Jan 1 2100 */
+  TEST("parse_objid.1", parse_objid("#1:4102444800") == GOD);
+  TEST("parse_objid.2", real_parse_objid("#1:4102444800", 1) == GOD);
+  TEST("parse_objid.3", parse_objid("#1:4102444801") == NOTHING);
+  CreTime(GOD) = saved;
+  TEST("parse_objid.4", parse_objid("#1:notanumber") == NOTHING);
 }
 
 /** Given a string, parse out a boolean value.

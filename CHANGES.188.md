@@ -37,6 +37,7 @@ Fixes
 * Telnet subnegotations displayed the subnegotation end character (SE) visibly for clients which had negotiated a unicode character set. Reported by Ben Gunderson. [1407, MG]
 * Fix for crashbug in @halt [1424,MT]
 * Repeating telnet characterset negotiation for a connection which had already negotiated as UTF-8 could cause a crash. From a report from Volund. [MG]
+* Fixed a `sys/random.h` compilation failure on MacOS, and fixed `info_slave`/`ssl_slave` PostgreSQL client library search paths. Reported by Adrian Irving-Beer. [1430, TK]
 * Fixed a crash in `floordiv()`, `modulo()` and `remainder()` with certain integer arguments. [TK]
 * Fixed a buffer overflow in `align()` and `lalign()`. [TK]
 * Fixed a potential use-after-free in `@halt/pid`. [TK]

@@ -39,6 +39,8 @@
 
 #undef HAVE_POLL_H
 
+#undef HAVE_SYS_RANDOM_H
+
 #undef HAVE_SYS_SELECT_H
 
 #undef HAVE_SYS_INOTIFY_H

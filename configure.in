@@ -142,6 +142,7 @@ AC_CHECK_HEADERS([sys/stat.h sys/time.h sys/types.h sys/eventfd.h])
 AC_CHECK_HEADERS([sys/socket.h arpa/inet.h libintl.h netdb.h netinet/tcp.h])
 AC_CHECK_HEADERS([netinet/in.h sys/un.h sys/resource.h sys/event.h sys/uio.h])
 AC_CHECK_HEADERS([poll.h sys/select.h sys/inotify.h langinfo.h crypt.h])
+AC_CHECK_HEADERS([sys/random.h])
 AC_CHECK_HEADERS([event2/event.h event2/dns.h fenv.h sys/param.h syslog.h])
 AC_CHECK_HEADERS([sys/prctl.h byteswap.h endian.h sys/endian.h pthread.h])
 AC_CHECK_HEADERS([sys/ucred.h sys/file.h], [], [], [

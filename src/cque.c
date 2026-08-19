@@ -2315,6 +2315,7 @@ do_haltpid(dbref player, const char *arg1)
   q->executor = NOTHING;
   if (q->semaphore_attr) {
     MQUE *last = NULL, *tmp;
+    bool found = false;
     for (tmp = qsemfirst; tmp; last = tmp, tmp = tmp->next) {
       if (tmp == q) {
         if (last)
@@ -2323,13 +2324,20 @@ do_haltpid(dbref player, const char *arg1)
           qsemfirst = tmp->next;
         if (qsemlast == tmp)
           qsemlast = last;
+        found = true;
         break;
       }
     }
 
-    giveto(victim, QUEUE_COST);
-    add_to_sem(q->semaphore_obj, -1, q->semaphore_attr);
-    free_qentry(q);
+    /* Only clean up here if the entry is still waiting on the semaphore
+     * queue. If it has already been notified or timed out it has been moved
+     * to the normal queue (with semaphore_attr still set), where being flagged
+     * as halted is enough for it to be discarded safely. */
+    if (found) {
+      giveto(victim, QUEUE_COST);
+      add_to_sem(q->semaphore_obj, -1, q->semaphore_attr);
+      free_qentry(q);
+    }
   }
 
   notify_format(player, T("Queue entry with pid %u halted."),

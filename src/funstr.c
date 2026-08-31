@@ -51,8 +51,6 @@ static int align_one_line(char *buff, char **bp, int ncols, int cols[MAX_COLS],
                           ansi_string *as[MAX_COLS], ansi_data adata[MAX_COLS],
                           int linenum, char *fieldsep, int fslen, char *linesep,
                           int lslen, char filler);
-static int comp_gencomp(dbref executor, char *left, char *right,
-                        const char *type);
 void init_pronouns(void);
 
 /** Return an indicator of a player's gender.
@@ -435,16 +433,6 @@ FUNCTION(fun_str_rep_or_ins)
   safe_ansi_string(dst, 0, dst->len, buff, bp);
   free_ansi_string(dst);
   free_ansi_string(src);
-}
-
-extern int sort_order; /* from sort.c */
-
-static int
-comp_gencomp(dbref executor, char *left, char *right, const char *type)
-{
-  int c;
-  c = gencomp(executor, left, right, type);
-  return (c > 0 ? 1 : (c < 0 ? -1 : 0)) * sort_order;
 }
 
 /* ARGSUSED */

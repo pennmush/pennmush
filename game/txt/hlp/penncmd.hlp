@@ -1257,22 +1257,47 @@ See also: @link, @search, entrances()
 
 See also: TRANSPARENT, @conformat, @nameformat, @descformat
 & @HTTP
-  @http      <obj>/<attr>=<URL>
-  @http/delete <obj>/<att>=<URL>[,<data>]
-  @http/post <obj>/<att>=<URL>[,<data>]
-  @http/put <obj>/<att>=<URL>[,<data>]
+  @http      <obj>/<attr>=<URL>[,<headers>]
+  @http/delete <obj>/<att>=<URL>[,<data>[,<headers>]]
+  @http/post <obj>/<att>=<URL>[,<data>[,<headers>]]
+  @http/put <obj>/<att>=<URL>[,<data>[,<headers>]]
+  @http/patch <obj>/<att>=<URL>[,<data>[,<headers>]]
+  @http/trace <obj>/<att>=<URL>[,<data>[,<headers>]]
+  @http/options <obj>/<att>=<URL>[,<data>[,<headers>]]
+  @http/head <obj>/<att>=<URL>[,<data>[,<headers>]]
+  @http/connect <obj>/<att>=<URL>[,<data>[,<headers>]]
 
   Attempts to retrieve URL with a HTTP GET request, and upon doing so, queues the action list in <obj>/<attr>. The body of the reply from the remote web server is passed as %0, with the HTTP status in %q<status> and the Content-Type header in %q<content-type>. Any commas in the URL need to be escaped.
 
   The POST switch makes it do a HTTP POST request instead of the default GET, (And PUT and DELETE do the obvious). With these, the 'content-type' q-register controls the type of data; it defaults to 'application/x-www-form-urlencoded'.` If it contains the string "charset=utf-8", <data> will be converted to UTF-8, otherwise it is assumed to be Latin-1.
 
   If the q-register 'userpass' is set when running @http, it should hold a string of the form user:password and will be used if needed for HTTP authentication.
+  If <headers> is passed, it is expected to be a newline delimited list of key:value pairs. It will also ignore the content-type q-register.
 
   Restricted to objects set Wizard or with the Can_HTTP @Power.
 
-  Note: The response body has the same 8k limit as other MUSH strings. Anything longer is truncated; this command is best used with APIs that provide short responses.
+  Note: The response body has the same 8k limit as other MUSH strings. Anything longer is truncated; this command is best used with APIs that provide short responses. The register 'http-overflow' will be set to 1 if the response is too large.
 
-See also: urlencode(), urldecode()
+  See 'help @http2' for examples.
+
+See also: urlencode(), urldecode(), @http2
+& @http2
+  Example:
+    > &think me=th [json_query(%0,extract,$.headers.foo)]%r[json_query(%0,extract,$.json)]
+    > @http/delete %!/think=https://postman-echo.com/delete,json(object,bar,"baz"),Content-Type:application/json%rfoo:bar
+    One/THINK - Set.
+    bar
+    {"bar":"baz"}
+
+    > &think me=th %0
+    > @http %!/think=https://postman-echo.com/headers,Content-Type:application/json
+    One/THINK - Set.
+    {"headers":{"x-forwarded-proto":"https","x-forwarded-port":"443","host":"postman-echo.com","x-amzn-trace-id":"Root=1-632a4bb2-6f6ba8bf56e3aa4f6465d6b3","user-agent":"PennMUSH/1.8","accept":"*/*","accept-charset":"iso-8859-1, utf-8, us-ascii"}}
+
+    > &think me=th %0
+    > @http %!/think=[setq(userpass,postman:password)]https://postman-echo.com/basic-auth
+    One/THINK - Set.
+    {"authenticated":true}
 & @firstexit
   @firstexit <exit1>[, ... , <exitN>]
   

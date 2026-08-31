@@ -73,6 +73,8 @@ int slist_comp(s_rec *s1, s_rec *s2, ListTypeInfo *lti);
 
 /** General-use sorting routines, good for most purposes. */
 int gencomp(dbref player, char *a, char *b, SortType sort_type);
+int comp_gencomp(dbref executor, char *left, char *right,
+                        const char *type);
 void do_gensort(dbref player, char *keys[], char *strs[], int n,
                 SortType sort_type);
 

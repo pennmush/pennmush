@@ -1580,7 +1580,7 @@ static cJSON_bool print_array(const cJSON * const item, printbuffer * const outp
                 return false;
             }
             *output_pointer++ = ',';
-            if(output_buffer->format)
+            if (output_buffer->format)
             {
                 *output_pointer++ = ' ';
             }

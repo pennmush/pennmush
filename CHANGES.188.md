@@ -39,6 +39,12 @@ Fixes
 * Repeating telnet characterset negotiation for a connection which had already negotiated as UTF-8 could cause a crash. From a report from Volund. [MG]
 * Fixed a `sys/random.h` compilation failure on MacOS, and fixed `info_slave`/`ssl_slave` PostgreSQL client library search paths. Reported by Adrian Irving-Beer. [1430, TK]
 
+Softcode
+--------
+* `http()` for local small http calls. Patch by Mercutio.
+* `@http` and `http()` now support all other HTTP Verbs. Patch by Mercutio.
+* `@http` and `http()` now store information on overflow into a register. Patch by Mercutio.
+
 Version 1.8.8 patchlevel 0 Apr 20 2020
 ======================================
 
